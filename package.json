@@ -1,0 +1,20 @@
+{
+  "name": "vulci",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The reference interpreter for the Vulci programming language.",
+  "type": "module",
+  "bin": {
+    "vulci": "./dist/cli.js"
+  },
+  "scripts": {
+    "dev": "tsx src/cli.ts",
+    "build": "tsc",
+    "start": "node dist/cli.js"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
