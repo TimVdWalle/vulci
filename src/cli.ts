@@ -2,6 +2,9 @@
 
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { Lexer } from "./lexer.js";
+import { TokenType } from "./token.js";
+import { Parser } from "./parser.js";
 
 async function main(): Promise<void> {
     const filePath = process.argv[2];
@@ -17,10 +20,37 @@ async function main(): Promise<void> {
         console.log("=== Vulci ===");
         console.log(source);
 
-        // TODO:
-        // const tokens = lex(source);
-        // const ast = parse(tokens);
-        // evaluate(ast);
+        const lexer = new Lexer(source);
+
+        const tokens = lexer.lex();
+
+           const parser = new Parser(tokens);
+
+        const program = parser.parse();
+
+        console.dir(program, {
+
+            depth: null,
+
+            colors: true,
+
+        })
+
+       console.table(
+
+    tokens.map((token) => ({
+
+        type: TokenType[token.type],
+
+        lexeme: token.lexeme === "" ? "<empty>" : token.lexeme,
+
+        line: token.line,
+
+        column: token.column,
+
+    }))
+
+);
 
     } catch (error) {
         if (error instanceof Error) {
