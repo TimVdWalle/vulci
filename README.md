@@ -1,31 +1,92 @@
-# Vulci
+Vulci
 
-Vulci is an experimental project focused on designing and building a new programming language.
+A general-purpose programming language designed from first principles.
 
-## About the project
+Vulci is an attempt to build a programming language that genuinely deserves to exist.
 
-Vulci is an exploration of what a programming language can look like when it values clarity, intention, and composability. The project is centered on language design rather than on producing a finished product immediately.
+The goal is not to create another language with a different syntax, nor to experiment for experimentation’s sake. The goal is to design a language whose overall design provides enough value that experienced developers can justify choosing it over existing alternatives.
 
-## Design philosophy
+Although Vulci is developed as a hobby project, it is designed with the ambition and discipline of a serious programming language. Development decisions may be pragmatic, but language design decisions are made as if Vulci were intended for long-term, real-world use.
 
-The language aims to be:
+⸻
 
-- readable and approachable
-- explicit where ambiguity would otherwise create confusion
-- structured around simple, composable ideas
-- shaped by the experience of writing and reading code, not just by implementation convenience
+Design Philosophy
 
-## Language direction
+Every significant language decision is evaluated against three core philosophies.
 
-Vulci is intended to explore a syntax and semantics that feel deliberate rather than arbitrary. The goal is not to mimic existing languages blindly, but to experiment with forms that make programs easier to understand and maintain.
+Phi1 — One mental model for working with data
 
-## Project goals
+Regardless of whether data comes from memory, files, databases, APIs, streams, or other sources, programmers should work with it through the same mental model.
 
-- develop a coherent language concept
-- define a syntax that feels natural and expressive
-- explore semantics that prioritize clarity
-- grow the project gradually as the design becomes more concrete
+Different data sources should not require fundamentally different programming models.
 
-## Scope
+⸻
 
-This repository is a place for developing the idea of Vulci as it evolves. It is meant to capture the language’s direction, its design choices, and the thinking behind them as the project grows.
+Phi2 — Code should be easy to read and unambiguous
+
+Code is read far more often than it is written.
+
+Vulci favors clarity, consistency, and explicit intent over cleverness or unnecessary brevity. Every construct should have one clear interpretation, avoiding hidden behavior and surprising language rules whenever practical.
+
+⸻
+
+Phi3 — Small building blocks, powerful combinations
+
+Rather than introducing many specialized language features, Vulci aims to provide a small number of fundamental concepts that combine naturally into expressive solutions.
+
+Complexity should emerge from composition, not from an ever-growing collection of language features.
+
+⸻
+
+Project Goals
+
+The project distinguishes between the success of the project itself and the success of the language.
+
+A successful project
+
+The project should remain enjoyable, sustainable, and educational throughout its development.
+
+A successful project is one that results in a complete programming language while providing an enjoyable opportunity to learn about language design, interpreter implementation, and the many trade-offs involved in creating a coherent language.
+
+A successful language
+
+The language succeeds only if it genuinely earns its place among existing programming languages.
+
+Novelty alone is not enough. Vulci should justify its existence through the quality, consistency, readability, and usefulness of its overall design.
+
+⸻
+
+Design Principles
+
+Some principles guide every language decision:
+
+* Every feature should support one or more of the three philosophies.
+* Features should justify their existence.
+* Simplicity is preferred over feature count.
+* Consistency is preferred over special cases.
+* Temporary implementation constraints should not compromise the long-term language design.
+* The implementation order does not imply the importance of a feature.
+
+⸻
+
+Name
+
+The language is named Vulci, after the ancient Etruscan city of Vulci in present-day Italy.
+
+The name was chosen while the project’s creator was on holiday near the archaeological site itself. It was selected because it is short, distinctive, memorable, easy to pronounce, and independent of any particular programming concept or implementation detail.
+
+Source files currently use the extension:
+
+.vulci
+
+Both the name and extension are accepted project decisions, although they may still evolve before a stable release.
+
+⸻
+
+Guiding Principle
+
+A programming language should reduce the number of things a programmer needs to think about—not increase them.
+
+If a language feature makes programs easier to understand, more consistent, and more expressive without increasing the programmer’s mental burden, it probably belongs in Vulci.
+
+If it does not, it probably doesn’t.
