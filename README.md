@@ -60,12 +60,12 @@ Design Principles
 
 Some principles guide every language decision:
 
-* Every feature should support one or more of the three philosophies.
-* Features should justify their existence.
-* Simplicity is preferred over feature count.
-* Consistency is preferred over special cases.
-* Temporary implementation constraints should not compromise the long-term language design.
-* The implementation order does not imply the importance of a feature.
+- Every feature should support one or more of the three philosophies.
+- Features should justify their existence.
+- Simplicity is preferred over feature count.
+- Consistency is preferred over special cases.
+- Temporary implementation constraints should not compromise the long-term language design.
+- The implementation order does not imply the importance of a feature.
 
 ⸻
 

@@ -1,22 +1,22 @@
 export enum TokenType {
-    Integer,
+  Integer,
 
-    Identifier,
+  Identifier,
 
-    Assign,
+  Assign,
 
-    LeftParen,
-    RightParen,
-    Comma,
+  LeftParen,
+  RightParen,
+  Comma,
 
-    Newline,
+  Newline,
 
-    EOF,
+  EOF,
 }
 
 export interface Token {
-    type: TokenType;
-    lexeme: string;
-    line: number;
-    column: number;
+  type: TokenType;
+  lexeme: string;
+  line: number;
+  column: number;
 }

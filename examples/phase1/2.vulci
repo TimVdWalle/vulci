@@ -1,2 +1,1 @@
-answer = 42 // trailing comment
-print(answer)
+// comment only
