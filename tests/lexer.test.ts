@@ -57,7 +57,7 @@ print(answer)
         type: TokenType.EOF,
         lexeme: "",
       },
-    ]
+    ],
   );
 });
 
@@ -77,7 +77,7 @@ answer = 42 // trailing comment
       TokenType.Integer,
       TokenType.Newline,
       TokenType.EOF,
-    ]
+    ],
   );
 });
 
@@ -91,6 +91,6 @@ test("lexes identifiers containing underscores and numbers", () => {
 test("reports unexpected characters with their position", () => {
   assert.throws(
     () => new Lexer("answer = @").lex(),
-    /Unexpected character '@' at 1:10/
+    /Unexpected character '@' at 1:10/,
   );
 });

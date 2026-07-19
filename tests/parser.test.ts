@@ -68,6 +68,6 @@ test("requires a newline between statements", () => {
 
   assert.throws(
     () => new Parser(tokens).parse(),
-    /Expected a newline after statement/
+    /Expected a newline after statement/,
   );
 });

@@ -139,7 +139,7 @@ export class Lexer {
     const c = this.source[this.current];
     this.current++;
     this.column++;
-    return c;
+    return c ?? "\0";
   }
 
   private match(expected: string): boolean {
@@ -161,7 +161,7 @@ export class Lexer {
       return "\0";
     }
 
-    return this.source[this.current];
+    return this.source[this.current] ?? "\0";
   }
 
   private isDigit(c: string): boolean {

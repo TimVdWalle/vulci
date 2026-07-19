@@ -45,7 +45,7 @@ test("calls native functions with evaluated arguments", () => {
     `answer = 42
 capture(answer)
 `,
-    environment
+    environment,
   );
 
   assert.deepEqual(receivedArguments, [
@@ -61,7 +61,7 @@ test("reports undefined variables", () => {
 
   assert.throws(
     () => evaluate("print(answer)", environment),
-    /Undefined variable 'print'/
+    /Undefined variable 'print'/,
   );
 });
 
@@ -74,8 +74,8 @@ test("reports values that are not callable", () => {
         `answer = 42
 answer()
 `,
-        environment
+        environment,
       ),
-    /'answer' is not callable/
+    /'answer' is not callable/,
   );
 });
