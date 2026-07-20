@@ -1,0 +1,34 @@
+// Phase 3: line comments
+
+value = 10 // trailing line comment
+print(value)
+
+/*
+Phase 3: multiline block comment
+
+Nothing inside this comment is executed.
+
+print(999)
+*/
+
+result = 1 + /* comment between tokens */ 2
+print(result)
+
+/*
+Outer block comment
+
+    /* Nested block comment */
+
+Back inside the outer block comment.
+*/
+
+nested_result = 20 /* first /* second /* third */ second */ first */ / 5
+print(nested_result)
+
+/// Documentation-style line comments are ordinary comments for now.
+
+/**
+ * Documentation-style block comments are also ordinary comments for now.
+ */
+
+print(42)
