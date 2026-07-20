@@ -30,4 +30,4 @@ jobs:
         run: npm ci
 
       - name: Run formatting, linting, type checks, and tests
-        run: npm run check 
+        run: npm run check
