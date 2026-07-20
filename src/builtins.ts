@@ -20,10 +20,13 @@ function formatValue(value: RuntimeValue): string {
     case "Integer":
       return value.value.toString();
 
+    case "Boolean":
+      return value.value ? "true" : "false";
+
     case "Null":
       return "null";
 
     case "NativeFunction":
-      return "<native function>";
+      return "";
   }
 }

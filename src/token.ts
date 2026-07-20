@@ -1,8 +1,17 @@
 export enum TokenType {
   Integer,
   Identifier,
+  True,
+  False,
 
   Assign,
+  EqualEqual,
+  BangEqual,
+  Less,
+  LessEqual,
+  Greater,
+  GreaterEqual,
+
   Plus,
   Minus,
   Star,
