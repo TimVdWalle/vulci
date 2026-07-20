@@ -11,7 +11,7 @@ itself.
 The language specification (syntax and semantics) remains independent of
 any particular implementation.
 
-------------------------------------------------------------------------
+---
 
 ## Reference Implementation
 
@@ -21,7 +21,7 @@ runs on **Node.js**.
 This implementation is considered the primary implementation of the
 language, not merely a prototype.
 
-------------------------------------------------------------------------
+---
 
 ## Interpreter Architecture
 
@@ -35,22 +35,22 @@ The evaluator walks the AST directly and executes the program.
 
 No bytecode is generated.
 
-------------------------------------------------------------------------
+---
 
 ## Runtime
 
 The implementation relies on Node.js for:
 
--   Process execution
--   Memory allocation
--   Garbage collection
--   File system access
--   Operating system integration
+- Process execution
+- Memory allocation
+- Garbage collection
+- File system access
+- Operating system integration
 
 The interpreter itself is responsible only for implementing the language
 semantics.
 
-------------------------------------------------------------------------
+---
 
 ## Distribution
 
@@ -64,23 +64,23 @@ users are not be required to install Node.js.
 The command-line interface is considered part of the language experience
 and should remain stable regardless of implementation changes.
 
-------------------------------------------------------------------------
+---
 
 ## Performance Philosophy
 
 The project prioritizes:
 
--   Correct language semantics
--   Simplicity of implementation
--   Fast iteration
--   Ease of experimentation
+- Correct language semantics
+- Simplicity of implementation
+- Fast iteration
+- Ease of experimentation
 
 Premature runtime optimization is intentionally avoided.
 
 Performance improvements should only be pursued when justified by real
 usage and measurement.
 
-------------------------------------------------------------------------
+---
 
 ## Future Implementations
 
@@ -95,7 +95,7 @@ user-facing interface.
 Changing the implementation must not require changes to user programs or
 the command-line interface.
 
-------------------------------------------------------------------------
+---
 
 ## Rationale
 

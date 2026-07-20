@@ -50,6 +50,33 @@ export class Lexer {
         this.addToken(TokenType.Assign, c, startLine, startColumn);
         return;
 
+      case "+":
+        this.addToken(TokenType.Plus, c, startLine, startColumn);
+        return;
+
+      case "-":
+        this.addToken(TokenType.Minus, c, startLine, startColumn);
+        return;
+
+      case "*":
+        this.addToken(TokenType.Star, c, startLine, startColumn);
+        return;
+
+      case "/":
+        if (this.match("/")) {
+          while (!this.isAtEnd() && this.peek() !== "\n") {
+            this.advance();
+          }
+          return;
+        }
+
+        this.addToken(TokenType.Slash, c, startLine, startColumn);
+        return;
+
+      case "%":
+        this.addToken(TokenType.Percent, c, startLine, startColumn);
+        return;
+
       case "(":
         this.addToken(TokenType.LeftParen, c, startLine, startColumn);
         return;
@@ -62,22 +89,16 @@ export class Lexer {
         this.addToken(TokenType.Comma, c, startLine, startColumn);
         return;
 
-      case "/":
-        if (this.match("/")) {
-          while (!this.isAtEnd() && this.peek() !== "\n") {
-            this.advance();
-          }
-          return;
-        }
-
-        throw new Error(
-          `Unexpected character '/' at ${startLine}:${startColumn}`,
-        );
-
       default:
         if (this.isDigit(c)) {
           this.integer(startLine, startColumn);
           return;
+        }
+
+        if (c === "_" && this.isDigit(this.peek())) {
+          throw new Error(
+            `Invalid integer separator at ${startLine}:${startColumn}`,
+          );
         }
 
         if (this.isIdentifierStart(c)) {
@@ -94,7 +115,22 @@ export class Lexer {
   private integer(line: number, column: number): void {
     const start = this.current - 1;
 
-    while (this.isDigit(this.peek())) {
+    while (this.isDigit(this.peek()) || this.peek() === "_") {
+      if (this.peek() === "_") {
+        const separatorLine = this.line;
+        const separatorColumn = this.column;
+
+        this.advance();
+
+        if (!this.isDigit(this.peek())) {
+          throw new Error(
+            `Invalid integer separator at ${separatorLine}:${separatorColumn}`,
+          );
+        }
+
+        continue;
+      }
+
       this.advance();
     }
 
@@ -137,8 +173,10 @@ export class Lexer {
 
   private advance(): string {
     const c = this.source[this.current];
+
     this.current++;
     this.column++;
+
     return c ?? "\0";
   }
 
@@ -153,6 +191,7 @@ export class Lexer {
 
     this.current++;
     this.column++;
+
     return true;
   }
 
