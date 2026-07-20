@@ -1,0 +1,77 @@
+// p2err01 — Division by zero
+// print(10 / 0)
+
+
+// p2err02 — Remainder by zero
+// print(10 % 0)
+
+
+// p2err03 — Repeated literal negation
+// print(--5)
+
+
+// p2err04 — Integer literal out of range
+// print(9_007_199_254_740_992)
+
+
+// p2err05 — Arithmetic overflow through a variable
+// maximum = 9_007_199_254_740_991
+// print(maximum + 1)
+
+
+// p2err06 — Addition overflow
+// print(9_007_199_254_740_991 + 1)
+
+
+// p2err07 — Subtraction overflow
+// print(-9_007_199_254_740_991 - 1)
+
+
+// p2err08 — Multiplication overflow
+// print(9_007_199_254_740_991 * 2)
+
+
+// p2err09 — Intermediate-result overflow
+// print((9_007_199_254_740_991 + 1) - 1)
+
+
+// p2err10 — Negated out-of-range literal
+// print(-9_007_199_254_740_992)
+
+
+// p2err11 — Repeated variable negation
+// value = 5
+// print(--value)
+
+
+// p2err12 — Repeated grouped-expression negation
+// print(--(1 + 2))
+
+
+
+
+// Parser regression cases
+
+
+// p2err13 — Missing right operand
+// print(1 +)
+
+
+// p2err14 — Missing left operand
+// print(* 2)
+
+
+// p2err15 — Adjacent binary operators
+// print(1 + * 2)
+
+
+// p2err16 — Missing closing parenthesis
+// print((1 + 2)
+
+
+// p2err17 — Unexpected closing parenthesis
+// print(1 + 2))
+
+
+// p2err18 — Empty parentheses
+// print(())
