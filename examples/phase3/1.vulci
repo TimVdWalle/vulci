@@ -31,4 +31,4 @@ print(nested_result)
  * Documentation-style block comments are also ordinary comments for now.
  */
 
-print(42)
+print(42 + 43)
