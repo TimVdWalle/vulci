@@ -47,7 +47,40 @@ export class Lexer {
         return;
 
       case "=":
-        this.addToken(TokenType.Assign, c, startLine, startColumn);
+        if (this.match("=")) {
+          this.addToken(TokenType.EqualEqual, "==", startLine, startColumn);
+          return;
+        }
+
+        this.addToken(TokenType.Assign, "=", startLine, startColumn);
+        return;
+
+      case "!":
+        if (this.match("=")) {
+          this.addToken(TokenType.BangEqual, "!=", startLine, startColumn);
+          return;
+        }
+
+        throw new Error(
+          `Unexpected character '${c}' at ${startLine}:${startColumn}`,
+        );
+
+      case "<":
+        if (this.match("=")) {
+          this.addToken(TokenType.LessEqual, "<=", startLine, startColumn);
+          return;
+        }
+
+        this.addToken(TokenType.Less, c, startLine, startColumn);
+        return;
+
+      case ">":
+        if (this.match("=")) {
+          this.addToken(TokenType.GreaterEqual, ">=", startLine, startColumn);
+          return;
+        }
+
+        this.addToken(TokenType.Greater, c, startLine, startColumn);
         return;
 
       case "+":
@@ -189,12 +222,24 @@ export class Lexer {
       this.advance();
     }
 
-    this.addToken(
-      TokenType.Identifier,
-      this.source.slice(start, this.current),
-      line,
-      column,
-    );
+    const lexeme = this.source.slice(start, this.current);
+
+    let type: TokenType;
+
+    switch (lexeme) {
+      case "true":
+        type = TokenType.True;
+        break;
+
+      case "false":
+        type = TokenType.False;
+        break;
+
+      default:
+        type = TokenType.Identifier;
+    }
+
+    this.addToken(type, lexeme, line, column);
   }
 
   private addToken(

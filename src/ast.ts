@@ -20,6 +20,7 @@ export interface ExpressionStatement {
 
 export type Expression =
   | IntegerLiteral
+  | BooleanLiteral
   | VariableReference
   | FunctionCall
   | UnaryExpression
@@ -28,6 +29,11 @@ export type Expression =
 export interface IntegerLiteral {
   type: "IntegerLiteral";
   value: number;
+}
+
+export interface BooleanLiteral {
+  type: "BooleanLiteral";
+  value: boolean;
 }
 
 export interface VariableReference {

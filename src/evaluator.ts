@@ -1,6 +1,12 @@
 import { Expression, Program, Statement } from "./ast.js";
 import { Environment } from "./environment.js";
-import { IntegerValue, NULL_VALUE, RuntimeValue } from "./runtime-value.js";
+import {
+  FALSE_VALUE,
+  IntegerValue,
+  NULL_VALUE,
+  RuntimeValue,
+  TRUE_VALUE,
+} from "./runtime-value.js";
 import { Token, TokenType } from "./token.js";
 
 export class Evaluator {
@@ -20,7 +26,9 @@ export class Evaluator {
     switch (statement.type) {
       case "VariableAssignment": {
         const value = this.evaluateExpression(statement.value);
+
         this.environment.define(statement.name, value);
+
         return value;
       }
 
@@ -39,6 +47,9 @@ export class Evaluator {
 
         return value;
       }
+
+      case "BooleanLiteral":
+        return expression.value ? TRUE_VALUE : FALSE_VALUE;
 
       case "VariableReference":
         return this.environment.get(expression.name);
@@ -95,6 +106,20 @@ export class Evaluator {
     left: RuntimeValue,
     right: RuntimeValue,
   ): RuntimeValue {
+    switch (operator.type) {
+      case TokenType.EqualEqual:
+        return this.createBoolean(this.valuesEqual(left, right, operator));
+
+      case TokenType.BangEqual:
+        return this.createBoolean(!this.valuesEqual(left, right, operator));
+
+      case TokenType.Less:
+      case TokenType.LessEqual:
+      case TokenType.Greater:
+      case TokenType.GreaterEqual:
+        return this.evaluateOrderingComparison(operator, left, right);
+    }
+
     const leftInteger = this.requireInteger(left, operator);
     const rightInteger = this.requireInteger(right, operator);
 
@@ -141,6 +166,64 @@ export class Evaluator {
     }
 
     return this.createInteger(result, operator);
+  }
+
+  private valuesEqual(
+    left: RuntimeValue,
+    right: RuntimeValue,
+    operator: Token,
+  ): boolean {
+    if (left.type === "Integer" && right.type === "Integer") {
+      return left.value === right.value;
+    }
+
+    if (left.type === "Boolean" && right.type === "Boolean") {
+      return left.value === right.value;
+    }
+
+    throw new Error(
+      `Operator '${operator.lexeme}' requires operands ` +
+        `of the same type. at ` +
+        `${operator.line}:${operator.column}`,
+    );
+  }
+
+  private evaluateOrderingComparison(
+    operator: Token,
+    left: RuntimeValue,
+    right: RuntimeValue,
+  ): RuntimeValue {
+    if (left.type !== "Integer" || right.type !== "Integer") {
+      throw new Error(
+        `Operator '${operator.lexeme}' requires integer ` +
+          `operands. at ` +
+          `${operator.line}:${operator.column}`,
+      );
+    }
+
+    switch (operator.type) {
+      case TokenType.Less:
+        return this.createBoolean(left.value < right.value);
+
+      case TokenType.LessEqual:
+        return this.createBoolean(left.value <= right.value);
+
+      case TokenType.Greater:
+        return this.createBoolean(left.value > right.value);
+
+      case TokenType.GreaterEqual:
+        return this.createBoolean(left.value >= right.value);
+
+      default:
+        throw new Error(
+          `Unsupported ordering operator '${operator.lexeme}' at ` +
+            `${operator.line}:${operator.column}`,
+        );
+    }
+  }
+
+  private createBoolean(value: boolean): RuntimeValue {
+    return value ? TRUE_VALUE : FALSE_VALUE;
   }
 
   private requireInteger(value: RuntimeValue, operator: Token): IntegerValue {

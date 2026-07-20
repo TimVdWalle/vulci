@@ -1,5 +1,6 @@
 import {
   BinaryExpression,
+  BooleanLiteral,
   Expression,
   ExpressionStatement,
   FunctionCall,
@@ -62,7 +63,43 @@ export class Parser {
   }
 
   private expression(): Expression {
-    return this.addition();
+    return this.comparison();
+  }
+
+  private comparison(): Expression {
+    let expression = this.addition();
+
+    if (
+      this.match(
+        TokenType.EqualEqual,
+        TokenType.BangEqual,
+        TokenType.Less,
+        TokenType.LessEqual,
+        TokenType.Greater,
+        TokenType.GreaterEqual,
+      )
+    ) {
+      const operator = this.previous();
+      const right = this.addition();
+
+      const node: BinaryExpression = {
+        type: "BinaryExpression",
+        left: expression,
+        operator,
+        right,
+      };
+
+      expression = node;
+    }
+
+    if (this.isComparisonOperator(this.peek().type)) {
+      throw this.error(
+        this.peek(),
+        "Comparison operators are non-associative.",
+      );
+    }
+
+    return expression;
   }
 
   private addition(): Expression {
@@ -148,6 +185,17 @@ export class Parser {
       return node;
     }
 
+    if (this.match(TokenType.True, TokenType.False)) {
+      const token = this.previous();
+
+      const node: BooleanLiteral = {
+        type: "BooleanLiteral",
+        value: token.type === TokenType.True,
+      };
+
+      return node;
+    }
+
     if (this.match(TokenType.Identifier)) {
       const identifier = this.previous();
 
@@ -211,6 +259,17 @@ export class Parser {
     while (this.match(TokenType.Newline)) {
       // Skip blank lines.
     }
+  }
+
+  private isComparisonOperator(type: TokenType): boolean {
+    return (
+      type === TokenType.EqualEqual ||
+      type === TokenType.BangEqual ||
+      type === TokenType.Less ||
+      type === TokenType.LessEqual ||
+      type === TokenType.Greater ||
+      type === TokenType.GreaterEqual
+    );
   }
 
   private consume(type: TokenType, message: string): Token {
