@@ -11,7 +11,7 @@ Only syntax that has been explicitly accepted belongs in the language.
 Anything listed as **On Hold** or **Undecided** is **not** part of the
 language.
 
-------------------------------------------------------------------------
+---
 
 # 1. Program Structure
 
@@ -27,14 +27,14 @@ Avoid mandatory boilerplate for simple programs.
 
 ### Example
 
-``` text
+```text
 print("Hello")
 start
 ```
 
 No `fn main` exists.
 
-------------------------------------------------------------------------
+---
 
 # 2. Statements
 
@@ -48,7 +48,7 @@ Semicolons are not allowed.
 
 ### Valid
 
-``` text
+```text
 x = 1
 y = 2
 print(x)
@@ -56,23 +56,23 @@ print(x)
 
 ### Invalid
 
-``` text
+```text
 x = 1;
 ```
 
-------------------------------------------------------------------------
+---
 
 # 3. Comments
 
 Single-line:
 
-``` text
+```text
 // comment
 ```
 
 Multi-line:
 
-``` text
+```text
 /*
 comment
 */
@@ -80,13 +80,13 @@ comment
 
 Reason: keeps `#` available for possible future language features.
 
-------------------------------------------------------------------------
+---
 
 # 4. Literals
 
 ## Boolean
 
-``` text
+```text
 true
 false
 ```
@@ -95,7 +95,7 @@ false
 
 Single-line strings use double quotes.
 
-``` text
+```text
 name = "Alice"
 ```
 
@@ -105,7 +105,7 @@ Single quotes are not used for strings.
 
 Supported:
 
-``` text
+```text
 \n
 \t
 \r
@@ -115,7 +115,7 @@ Supported:
 
 Example:
 
-``` text
+```text
 text = "Hello\nWorld"
 ```
 
@@ -123,7 +123,7 @@ text = "Hello\nWorld"
 
 Use triple double quotes.
 
-``` text
+```text
 text = \"\"\"
 Hello
 World
@@ -136,12 +136,12 @@ Reason: Keeps multiline strings visually distinct.
 
 Currently supported:
 
--   Decimal integers
--   Decimal floating point
+- Decimal integers
+- Decimal floating point
 
 Digit separators are allowed.
 
-``` text
+```text
 1_000
 1_000_000
 3.141_592
@@ -149,18 +149,18 @@ Digit separators are allowed.
 
 Not currently supported:
 
--   Hexadecimal
--   Binary
--   Octal
--   Scientific notation
+- Hexadecimal
+- Binary
+- Octal
+- Scientific notation
 
-------------------------------------------------------------------------
+---
 
 # 5. Operators
 
 ## Comparison
 
-``` text
+```text
 ==
 !=
 <
@@ -171,7 +171,7 @@ Not currently supported:
 
 ## Logical
 
-``` text
+```text
 and
 or
 not
@@ -179,7 +179,7 @@ not
 
 Reason: Keyword operators improve readability.
 
-------------------------------------------------------------------------
+---
 
 # 6. Function Calls
 
@@ -189,7 +189,7 @@ Parentheses may be omitted.
 
 Valid:
 
-``` text
+```text
 start
 exit
 ```
@@ -198,14 +198,14 @@ exit
 
 Parentheses are required.
 
-``` text
+```text
 print("Hello")
 resize(image, width=100)
 ```
 
 Invalid:
 
-``` text
+```text
 print "Hello"
 ```
 
@@ -213,45 +213,45 @@ print "Hello"
 
 Uses `.`
 
-``` text
+```text
 user.name
 user.address.city
 ```
 
 Function reference syntax is still undecided.
 
-------------------------------------------------------------------------
+---
 
 # 7. Parameters & Arguments
 
 ## Rules
 
--   Named arguments are the default.
--   Up to the first **two required** parameters may be supplied
-    positionally.
--   Optional parameters must always be named.
--   Named arguments may appear in any order.
--   Once a named argument is used, every following argument must also be
-    named.
--   Supplying the same parameter twice is invalid.
+- Named arguments are the default.
+- Up to the first **two required** parameters may be supplied
+  positionally.
+- Optional parameters must always be named.
+- Named arguments may appear in any order.
+- Once a named argument is used, every following argument must also be
+  named.
+- Supplying the same parameter twice is invalid.
 
 ### Valid
 
-``` text
+```text
 resize(image, 100, height=200)
 resize(image, height=200, width=100)
 ```
 
 ### Invalid
 
-``` text
+```text
 resize(image, height=200, 100)
 resize(image, width=100, width=200)
 ```
 
 Reason: Names improve readability once calls become larger.
 
-------------------------------------------------------------------------
+---
 
 # 8. Control Flow
 
@@ -259,7 +259,7 @@ Reason: Names improve readability once calls become larger.
 
 Parentheses are required.
 
-``` text
+```text
 if (ready) {
 }
 
@@ -269,7 +269,7 @@ while (running) {
 
 ## Else-if
 
-``` text
+```text
 if (...) {
 }
 else if (...) {
@@ -278,7 +278,7 @@ else {
 }
 ```
 
-------------------------------------------------------------------------
+---
 
 # 9. Functions
 
@@ -286,7 +286,7 @@ else {
 
 The final evaluated expression becomes the return value.
 
-``` text
+```text
 fn add(a, b) {
     a + b
 }
@@ -298,7 +298,7 @@ Allowed anywhere.
 
 Primarily intended for early exits.
 
-``` text
+```text
 fn process(data) {
     if (invalid(data)) {
         return null
@@ -313,23 +313,23 @@ There is no `noop` keyword.
 When an implicit return of `null` is desired, use `null` as the final
 expression.
 
-------------------------------------------------------------------------
+---
 
 # 10. Imports
 
 Import keyword:
 
-``` text
+```text
 import math
 ```
 
-------------------------------------------------------------------------
+---
 
 # 11. Formatting Rules
 
 Trailing commas are allowed.
 
-``` text
+```text
 [
     1,
     2,
@@ -337,7 +337,7 @@ Trailing commas are allowed.
 ]
 ```
 
-------------------------------------------------------------------------
+---
 
 # 12. Style Guide (Non-syntax)
 
@@ -347,7 +347,7 @@ These are recommendations only.
 
 Preferred:
 
-``` text
+```text
 fn add(a, b) {
     a + b
 }
@@ -355,7 +355,7 @@ fn add(a, b) {
 
 Allowed but discouraged:
 
-``` text
+```text
 fn add(a, b) {
     return a + b
 }
@@ -363,39 +363,39 @@ fn add(a, b) {
 
 Use explicit `return` mainly for guard clauses and early exits.
 
-------------------------------------------------------------------------
+---
 
 # 13. On Hold
 
--   Compound assignment (`+=`, etc.)
--   Loop syntax
--   Match / switch syntax
--   Lambda syntax
--   Generic syntax
--   Error handling syntax
--   Attributes / annotations
--   Visibility syntax
--   Hexadecimal literals
--   Binary literals
--   Octal literals
--   Scientific notation
--   String interpolation
+- Compound assignment (`+=`, etc.)
+- Loop syntax
+- Match / switch syntax
+- Lambda syntax
+- Generic syntax
+- Error handling syntax
+- Attributes / annotations
+- Visibility syntax
+- Hexadecimal literals
+- Binary literals
+- Octal literals
+- Scientific notation
+- String interpolation
 
 These are intentionally postponed and are **not** part of the language.
 
-------------------------------------------------------------------------
+---
 
 # 14. Undecided
 
--   Function references
--   Collection syntax
--   Object syntax
--   Type syntax
--   Enum syntax
--   Class syntax
--   Module/package syntax
+- Function references
+- Collection syntax
+- Object syntax
+- Type syntax
+- Enum syntax
+- Class syntax
+- Module/package syntax
 
-------------------------------------------------------------------------
+---
 
 # Scope
 
