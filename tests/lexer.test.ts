@@ -61,7 +61,7 @@ print(answer)
   );
 });
 
-test("ignores comments", () => {
+test("ignores line comments", () => {
   const source = `// comment
 answer = 42 // trailing comment
 `;
@@ -157,6 +157,193 @@ remainder = 10 % 3
       TokenType.Integer,
       TokenType.Newline,
       TokenType.EOF,
+    ],
+  );
+});
+
+test("ignores a block comment", () => {
+  const tokens = new Lexer("1 /* comment */ + 2").lex();
+
+  assert.deepEqual(
+    tokens.map((token) => ({
+      type: token.type,
+      lexeme: token.lexeme,
+    })),
+    [
+      {
+        type: TokenType.Integer,
+        lexeme: "1",
+      },
+      {
+        type: TokenType.Plus,
+        lexeme: "+",
+      },
+      {
+        type: TokenType.Integer,
+        lexeme: "2",
+      },
+      {
+        type: TokenType.EOF,
+        lexeme: "",
+      },
+    ],
+  );
+});
+
+test("allows block comments between tokens", () => {
+  const tokens = new Lexer("1 + /* explanation */ 2").lex();
+
+  assert.deepEqual(
+    tokens.map((token) => token.type),
+    [TokenType.Integer, TokenType.Plus, TokenType.Integer, TokenType.EOF],
+  );
+});
+
+test("does not emit newlines inside block comments", () => {
+  const source = `1 + /*
+first line
+second line
+*/ 2`;
+
+  const tokens = new Lexer(source).lex();
+
+  assert.deepEqual(
+    tokens.map((token) => token.type),
+    [TokenType.Integer, TokenType.Plus, TokenType.Integer, TokenType.EOF],
+  );
+});
+
+test("tracks source positions after multiline block comments", () => {
+  const source = `1 + /*
+first line
+second line
+*/ 2`;
+
+  const tokens = new Lexer(source).lex();
+  const finalInteger = tokens[2];
+
+  assert.equal(finalInteger?.type, TokenType.Integer);
+  assert.equal(finalInteger?.lexeme, "2");
+  assert.equal(finalInteger?.line, 4);
+  assert.equal(finalInteger?.column, 4);
+});
+
+test("supports nested block comments", () => {
+  const tokens = new Lexer("1 + /* outer /* inner */ outer */ 2").lex();
+
+  assert.deepEqual(
+    tokens.map((token) => ({
+      type: token.type,
+      lexeme: token.lexeme,
+    })),
+    [
+      {
+        type: TokenType.Integer,
+        lexeme: "1",
+      },
+      {
+        type: TokenType.Plus,
+        lexeme: "+",
+      },
+      {
+        type: TokenType.Integer,
+        lexeme: "2",
+      },
+      {
+        type: TokenType.EOF,
+        lexeme: "",
+      },
+    ],
+  );
+});
+
+test("supports multiple levels of nested block comments", () => {
+  const source = `1 + /*
+level 1
+/* level 2
+/* level 3 */
+level 2 */
+level 1 */ 2`;
+
+  const tokens = new Lexer(source).lex();
+
+  assert.deepEqual(
+    tokens.map((token) => token.type),
+    [TokenType.Integer, TokenType.Plus, TokenType.Integer, TokenType.EOF],
+  );
+});
+
+test("tracks source positions after nested multiline block comments", () => {
+  const source = `1 + /*
+outer
+/* inner */
+outer
+*/ 2`;
+
+  const tokens = new Lexer(source).lex();
+  const finalInteger = tokens[2];
+
+  assert.equal(finalInteger?.type, TokenType.Integer);
+  assert.equal(finalInteger?.lexeme, "2");
+  assert.equal(finalInteger?.line, 5);
+  assert.equal(finalInteger?.column, 4);
+});
+
+test("reports an unterminated block comment at its opening delimiter", () => {
+  assert.throws(
+    () =>
+      new Lexer(`1 + /*
+unfinished`).lex(),
+    /Unterminated block comment at 1:5/,
+  );
+});
+
+test("reports an unterminated nested block comment at the outer opening delimiter", () => {
+  assert.throws(
+    () => new Lexer("1 + /* outer /* inner */ still outer").lex(),
+    /Unterminated block comment at 1:5/,
+  );
+});
+
+test("treats documentation-style comments as ordinary comments", () => {
+  const source = `/// line documentation comment
+1 + /** block documentation comment */ 2`;
+
+  const tokens = new Lexer(source).lex();
+
+  assert.deepEqual(
+    tokens.map((token) => token.type),
+    [
+      TokenType.Newline,
+      TokenType.Integer,
+      TokenType.Plus,
+      TokenType.Integer,
+      TokenType.EOF,
+    ],
+  );
+});
+
+test("does not combine tokens separated by comments", () => {
+  const tokens = new Lexer("1/* comment */000").lex();
+
+  assert.deepEqual(
+    tokens.map((token) => ({
+      type: token.type,
+      lexeme: token.lexeme,
+    })),
+    [
+      {
+        type: TokenType.Integer,
+        lexeme: "1",
+      },
+      {
+        type: TokenType.Integer,
+        lexeme: "000",
+      },
+      {
+        type: TokenType.EOF,
+        lexeme: "",
+      },
     ],
   );
 });

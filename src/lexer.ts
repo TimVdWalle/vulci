@@ -67,6 +67,12 @@ export class Lexer {
           while (!this.isAtEnd() && this.peek() !== "\n") {
             this.advance();
           }
+
+          return;
+        }
+
+        if (this.match("*")) {
+          this.blockComment(startLine, startColumn);
           return;
         }
 
@@ -110,6 +116,40 @@ export class Lexer {
           `Unexpected character '${c}' at ${startLine}:${startColumn}`,
         );
     }
+  }
+
+  private blockComment(line: number, column: number): void {
+    let depth = 1;
+
+    while (!this.isAtEnd()) {
+      if (this.peek() === "/" && this.peekNext() === "*") {
+        this.advance();
+        this.advance();
+        depth++;
+        continue;
+      }
+
+      if (this.peek() === "*" && this.peekNext() === "/") {
+        this.advance();
+        this.advance();
+        depth--;
+
+        if (depth === 0) {
+          return;
+        }
+
+        continue;
+      }
+
+      const c = this.advance();
+
+      if (c === "\n") {
+        this.line++;
+        this.column = 1;
+      }
+    }
+
+    throw new Error(`Unterminated block comment at ${line}:${column}`);
   }
 
   private integer(line: number, column: number): void {
@@ -201,6 +241,14 @@ export class Lexer {
     }
 
     return this.source[this.current] ?? "\0";
+  }
+
+  private peekNext(): string {
+    if (this.current + 1 >= this.source.length) {
+      return "\0";
+    }
+
+    return this.source[this.current + 1] ?? "\0";
   }
 
   private isDigit(c: string): boolean {

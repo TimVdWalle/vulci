@@ -1,0 +1,127 @@
+/*
+Vulci smoke test
+Implemented phases: 1, 2, and 3
+
+Expected output:
+1
+2
+3
+...
+25
+*/
+
+// 1 — Integer literal and print
+print(1)
+
+// 2 — Variable assignment and lookup
+value = 2
+print(value)
+
+// 3 — Variable reassignment
+value = 3
+print(value)
+
+// 4 — Addition
+addition = 1 + 3
+print(addition)
+
+// 5 — Subtraction
+subtraction = 10 - 5
+print(subtraction)
+
+// 6 — Multiplication
+multiplication = 2 * 3
+print(multiplication)
+
+// 7 — Integer division
+division = 14 / 2
+print(division)
+
+// 8 — Remainder
+remainder = 17 % 9
+print(remainder)
+
+// 9 — Unary negation and repeated negation
+negation = -(-9)
+print(negation)
+
+// 10 — Parenthesized expression
+parentheses = (2 + 3) * 2
+print(parentheses)
+
+// 11 — Operator precedence
+precedence = 3 + 4 * 2
+print(precedence)
+
+// 12 — Left-associative subtraction
+left_subtraction = 20 - 5 - 3
+print(left_subtraction)
+
+// 13 — Left-associative division
+left_division = 52 / 2 / 2
+print(left_division)
+
+// 14 — Mixed arithmetic
+mixed_arithmetic = (5 + 2) * 2
+print(mixed_arithmetic)
+
+// 15 — Integer digit separator
+digit_separator = 1_5
+print(digit_separator)
+
+// 16 — Expressions using multiple variables
+left_value = 8
+right_value = 8
+variable_expression = left_value + right_value
+print(variable_expression)
+
+// 17 — Negative division truncates toward zero
+negative_division = (-35 / 2) + 34
+print(negative_division)
+
+// 18 — Remainder follows the dividend's sign
+negative_remainder = (-37 % 10) + 25
+print(negative_remainder)
+
+// 19 — Trailing line comment
+line_comment = 9 + 10 // ignored
+print(line_comment)
+
+// 20 — Block comment between tokens
+block_comment = 10 /* ignored */ + 10
+print(block_comment)
+
+// 21 — Multiline block comment inside an expression
+multiline_comment = 10 + /*
+This comment contains newlines,
+but they do not end the expression.
+*/ 11
+print(multiline_comment)
+
+// 22 — Nested block comments
+nested_comment = 11 + /*
+Outer comment
+/* Inner comment */
+/* Another /* deeper */ nested comment */
+Outer comment continues
+*/ 11
+print(nested_comment)
+
+/// Documentation-style line comments are ordinary comments for now.
+
+// 23 — Identifier containing an underscore and number
+smoke_value_2 = 23
+print(smoke_value_2)
+
+/**
+ * Documentation-style block comments are ordinary comments for now.
+ */
+
+// 24 — Multiple integer separators
+multiple_separators = 2_4
+print(multiple_separators)
+
+// 25 — Maximum safe integer is accepted
+maximum_safe_integer = 9_007_199_254_740_991
+safe_integer_result = maximum_safe_integer - 9_007_199_254_740_966
+print(safe_integer_result)
