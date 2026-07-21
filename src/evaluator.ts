@@ -75,6 +75,17 @@ export class Evaluator {
         );
 
       case "BinaryExpression":
+        if (
+          expression.operator.type === TokenType.And ||
+          expression.operator.type === TokenType.Or
+        ) {
+          return this.evaluateLogicalExpression(
+            expression.operator,
+            expression.left,
+            expression.right,
+          );
+        }
+
         return this.evaluateBinaryExpression(
           expression.operator,
           this.evaluateExpression(expression.left),
@@ -87,15 +98,75 @@ export class Evaluator {
     operator: Token,
     operand: RuntimeValue,
   ): RuntimeValue {
-    const integer = this.requireInteger(operand, operator);
-
     switch (operator.type) {
-      case TokenType.Minus:
+      case TokenType.Minus: {
+        const integer = this.requireInteger(operand, operator);
+
         return this.createInteger(-integer.value, operator);
+      }
+
+      case TokenType.Not:
+        if (operand.type !== "Boolean") {
+          throw new Error(
+            `Operator 'not' requires a boolean operand, but ` +
+              `the operand is ${this.runtimeTypeName(operand)}. ` +
+              `at ${operator.line}:${operator.column}`,
+          );
+        }
+
+        return this.createBoolean(!operand.value);
 
       default:
         throw new Error(
           `Unsupported unary operator '${operator.lexeme}' at ` +
+            `${operator.line}:${operator.column}`,
+        );
+    }
+  }
+
+  private evaluateLogicalExpression(
+    operator: Token,
+    leftExpression: Expression,
+    rightExpression: Expression,
+  ): RuntimeValue {
+    const left = this.evaluateExpression(leftExpression);
+
+    if (left.type !== "Boolean") {
+      throw new Error(
+        `Operator '${operator.lexeme}' requires boolean operands, ` +
+          `but the left operand is ${this.runtimeTypeName(left)}. ` +
+          `at ${operator.line}:${operator.column}`,
+      );
+    }
+
+    if (operator.type === TokenType.And && !left.value) {
+      return FALSE_VALUE;
+    }
+
+    if (operator.type === TokenType.Or && left.value) {
+      return TRUE_VALUE;
+    }
+
+    const right = this.evaluateExpression(rightExpression);
+
+    if (right.type !== "Boolean") {
+      throw new Error(
+        `Operator '${operator.lexeme}' requires boolean operands, ` +
+          `but the right operand is ${this.runtimeTypeName(right)}. ` +
+          `at ${operator.line}:${operator.column}`,
+      );
+    }
+
+    switch (operator.type) {
+      case TokenType.And:
+        return this.createBoolean(left.value && right.value);
+
+      case TokenType.Or:
+        return this.createBoolean(left.value || right.value);
+
+      default:
+        throw new Error(
+          `Unsupported logical operator '${operator.lexeme}' at ` +
             `${operator.line}:${operator.column}`,
         );
     }
@@ -224,6 +295,10 @@ export class Evaluator {
 
   private createBoolean(value: boolean): RuntimeValue {
     return value ? TRUE_VALUE : FALSE_VALUE;
+  }
+
+  private runtimeTypeName(value: RuntimeValue): string {
+    return value.type.toLowerCase();
   }
 
   private requireInteger(value: RuntimeValue, operator: Token): IntegerValue {

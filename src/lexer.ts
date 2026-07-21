@@ -235,6 +235,18 @@ export class Lexer {
         type = TokenType.False;
         break;
 
+      case "and":
+        type = TokenType.And;
+        break;
+
+      case "or":
+        type = TokenType.Or;
+        break;
+
+      case "not":
+        type = TokenType.Not;
+        break;
+
       default:
         type = TokenType.Identifier;
     }

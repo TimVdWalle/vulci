@@ -474,3 +474,170 @@ test("reports the second comparison operator position", () => {
     /Comparison operators are non-associative\. at 1:7/,
   );
 });
+test("parses not as a unary expression", () => {
+  const tokens = new Lexer("not true").lex();
+  const program = new Parser(tokens).parse();
+  assert.deepEqual(program.statements[0], {
+    type: "ExpressionStatement",
+    expression: {
+      type: "UnaryExpression",
+      operator: {
+        type: TokenType.Not,
+        lexeme: "not",
+        line: 1,
+        column: 1,
+      },
+      operand: {
+        type: "BooleanLiteral",
+        value: true,
+      },
+    },
+  });
+});
+test("parses repeated not operators", () => {
+  const tokens = new Lexer("not not true").lex();
+  const program = new Parser(tokens).parse();
+  const statement = program.statements[0];
+  assert.equal(statement?.type, "ExpressionStatement");
+  if (statement?.type !== "ExpressionStatement") {
+    assert.fail("Expected an expression statement.");
+  }
+  assert.equal(statement.expression.type, "UnaryExpression");
+  if (statement.expression.type !== "UnaryExpression") {
+    assert.fail("Expected a unary expression.");
+  }
+  assert.equal(statement.expression.operator.type, TokenType.Not);
+  assert.equal(statement.expression.operand.type, "UnaryExpression");
+  if (statement.expression.operand.type !== "UnaryExpression") {
+    assert.fail("Expected a unary expression.");
+  }
+  assert.equal(statement.expression.operand.operator.type, TokenType.Not);
+});
+test("parses and left-associatively", () => {
+  const tokens = new Lexer("true and false and true").lex();
+  const program = new Parser(tokens).parse();
+  const statement = program.statements[0];
+  assert.equal(statement?.type, "ExpressionStatement");
+  if (statement?.type !== "ExpressionStatement") {
+    assert.fail("Expected an expression statement.");
+  }
+  assert.equal(statement.expression.type, "BinaryExpression");
+  if (statement.expression.type !== "BinaryExpression") {
+    assert.fail("Expected a binary expression.");
+  }
+  assert.equal(statement.expression.operator.type, TokenType.And);
+  assert.equal(statement.expression.left.type, "BinaryExpression");
+  if (statement.expression.left.type !== "BinaryExpression") {
+    assert.fail("Expected a binary expression.");
+  }
+  assert.equal(statement.expression.left.operator.type, TokenType.And);
+});
+test("parses or left-associatively", () => {
+  const tokens = new Lexer("true or false or true").lex();
+  const program = new Parser(tokens).parse();
+  const statement = program.statements[0];
+  assert.equal(statement?.type, "ExpressionStatement");
+  if (statement?.type !== "ExpressionStatement") {
+    assert.fail("Expected an expression statement.");
+  }
+  assert.equal(statement.expression.type, "BinaryExpression");
+  if (statement.expression.type !== "BinaryExpression") {
+    assert.fail("Expected a binary expression.");
+  }
+  assert.equal(statement.expression.operator.type, TokenType.Or);
+  assert.equal(statement.expression.left.type, "BinaryExpression");
+  if (statement.expression.left.type !== "BinaryExpression") {
+    assert.fail("Expected a binary expression.");
+  }
+  assert.equal(statement.expression.left.operator.type, TokenType.Or);
+});
+test("parses comparisons before not", () => {
+  const tokens = new Lexer("not 1 < 2").lex();
+  const program = new Parser(tokens).parse();
+  const statement = program.statements[0];
+  assert.equal(statement?.type, "ExpressionStatement");
+  if (statement?.type !== "ExpressionStatement") {
+    assert.fail("Expected an expression statement.");
+  }
+  assert.equal(statement.expression.type, "UnaryExpression");
+  if (statement.expression.type !== "UnaryExpression") {
+    assert.fail("Expected a unary expression.");
+  }
+  assert.equal(statement.expression.operator.type, TokenType.Not);
+  assert.equal(statement.expression.operand.type, "BinaryExpression");
+  if (statement.expression.operand.type !== "BinaryExpression") {
+    assert.fail("Expected a binary expression.");
+  }
+  assert.equal(statement.expression.operand.operator.type, TokenType.Less);
+});
+test("parses not before and", () => {
+  const tokens = new Lexer("not true and false").lex();
+  const program = new Parser(tokens).parse();
+  const statement = program.statements[0];
+  assert.equal(statement?.type, "ExpressionStatement");
+  if (statement?.type !== "ExpressionStatement") {
+    assert.fail("Expected an expression statement.");
+  }
+  assert.equal(statement.expression.type, "BinaryExpression");
+  if (statement.expression.type !== "BinaryExpression") {
+    assert.fail("Expected a binary expression.");
+  }
+  assert.equal(statement.expression.operator.type, TokenType.And);
+  assert.equal(statement.expression.left.type, "UnaryExpression");
+  if (statement.expression.left.type !== "UnaryExpression") {
+    assert.fail("Expected a unary expression.");
+  }
+  assert.equal(statement.expression.left.operator.type, TokenType.Not);
+});
+test("parses and before or", () => {
+  const tokens = new Lexer("true or false and false").lex();
+  const program = new Parser(tokens).parse();
+  const statement = program.statements[0];
+  assert.equal(statement?.type, "ExpressionStatement");
+  if (statement?.type !== "ExpressionStatement") {
+    assert.fail("Expected an expression statement.");
+  }
+  assert.equal(statement.expression.type, "BinaryExpression");
+  if (statement.expression.type !== "BinaryExpression") {
+    assert.fail("Expected a binary expression.");
+  }
+  assert.equal(statement.expression.operator.type, TokenType.Or);
+  assert.equal(statement.expression.right.type, "BinaryExpression");
+  if (statement.expression.right.type !== "BinaryExpression") {
+    assert.fail("Expected a binary expression.");
+  }
+  assert.equal(statement.expression.right.operator.type, TokenType.And);
+});
+test("allows parentheses to override logical precedence", () => {
+  const tokens = new Lexer("(true or false) and false").lex();
+  const program = new Parser(tokens).parse();
+  const statement = program.statements[0];
+  assert.equal(statement?.type, "ExpressionStatement");
+  if (statement?.type !== "ExpressionStatement") {
+    assert.fail("Expected an expression statement.");
+  }
+  assert.equal(statement.expression.type, "BinaryExpression");
+  if (statement.expression.type !== "BinaryExpression") {
+    assert.fail("Expected a binary expression.");
+  }
+  assert.equal(statement.expression.operator.type, TokenType.And);
+  assert.equal(statement.expression.left.type, "BinaryExpression");
+  if (statement.expression.left.type !== "BinaryExpression") {
+    assert.fail("Expected a binary expression.");
+  }
+  assert.equal(statement.expression.left.operator.type, TokenType.Or);
+});
+test("rejects missing logical operands", () => {
+  const cases = ["true and", "false or", "not"];
+  for (const source of cases) {
+    const tokens = new Lexer(source).lex();
+    assert.throws(() => new Parser(tokens).parse(), /Expected expression/);
+  }
+});
+test("rejects logical keywords as assignment identifiers", () => {
+  const cases = ["and = true", "or = false", "not = true"];
+  for (const source of cases) {
+    const tokens = new Lexer(source).lex();
+    assert.throws(() => new Parser(tokens).parse(), /Expected expression/);
+  }
+});

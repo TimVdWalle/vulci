@@ -3,7 +3,9 @@ export enum TokenType {
   Identifier,
   True,
   False,
-
+  And,
+  Or,
+  Not,
   Assign,
   EqualEqual,
   BangEqual,
@@ -11,13 +13,11 @@ export enum TokenType {
   LessEqual,
   Greater,
   GreaterEqual,
-
   Plus,
   Minus,
   Star,
   Slash,
   Percent,
-
   LeftParen,
   RightParen,
   Comma,

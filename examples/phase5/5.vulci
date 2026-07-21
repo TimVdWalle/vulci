@@ -1,0 +1,27 @@
+/* Phase 5 combined example */
+
+a = 10
+b = 20
+
+isSmaller = a < b
+hasExpectedValues = a == 10 and b == 20
+arithmeticWorks = a * 2 == b
+combined = isSmaller and hasExpectedValues and arithmeticWorks
+
+/* True results */
+
+print(not false)
+print(not not combined)
+print(a < b and b > a)
+print(a == b or a + 10 == b)
+print(true or false and false)
+print(true or skippedOr)
+
+/* False results */
+
+print(not true)
+print(not combined)
+print(a == b and b < a)
+print((true or false) and false)
+print(false and skippedAnd)
+print(false or false)
