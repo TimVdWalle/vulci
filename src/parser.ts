@@ -63,6 +63,62 @@ export class Parser {
   }
 
   private expression(): Expression {
+    return this.or();
+  }
+
+  private or(): Expression {
+    let expression = this.and();
+
+    while (this.match(TokenType.Or)) {
+      const operator = this.previous();
+      const right = this.and();
+
+      const node: BinaryExpression = {
+        type: "BinaryExpression",
+        left: expression,
+        operator,
+        right,
+      };
+
+      expression = node;
+    }
+
+    return expression;
+  }
+
+  private and(): Expression {
+    let expression = this.not();
+
+    while (this.match(TokenType.And)) {
+      const operator = this.previous();
+      const right = this.not();
+
+      const node: BinaryExpression = {
+        type: "BinaryExpression",
+        left: expression,
+        operator,
+        right,
+      };
+
+      expression = node;
+    }
+
+    return expression;
+  }
+
+  private not(): Expression {
+    if (this.match(TokenType.Not)) {
+      const operator = this.previous();
+
+      const node: UnaryExpression = {
+        type: "UnaryExpression",
+        operator,
+        operand: this.not(),
+      };
+
+      return node;
+    }
+
     return this.comparison();
   }
 

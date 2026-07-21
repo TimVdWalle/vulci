@@ -528,3 +528,128 @@ test("tracks comparison operator source positions", () => {
 test("reports a standalone exclamation mark", () => {
   assert.throws(() => new Lexer("!").lex(), /Unexpected character '!' at 1:1/);
 });
+test("lexes logical operator keywords", () => {
+  const tokens = new Lexer("and or not").lex();
+  assert.deepEqual(
+    tokens.map((token) => ({
+      type: token.type,
+      lexeme: token.lexeme,
+    })),
+    [
+      {
+        type: TokenType.And,
+        lexeme: "and",
+      },
+      {
+        type: TokenType.Or,
+        lexeme: "or",
+      },
+      {
+        type: TokenType.Not,
+        lexeme: "not",
+      },
+      {
+        type: TokenType.EOF,
+        lexeme: "",
+      },
+    ],
+  );
+});
+test("tracks logical operator source positions", () => {
+  const tokens = new Lexer(`true and false
+false or true
+not false`).lex();
+  const and = tokens.find((token) => token.type === TokenType.And);
+  const or = tokens.find((token) => token.type === TokenType.Or);
+  const not = tokens.find((token) => token.type === TokenType.Not);
+  assert.deepEqual(
+    {
+      lexeme: and?.lexeme,
+      line: and?.line,
+      column: and?.column,
+    },
+    {
+      lexeme: "and",
+      line: 1,
+      column: 6,
+    },
+  );
+  assert.deepEqual(
+    {
+      lexeme: or?.lexeme,
+      line: or?.line,
+      column: or?.column,
+    },
+    {
+      lexeme: "or",
+      line: 2,
+      column: 7,
+    },
+  );
+  assert.deepEqual(
+    {
+      lexeme: not?.lexeme,
+      line: not?.line,
+      column: not?.column,
+    },
+    {
+      lexeme: "not",
+      line: 3,
+      column: 1,
+    },
+  );
+});
+test("keeps names containing logical keywords as identifiers", () => {
+  const tokens = new Lexer("android order notice and_value or2 nothing").lex();
+  assert.deepEqual(
+    tokens.map((token) => ({
+      type: token.type,
+      lexeme: token.lexeme,
+    })),
+    [
+      {
+        type: TokenType.Identifier,
+        lexeme: "android",
+      },
+      {
+        type: TokenType.Identifier,
+        lexeme: "order",
+      },
+      {
+        type: TokenType.Identifier,
+        lexeme: "notice",
+      },
+      {
+        type: TokenType.Identifier,
+        lexeme: "and_value",
+      },
+      {
+        type: TokenType.Identifier,
+        lexeme: "or2",
+      },
+      {
+        type: TokenType.Identifier,
+        lexeme: "nothing",
+      },
+      {
+        type: TokenType.EOF,
+        lexeme: "",
+      },
+    ],
+  );
+});
+test("lexes logical keywords inside expressions", () => {
+  const tokens = new Lexer("not true and false or true").lex();
+  assert.deepEqual(
+    tokens.map((token) => token.type),
+    [
+      TokenType.Not,
+      TokenType.True,
+      TokenType.And,
+      TokenType.False,
+      TokenType.Or,
+      TokenType.True,
+      TokenType.EOF,
+    ],
+  );
+});

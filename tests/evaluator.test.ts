@@ -338,3 +338,163 @@ test("evaluates parenthesized comparisons", () => {
     value: true,
   });
 });
+test("evaluates not", () => {
+  assert.deepEqual(evaluate("not true", new Environment()), {
+    type: "Boolean",
+    value: false,
+  });
+  assert.deepEqual(evaluate("not false", new Environment()), {
+    type: "Boolean",
+    value: true,
+  });
+});
+test("evaluates repeated not operators", () => {
+  assert.deepEqual(evaluate("not not true", new Environment()), {
+    type: "Boolean",
+    value: true,
+  });
+  assert.deepEqual(evaluate("not not false", new Environment()), {
+    type: "Boolean",
+    value: false,
+  });
+});
+test("evaluates all and truth-table cases", () => {
+  const cases: Array<[string, boolean]> = [
+    ["true and true", true],
+    ["true and false", false],
+    ["false and true", false],
+    ["false and false", false],
+  ];
+  for (const [source, expected] of cases) {
+    assert.deepEqual(evaluate(source, new Environment()), {
+      type: "Boolean",
+      value: expected,
+    });
+  }
+});
+test("evaluates all or truth-table cases", () => {
+  const cases: Array<[string, boolean]> = [
+    ["true or true", true],
+    ["true or false", true],
+    ["false or true", true],
+    ["false or false", false],
+  ];
+  for (const [source, expected] of cases) {
+    assert.deepEqual(evaluate(source, new Environment()), {
+      type: "Boolean",
+      value: expected,
+    });
+  }
+});
+test("evaluates logical operator precedence", () => {
+  assert.deepEqual(evaluate("not 1 < 2", new Environment()), {
+    type: "Boolean",
+    value: false,
+  });
+  assert.deepEqual(evaluate("not false and true", new Environment()), {
+    type: "Boolean",
+    value: true,
+  });
+  assert.deepEqual(evaluate("true or false and false", new Environment()), {
+    type: "Boolean",
+    value: true,
+  });
+  assert.deepEqual(evaluate("(true or false) and false", new Environment()), {
+    type: "Boolean",
+    value: false,
+  });
+});
+test("short-circuits and without evaluating the right operand", () => {
+  assert.deepEqual(evaluate("false and missing", new Environment()), {
+    type: "Boolean",
+    value: false,
+  });
+});
+test("short-circuits or without evaluating the right operand", () => {
+  assert.deepEqual(evaluate("true or missing", new Environment()), {
+    type: "Boolean",
+    value: true,
+  });
+});
+test("does not type-check skipped logical operands", () => {
+  assert.deepEqual(evaluate("false and 1", new Environment()), {
+    type: "Boolean",
+    value: false,
+  });
+  assert.deepEqual(evaluate("true or 1", new Environment()), {
+    type: "Boolean",
+    value: true,
+  });
+});
+test("evaluates required right logical operands", () => {
+  assert.throws(
+    () => evaluate("true and missing", new Environment()),
+    /Undefined variable 'missing'/,
+  );
+  assert.throws(
+    () => evaluate("false or missing", new Environment()),
+    /Undefined variable 'missing'/,
+  );
+});
+test("rejects a non-Boolean not operand", () => {
+  assert.throws(
+    () => evaluate("not 1", new Environment()),
+    /Operator 'not' requires a boolean operand, but the operand is integer\. at 1:1/,
+  );
+});
+test("rejects a non-Boolean left operand for and", () => {
+  assert.throws(
+    () => evaluate("1 and true", new Environment()),
+    /Operator 'and' requires boolean operands, but the left operand is integer\. at 1:3/,
+  );
+});
+test("rejects a non-Boolean right operand for and", () => {
+  assert.throws(
+    () => evaluate("true and 1", new Environment()),
+    /Operator 'and' requires boolean operands, but the right operand is integer\. at 1:6/,
+  );
+});
+test("rejects a non-Boolean left operand for or", () => {
+  assert.throws(
+    () => evaluate("1 or false", new Environment()),
+    /Operator 'or' requires boolean operands, but the left operand is integer\. at 1:3/,
+  );
+});
+test("rejects a non-Boolean right operand for or", () => {
+  assert.throws(
+    () => evaluate("false or 1", new Environment()),
+    /Operator 'or' requires boolean operands, but the right operand is integer\. at 1:7/,
+  );
+});
+test("reports logical errors at the operator source position", () => {
+  assert.throws(
+    () =>
+      evaluate(
+        `value = true
+value and 1
+`,
+        new Environment(),
+      ),
+    /Operator 'and' requires boolean operands, but the right operand is integer\. at 2:7/,
+  );
+  assert.throws(
+    () =>
+      evaluate(
+        `value = false
+value or 1
+`,
+        new Environment(),
+      ),
+    /Operator 'or' requires boolean operands, but the right operand is integer\. at 2:7/,
+  );
+  assert.throws(
+    () =>
+      evaluate(
+        `value = 1
+not value
+`,
+        new Environment(),
+      ),
+    /Operator 'not' requires a boolean operand, but the operand is integer\. at 2:1/,
+  );
+});

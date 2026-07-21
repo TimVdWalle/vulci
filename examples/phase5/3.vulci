@@ -1,0 +1,13 @@
+a = 10
+b = 20
+same = a == b
+smaller = a < b
+larger = a > b
+
+print(smaller and not same)
+print(a + 10 == b and b - 10 == a)
+print(not (a >= b))
+
+print(larger or same)
+print(a == b and smaller)
+print(not smaller)

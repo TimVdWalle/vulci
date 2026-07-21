@@ -1,0 +1,24 @@
+/* Phase 5 invalid cases
+ *
+ * Uncomment exactly one case at a time.
+ */
+/* p5err01 — invalid operand for not */
+// print(not 1)
+/* p5err02 — invalid left operand for and */
+// print(1 and true)
+/* p5err03 — invalid right operand for and */
+// print(true and 1)
+/* p5err04 — invalid left operand for or */
+// print(1 or false)
+/* p5err05 — invalid right operand for or */
+// print(false or 1)
+/* p5err06 — missing right operand after and */
+// print(true and)
+/* p5err07 — missing operand after not */
+// print(not)
+/* p5err08 — reserved keyword and used as identifier */
+// and = true
+/* p5err09 — reserved keyword or used as identifier */
+// or = true
+/* p5err10 — reserved keyword not used as identifier */
+// not = true
