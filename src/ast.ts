@@ -1,3 +1,5 @@
+// Phase 6
+
 import { Token } from "./token.js";
 
 export interface Program {
@@ -5,13 +7,7 @@ export interface Program {
   statements: Statement[];
 }
 
-export type Statement = VariableAssignment | ExpressionStatement;
-
-export interface VariableAssignment {
-  type: "VariableAssignment";
-  name: string;
-  value: Expression;
-}
+export type Statement = ExpressionStatement;
 
 export interface ExpressionStatement {
   type: "ExpressionStatement";
@@ -21,10 +17,14 @@ export interface ExpressionStatement {
 export type Expression =
   | IntegerLiteral
   | BooleanLiteral
+  | NullLiteral
   | VariableReference
+  | AssignmentExpression
   | FunctionCall
   | UnaryExpression
-  | BinaryExpression;
+  | BinaryExpression
+  | ComparisonChainExpression
+  | ConditionalExpression;
 
 export interface IntegerLiteral {
   type: "IntegerLiteral";
@@ -36,9 +36,19 @@ export interface BooleanLiteral {
   value: boolean;
 }
 
+export interface NullLiteral {
+  type: "NullLiteral";
+}
+
 export interface VariableReference {
   type: "VariableReference";
   name: string;
+}
+
+export interface AssignmentExpression {
+  type: "AssignmentExpression";
+  name: string;
+  value: Expression;
 }
 
 export interface FunctionCall {
@@ -58,4 +68,23 @@ export interface BinaryExpression {
   left: Expression;
   operator: Token;
   right: Expression;
+}
+
+export interface ComparisonChainExpression {
+  type: "ComparisonChainExpression";
+  operands: Expression[];
+  operators: Token[];
+}
+
+export interface ConditionalBranch {
+  keyword: Token;
+  condition: Expression;
+  expressions: Expression[];
+}
+
+export interface ConditionalExpression {
+  type: "ConditionalExpression";
+  branches: ConditionalBranch[];
+  elseKeyword: Token | null;
+  elseExpressions: Expression[] | null;
 }

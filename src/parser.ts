@@ -1,14 +1,20 @@
+// Phase 6
+
 import {
+  AssignmentExpression,
   BinaryExpression,
   BooleanLiteral,
+  ComparisonChainExpression,
+  ConditionalBranch,
+  ConditionalExpression,
   Expression,
   ExpressionStatement,
   FunctionCall,
   IntegerLiteral,
+  NullLiteral,
   Program,
   Statement,
   UnaryExpression,
-  VariableAssignment,
   VariableReference,
 } from "./ast.js";
 import { Token, TokenType } from "./token.js";
@@ -36,23 +42,7 @@ export class Parser {
   }
 
   private statement(): Statement {
-    if (this.check(TokenType.Identifier) && this.checkNext(TokenType.Assign)) {
-      return this.variableAssignment();
-    }
-
     return this.expressionStatement();
-  }
-
-  private variableAssignment(): VariableAssignment {
-    const name = this.consume(TokenType.Identifier, "Expected variable name.");
-
-    this.consume(TokenType.Assign, "Expected '=' after variable name.");
-
-    return {
-      type: "VariableAssignment",
-      name: name.lexeme,
-      value: this.expression(),
-    };
   }
 
   private expressionStatement(): ExpressionStatement {
@@ -63,7 +53,30 @@ export class Parser {
   }
 
   private expression(): Expression {
-    return this.or();
+    return this.assignment();
+  }
+
+  private assignment(): Expression {
+    const expression = this.or();
+
+    if (!this.match(TokenType.Assign)) {
+      return expression;
+    }
+
+    const operator = this.previous();
+    const value = this.assignment();
+
+    if (expression.type !== "VariableReference") {
+      throw this.error(operator, "Invalid assignment target.");
+    }
+
+    const node: AssignmentExpression = {
+      type: "AssignmentExpression",
+      name: expression.name,
+      value,
+    };
+
+    return node;
   }
 
   private or(): Expression {
@@ -123,39 +136,49 @@ export class Parser {
   }
 
   private comparison(): Expression {
-    let expression = this.addition();
+    const operands: Expression[] = [this.addition()];
+    const operators: Token[] = [];
 
-    if (
-      this.match(
-        TokenType.EqualEqual,
-        TokenType.BangEqual,
-        TokenType.Less,
-        TokenType.LessEqual,
-        TokenType.Greater,
-        TokenType.GreaterEqual,
-      )
-    ) {
-      const operator = this.previous();
-      const right = this.addition();
+    let category: "equality" | "ordering" | null = null;
 
+    while (this.isComparisonOperator(this.peek().type)) {
+      const operator = this.advance();
+      const operatorCategory = this.comparisonCategory(operator.type);
+
+      if (category !== null && category !== operatorCategory) {
+        throw this.error(
+          operator,
+          "Equality and ordering operators cannot be mixed in one comparison chain.",
+        );
+      }
+
+      category = operatorCategory;
+      operators.push(operator);
+      operands.push(this.addition());
+    }
+
+    if (operators.length === 0) {
+      return operands[0]!;
+    }
+
+    if (operators.length === 1) {
       const node: BinaryExpression = {
         type: "BinaryExpression",
-        left: expression,
-        operator,
-        right,
+        left: operands[0]!,
+        operator: operators[0]!,
+        right: operands[1]!,
       };
 
-      expression = node;
+      return node;
     }
 
-    if (this.isComparisonOperator(this.peek().type)) {
-      throw this.error(
-        this.peek(),
-        "Comparison operators are non-associative.",
-      );
-    }
+    const node: ComparisonChainExpression = {
+      type: "ComparisonChainExpression",
+      operands,
+      operators,
+    };
 
-    return expression;
+    return node;
   }
 
   private addition(): Expression {
@@ -252,6 +275,18 @@ export class Parser {
       return node;
     }
 
+    if (this.match(TokenType.Null)) {
+      const node: NullLiteral = {
+        type: "NullLiteral",
+      };
+
+      return node;
+    }
+
+    if (this.match(TokenType.If)) {
+      return this.conditionalExpression(this.previous());
+    }
+
     if (this.match(TokenType.Identifier)) {
       const identifier = this.previous();
 
@@ -276,6 +311,97 @@ export class Parser {
     }
 
     throw this.error(this.peek(), "Expected expression.");
+  }
+
+  private conditionalExpression(firstKeyword: Token): ConditionalExpression {
+    const branches: ConditionalBranch[] = [
+      this.conditionalBranch(firstKeyword),
+    ];
+
+    let elseKeyword: Token | null = null;
+    let elseExpressions: Expression[] | null = null;
+
+    while (true) {
+      const positionBeforeNewlines = this.current;
+
+      this.skipNewlines();
+
+      if (!this.match(TokenType.Else)) {
+        this.current = positionBeforeNewlines;
+        break;
+      }
+
+      const currentElse = this.previous();
+
+      this.skipNewlines();
+
+      if (this.match(TokenType.If)) {
+        branches.push(this.conditionalBranch(this.previous()));
+
+        continue;
+      }
+
+      elseKeyword = currentElse;
+      elseExpressions = this.expressionBlock();
+      break;
+    }
+
+    const node: ConditionalExpression = {
+      type: "ConditionalExpression",
+      branches,
+      elseKeyword,
+      elseExpressions,
+    };
+
+    return node;
+  }
+
+  private conditionalBranch(keyword: Token): ConditionalBranch {
+    this.consume(TokenType.LeftParen, "Expected '(' after 'if'.");
+
+    const condition = this.expression();
+
+    this.consume(TokenType.RightParen, "Expected ')' after condition.");
+
+    return {
+      keyword,
+      condition,
+      expressions: this.expressionBlock(),
+    };
+  }
+
+  private expressionBlock(): Expression[] {
+    this.skipNewlines();
+
+    this.consume(TokenType.LeftBrace, "Expected '{' before branch body.");
+
+    this.skipNewlines();
+
+    if (this.check(TokenType.RightBrace)) {
+      throw this.error(this.peek(), "Conditional branches cannot be empty.");
+    }
+
+    const expressions: Expression[] = [];
+
+    while (!this.check(TokenType.RightBrace) && !this.isAtEnd()) {
+      expressions.push(this.expression());
+
+      if (this.check(TokenType.RightBrace)) {
+        break;
+      }
+
+      if (this.isAtEnd()) {
+        throw this.error(this.peek(), "Expected '}' after branch body.");
+      }
+
+      this.consume(TokenType.Newline, "Expected a newline after expression.");
+
+      this.skipNewlines();
+    }
+
+    this.consume(TokenType.RightBrace, "Expected '}' after branch body.");
+
+    return expressions;
   }
 
   private finishFunctionCall(callee: string): FunctionCall {
@@ -328,6 +454,14 @@ export class Parser {
     );
   }
 
+  private comparisonCategory(type: TokenType): "equality" | "ordering" {
+    if (type === TokenType.EqualEqual || type === TokenType.BangEqual) {
+      return "equality";
+    }
+
+    return "ordering";
+  }
+
   private consume(type: TokenType, message: string): Token {
     if (this.check(type)) {
       return this.advance();
@@ -353,12 +487,6 @@ export class Parser {
     }
 
     return this.peek().type === type;
-  }
-
-  private checkNext(type: TokenType): boolean {
-    const next = this.tokens[this.current + 1];
-
-    return next?.type === type;
   }
 
   private advance(): Token {

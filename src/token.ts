@@ -1,8 +1,13 @@
+// Phase 6
+
 export enum TokenType {
   Integer,
   Identifier,
   True,
   False,
+  Null,
+  If,
+  Else,
   And,
   Or,
   Not,
@@ -20,6 +25,8 @@ export enum TokenType {
   Percent,
   LeftParen,
   RightParen,
+  LeftBrace,
+  RightBrace,
   Comma,
   Newline,
   EOF,

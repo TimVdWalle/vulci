@@ -1,3 +1,5 @@
+// Phase 6
+
 import { Token, TokenType } from "./token.js";
 
 export class Lexer {
@@ -124,6 +126,14 @@ export class Lexer {
         this.addToken(TokenType.RightParen, c, startLine, startColumn);
         return;
 
+      case "{":
+        this.addToken(TokenType.LeftBrace, c, startLine, startColumn);
+        return;
+
+      case "}":
+        this.addToken(TokenType.RightBrace, c, startLine, startColumn);
+        return;
+
       case ",":
         this.addToken(TokenType.Comma, c, startLine, startColumn);
         return;
@@ -233,6 +243,18 @@ export class Lexer {
 
       case "false":
         type = TokenType.False;
+        break;
+
+      case "null":
+        type = TokenType.Null;
+        break;
+
+      case "if":
+        type = TokenType.If;
+        break;
+
+      case "else":
+        type = TokenType.Else;
         break;
 
       case "and":

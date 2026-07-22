@@ -1,0 +1,63 @@
+// Phase 6
+
+print(null)
+print(null == null)
+print(null != null)
+
+minimum = 1
+value = 5
+maximum = 10
+
+print(minimum < value <= maximum)
+print(1 < 2 < 3 < 4)
+print(1 < 2 > 3)
+print(1 == 1 != 2)
+
+print((1 < 2) == true)
+
+category = if (value < minimum) {
+    1
+} else if (value > maximum) {
+    2
+} else {
+    3
+}
+
+print(category)
+
+counter = 0
+
+branch_result = if (true) {
+    counter = counter + 1
+    counter = counter + 1
+    counter * 10
+} else {
+    counter = 999
+    1 / 0
+}
+
+print(branch_result)
+print(counter)
+
+missing_else = if (false) {
+    100
+}
+
+print(missing_else)
+
+chain_short_circuit = 10 < 5 < 1 / 0
+
+print(chain_short_circuit)
+
+assigned = if (true) {
+    nested = if (false) {
+        1
+    } else {
+        20
+    }
+
+    nested + 2
+}
+
+print(assigned)
+print(nested)
