@@ -1,3 +1,5 @@
+// Phase 6
+
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Lexer } from "../src/lexer.js";
@@ -13,11 +15,14 @@ print(answer)
     type: "Program",
     statements: [
       {
-        type: "VariableAssignment",
-        name: "answer",
-        value: {
-          type: "IntegerLiteral",
-          value: 42,
+        type: "ExpressionStatement",
+        expression: {
+          type: "AssignmentExpression",
+          name: "answer",
+          value: {
+            type: "IntegerLiteral",
+            value: 42,
+          },
         },
       },
       {
@@ -457,21 +462,21 @@ test("allows parenthesized comparison expressions", () => {
     value: true,
   });
 });
-test("rejects unparenthesized chained comparisons", () => {
-  const cases = ["1 < 2 < 3", "1 == 1 == true", "1 < 2 == true", "1 != 2 >= 3"];
+test("rejects mixed unparenthesized comparison chains", () => {
+  const cases = ["1 < 2 == true", "1 != 2 >= 3"];
   for (const source of cases) {
     const tokens = new Lexer(source).lex();
     assert.throws(
       () => new Parser(tokens).parse(),
-      /Comparison operators are non-associative/,
+      /Equality and ordering operators cannot be mixed in one comparison chain/,
     );
   }
 });
-test("reports the second comparison operator position", () => {
+test("reports the mixed comparison operator position", () => {
   const tokens = new Lexer("1 < 2 == true").lex();
   assert.throws(
     () => new Parser(tokens).parse(),
-    /Comparison operators are non-associative\. at 1:7/,
+    /Equality and ordering operators cannot be mixed in one comparison chain\. at 1:7/,
   );
 });
 test("parses not as a unary expression", () => {

@@ -1,0 +1,5 @@
+// Phase 6
+
+print(null)
+
+print(if (true) {11} else {  222})

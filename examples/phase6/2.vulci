@@ -1,0 +1,20 @@
+// Phase 6
+
+value = 20
+
+result = if (value < 10) {
+    1
+} else if (value < 30) {
+    2
+} else {
+    3
+}
+
+print(result)
+
+no_match = if (false) {
+    100
+}
+
+print(no_match)
+print(999)
