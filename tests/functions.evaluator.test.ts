@@ -89,15 +89,26 @@ identity(20 + 22)`),
   );
 });
 test("evaluates function arguments from left to right", () => {
+  const environment = new Environment();
+  let nextValue = 0;
+  environment.define("next", {
+    type: "NativeFunction",
+    call() {
+      nextValue += 1;
+      return {
+        type: "Integer",
+        value: nextValue,
+      };
+    },
+  });
   assert.deepEqual(
-    evaluate(`$value = 0
-fn combine(left, right) {
+    evaluate(
+      `fn combine(left, right) {
   return left * 10 + right
 }
-combine(
-  $value = 1,
-  $value = $value + 1
-)`),
+combine(next(), next())`,
+      environment,
+    ),
     {
       type: "Integer",
       value: 12,
@@ -239,7 +250,7 @@ test("rejects a function name that collides with a native function", () => {
 }`,
         environment,
       ),
-    /Function 'capture' is already defined\./,
+    /Name 'capture' is already defined\. at 1:4/,
   );
 });
 test("function declarations evaluate to null", () => {
