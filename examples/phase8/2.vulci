@@ -1,0 +1,16 @@
+// Phase 8
+
+fn absolute(int value) returns int {
+    if (value < 0) {
+        return -value
+    }
+
+    value
+}
+
+fn isZero(int value) returns bool {
+    value == 0
+}
+
+print(absolute(-12))
+print(isZero(0))

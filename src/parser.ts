@@ -1,7 +1,8 @@
-// Phase 7
+// Phase 8
 
 import {
   AssignmentExpression,
+  BuiltInTypeName,
   BinaryExpression,
   BooleanLiteral,
   ComparisonChainExpression,
@@ -16,12 +17,24 @@ import {
   Program,
   ReturnExpression,
   Statement,
+  TypeAnnotation,
   UnaryExpression,
   VariableReference,
 } from "./ast.js";
 import { Token, TokenType } from "./token.js";
 
 export class Parser {
+  private static readonly BUILT_IN_TYPE_NAMES = new Set<string>([
+    "int",
+    "bool",
+    "str",
+    "list",
+    "set",
+    "map",
+    "any",
+    "null",
+  ]);
+
   private current = 0;
 
   constructor(private readonly tokens: Token[]) {}
@@ -73,6 +86,9 @@ export class Parser {
     }
 
     const operator = this.previous();
+
+    this.skipNewlines();
+
     const value = this.assignment();
 
     if (expression.type !== "VariableReference") {
@@ -91,8 +107,17 @@ export class Parser {
   private or(): Expression {
     let expression = this.and();
 
-    while (this.match(TokenType.Or)) {
+    while (true) {
+      this.skipNewlinesBefore(TokenType.Or);
+
+      if (!this.match(TokenType.Or)) {
+        break;
+      }
+
       const operator = this.previous();
+
+      this.skipNewlines();
+
       const right = this.and();
 
       const node: BinaryExpression = {
@@ -111,8 +136,17 @@ export class Parser {
   private and(): Expression {
     let expression = this.not();
 
-    while (this.match(TokenType.And)) {
+    while (true) {
+      this.skipNewlinesBefore(TokenType.And);
+
+      if (!this.match(TokenType.And)) {
+        break;
+      }
+
       const operator = this.previous();
+
+      this.skipNewlines();
+
       const right = this.not();
 
       const node: BinaryExpression = {
@@ -132,6 +166,8 @@ export class Parser {
     if (this.match(TokenType.Not)) {
       const operator = this.previous();
 
+      this.skipNewlines();
+
       const node: UnaryExpression = {
         type: "UnaryExpression",
         operator,
@@ -150,7 +186,20 @@ export class Parser {
 
     let category: "equality" | "ordering" | null = null;
 
-    while (this.isComparisonOperator(this.peek().type)) {
+    while (true) {
+      this.skipNewlinesBefore(
+        TokenType.EqualEqual,
+        TokenType.BangEqual,
+        TokenType.Less,
+        TokenType.LessEqual,
+        TokenType.Greater,
+        TokenType.GreaterEqual,
+      );
+
+      if (!this.isComparisonOperator(this.peek().type)) {
+        break;
+      }
+
       const operator = this.advance();
       const operatorCategory = this.comparisonCategory(operator.type);
 
@@ -163,6 +212,9 @@ export class Parser {
 
       category = operatorCategory;
       operators.push(operator);
+
+      this.skipNewlines();
+
       operands.push(this.addition());
     }
 
@@ -193,8 +245,17 @@ export class Parser {
   private addition(): Expression {
     let expression = this.multiplication();
 
-    while (this.match(TokenType.Plus, TokenType.Minus)) {
+    while (true) {
+      this.skipNewlinesBefore(TokenType.Plus, TokenType.Minus);
+
+      if (!this.match(TokenType.Plus, TokenType.Minus)) {
+        break;
+      }
+
       const operator = this.previous();
+
+      this.skipNewlines();
+
       const right = this.multiplication();
 
       const node: BinaryExpression = {
@@ -213,8 +274,21 @@ export class Parser {
   private multiplication(): Expression {
     let expression = this.unary();
 
-    while (this.match(TokenType.Star, TokenType.Slash, TokenType.Percent)) {
+    while (true) {
+      this.skipNewlinesBefore(
+        TokenType.Star,
+        TokenType.Slash,
+        TokenType.Percent,
+      );
+
+      if (!this.match(TokenType.Star, TokenType.Slash, TokenType.Percent)) {
+        break;
+      }
+
       const operator = this.previous();
+
+      this.skipNewlines();
+
       const right = this.unary();
 
       const node: BinaryExpression = {
@@ -240,6 +314,8 @@ export class Parser {
           "Repeated negation requires parentheses.",
         );
       }
+
+      this.skipNewlines();
 
       const node: UnaryExpression = {
         type: "UnaryExpression",
@@ -316,7 +392,11 @@ export class Parser {
     }
 
     if (this.match(TokenType.LeftParen)) {
+      this.skipNewlines();
+
       const expression = this.expression();
+
+      this.skipNewlines();
 
       this.consume(TokenType.RightParen, "Expected ')' after expression.");
 
@@ -339,14 +419,42 @@ export class Parser {
     this.consume(TokenType.LeftParen, "Expected '(' after function name.");
 
     const parameters: Token[] = [];
+    const parameterTypes: (TypeAnnotation | null)[] = [];
     const parameterNames = new Set<string>();
+    let hasExplicitParameterType = false;
 
     if (!this.check(TokenType.RightParen)) {
       do {
-        const parameter = this.consume(
-          TokenType.Identifier,
-          "Expected parameter name.",
-        );
+        if (this.check(TokenType.Pipe)) {
+          throw this.error(this.peek(), "A union type cannot start with '|'.");
+        }
+
+        const first = this.consumeTypeName("Expected parameter name or type.");
+
+        let parameter: Token;
+        let parameterType: TypeAnnotation | null = null;
+
+        const startsTypedParameter =
+          Parser.BUILT_IN_TYPE_NAMES.has(first.lexeme) ||
+          this.check(TokenType.Pipe) ||
+          this.check(TokenType.Identifier);
+
+        if (startsTypedParameter) {
+          parameterType = this.finishTypeAnnotation(first);
+          hasExplicitParameterType = true;
+
+          parameter = this.consume(
+            TokenType.Identifier,
+            "Expected parameter name after type declaration.",
+          );
+        } else {
+          parameter = first;
+
+          this.emitStrongWarning(
+            `parameter '${parameter.lexeme}' has no declared type and is treated as 'any'`,
+            parameter,
+          );
+        }
 
         if (parameter.lexeme.startsWith("$")) {
           throw this.error(
@@ -364,6 +472,7 @@ export class Parser {
 
         parameterNames.add(parameter.lexeme);
         parameters.push(parameter);
+        parameterTypes.push(parameterType);
       } while (this.match(TokenType.Comma));
     }
 
@@ -371,6 +480,25 @@ export class Parser {
       TokenType.RightParen,
       "Expected ')' after function parameters.",
     );
+
+    let returnType: TypeAnnotation | undefined;
+
+    if (this.match(TokenType.Returns)) {
+      if (this.check(TokenType.Pipe)) {
+        throw this.error(this.peek(), "A union type cannot start with '|'.");
+      }
+
+      const firstReturnType = this.consumeTypeName(
+        "Expected return type after 'returns'.",
+      );
+
+      returnType = this.finishTypeAnnotation(firstReturnType);
+    } else {
+      this.emitStrongWarning(
+        `function '${name.lexeme}' has no declared return type and is treated as 'any'`,
+        name,
+      );
+    }
 
     const node: FunctionDeclaration = {
       type: "FunctionDeclaration",
@@ -380,7 +508,79 @@ export class Parser {
       expressions: this.functionExpressionBlock(),
     };
 
+    if (hasExplicitParameterType) {
+      node.parameterTypes = parameterTypes;
+    }
+
+    if (returnType !== undefined) {
+      node.returnType = returnType;
+    }
+
     return node;
+  }
+
+  private finishTypeAnnotation(first: Token): TypeAnnotation {
+    this.validateTypeName(first);
+
+    const members: Token[] = [first];
+    const memberNames = new Set<string>([first.lexeme]);
+
+    while (this.match(TokenType.Pipe)) {
+      const separator = this.previous();
+
+      if (separator.whitespaceBefore || separator.whitespaceAfter) {
+        this.emitWarning(
+          "whitespace around union separator '|' is valid but discouraged",
+          separator,
+        );
+      }
+
+      if (this.check(TokenType.Pipe)) {
+        throw this.error(
+          this.peek(),
+          "A union type cannot contain repeated '|'.",
+        );
+      }
+
+      const member = this.consumeTypeName("Expected a type name after '|'.");
+
+      this.validateTypeName(member);
+
+      if (memberNames.has(member.lexeme)) {
+        throw this.error(member, `Duplicate union member '${member.lexeme}'.`);
+      }
+
+      memberNames.add(member.lexeme);
+      members.push(member);
+    }
+
+    if (members.length > 1 && memberNames.has("any")) {
+      const anyMember = members.find((member) => member.lexeme === "any")!;
+
+      throw this.error(anyMember, "'any' cannot appear inside a union type.");
+    }
+
+    if (members.length === 1 && first.lexeme === "any") {
+      this.emitWarning("explicit 'any' type declaration", first);
+    }
+
+    return { members };
+  }
+
+  private validateTypeName(token: Token): asserts token is Token & {
+    lexeme: BuiltInTypeName;
+  } {
+    if (!Parser.BUILT_IN_TYPE_NAMES.has(token.lexeme)) {
+      throw this.error(token, `Unknown type name '${token.lexeme}'.`);
+    }
+  }
+
+  private emitWarning(message: string, token: Token): void {
+    console.warn(`warning: ${message} at ${token.line}:${token.column}`);
+  }
+
+  private emitStrongWarning(message: string, token: Token): void {
+    console.warn(`strong warning: ${message} at ${token.line}:${token.column}`);
   }
 
   private returnExpression(keyword: Token): ReturnExpression {
@@ -404,6 +604,8 @@ export class Parser {
   }
 
   private conditionalExpression(firstKeyword: Token): ConditionalExpression {
+    this.skipNewlines();
+
     const branches: ConditionalBranch[] = [
       this.conditionalBranch(firstKeyword),
     ];
@@ -426,6 +628,7 @@ export class Parser {
       this.skipNewlines();
 
       if (this.match(TokenType.If)) {
+        this.skipNewlines();
         branches.push(this.conditionalBranch(this.previous()));
 
         continue;
@@ -449,7 +652,11 @@ export class Parser {
   private conditionalBranch(keyword: Token): ConditionalBranch {
     this.consume(TokenType.LeftParen, "Expected '(' after 'if'.");
 
+    this.skipNewlines();
+
     const condition = this.expression();
+
+    this.skipNewlines();
 
     this.consume(TokenType.RightParen, "Expected ')' after condition.");
 
@@ -555,11 +762,17 @@ export class Parser {
   private finishFunctionCall(calleeToken: Token): FunctionCall {
     const arguments_: Expression[] = [];
 
+    this.skipNewlines();
+
     if (!this.check(TokenType.RightParen)) {
       do {
+        this.skipNewlines();
         arguments_.push(this.expression());
+        this.skipNewlines();
       } while (this.match(TokenType.Comma));
     }
+
+    this.skipNewlines();
 
     this.consume(
       TokenType.RightParen,
@@ -592,6 +805,16 @@ export class Parser {
     }
   }
 
+  private skipNewlinesBefore(...types: TokenType[]): void {
+    const originalPosition = this.current;
+
+    this.skipNewlines();
+
+    if (!types.some((type) => this.check(type))) {
+      this.current = originalPosition;
+    }
+  }
+
   private isComparisonOperator(type: TokenType): boolean {
     return (
       type === TokenType.EqualEqual ||
@@ -609,6 +832,14 @@ export class Parser {
     }
 
     return "ordering";
+  }
+
+  private consumeTypeName(message: string): Token {
+    if (this.match(TokenType.Identifier, TokenType.Null)) {
+      return this.previous();
+    }
+
+    throw this.error(this.peek(), message);
   }
 
   private consume(type: TokenType, message: string): Token {

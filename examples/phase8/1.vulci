@@ -1,0 +1,7 @@
+// Phase 8
+
+fn double(int value) returns int {
+    value * 2
+}
+
+print(double(5))

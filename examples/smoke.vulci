@@ -1,40 +1,67 @@
-// Phase 7
+// Phase 8
 /*
 Vulci smoke test
-Implemented phases: 1–7
-Expected output:
-1129
-true
-null
+Implemented phases: 1–8
+
+Expected standard output:
+1154
+
+Expected warnings:
+- Explicit any parameter
+- Explicit any return type
+- Omitted parameter type
+- Omitted return type
+- Two spaced union separators
 */
+
 // Integer literals, assignments, reassignment, lookup, and arithmetic.
 value = 1
 value = value + 1
-arithmetic = value + 2 * 3 + (1 + 2) * 3 + 20 - 5 - 3 + 52 / 2 / 2 + -(-9) + (-35 / 2) + (-37 % 10) + 1_000
+arithmetic = value 
+    + 2 * 3 
+   + (1 + 2) * 3 
+   + 20 
+   - 5 
+   - 3 
+   + 52 / 2 / 2 
+   + -(-9) 
+   + (-35 / 2) 
+   + (-37 % 10) 
+   + 1_000
+
 // Line comment.
 line_comment = 1 // ignored
+
 // Block comment between tokens.
 block_comment = 1 /* ignored */ + 1
+
 // Multiline block comment inside an expression.
 multiline_comment = 1 + /*
 ignored
 */ 2
+
 // Nested block comments.
 nested_comment = 1 + /*
 outer
 /* inner */
 /* another /* deeper */ nested comment */
 */ 3
+
 /// Documentation-style line comments are ordinary comments.
+
 /**
  * Documentation-style block comments are ordinary comments.
  */
+
 // Identifiers may contain underscores and digits.
 smoke_value_2 = line_comment + block_comment + multiline_comment + nested_comment
+
 // Boolean literals, equality, ordering comparisons, and precedence.
 comparison_result = true == true and false == false and 1 == 1 and 1 != 2 and 1 < 2 and 2 <= 2 and 3 > 2 and 3 >= 3 and 1 + 2 == 3 and 2 * 3 > 5 and (1 < 2) == true
+
 // not, repeated not, and, or, and short-circuit evaluation.
 logical_result = not false and not not true and (false or true) and not (false and 1 / 0 == 0)
+
 // Basic conditional, else-if, and assignment from a conditional.
 conditional_result = if (false) {
     0
@@ -43,8 +70,8 @@ conditional_result = if (false) {
 } else {
     0
 }
+
 // Multiple expressions use the final expression as the branch result.
-// Assignments inside branches reuse the current environment.
 branch_value = 0
 branch_result = if (true) {
     branch_value = 5
@@ -52,12 +79,14 @@ branch_result = if (true) {
 } else {
     0
 }
+
 // Only the selected branch is evaluated.
 selected_branch = if (true) {
     8
 } else {
     1 / 0
 }
+
 // Nested conditional expressions.
 nested_result = if (true) {
     if (false) {
@@ -68,70 +97,176 @@ nested_result = if (true) {
 } else {
     0
 }
+
 // Ordering and equality comparison chains.
 chain_counter = 0
 chain_result = 0 < (chain_counter = chain_counter + 1) < 2 and 1 < 2 <= 3 and 1 == 1 != 2 and not (1 < 2 > 3)
+
 // Chained comparisons short-circuit.
 chain_short_circuit = not (10 < 5 < 1 / 0)
-// Function with parameters and explicit return.
-fn add(left, right) {
+
+// Typed parameters and explicit return.
+fn add(int left, int right) returns int {
     return left + right
 }
+
 // Zero-argument function and implicit return.
-fn implicit_result() {
+fn implicit_result() returns int {
     6
 }
-// return without a value.
-fn return_null() {
+
+// Bare return produces null.
+fn return_null() returns null {
     return
 }
+
 // Function-local assignment does not change the top-level variable.
 local_value = 10
-fn local_scope() {
+
+fn local_scope() returns int {
     local_value = 11
     return local_value
 }
+
 // Declared globals can be read and updated inside functions.
 $global_value = 1
-fn increment_global() {
+
+fn increment_global() returns int {
     $global_value = $global_value + 1
     return $global_value
 }
+
 // Direct recursion.
-fn recurse(value) {
+fn recurse(int value) returns int {
     if (value == 0) {
         return 4
     }
+
     return recurse(value - 1)
 }
+
 // Mutual recursion.
-fn is_even(value) {
+fn is_even(int value) returns bool {
     if (value == 0) {
         return true
     }
+
     return is_odd(value - 1)
 }
-fn is_odd(value) {
+
+fn is_odd(int value) returns bool {
     if (value == 0) {
         return false
     }
+
     return is_even(value - 1)
 }
+
 // Forward call: functions are registered before top-level evaluation.
 forward_result = declared_later()
-fn declared_later() {
+
+fn declared_later() returns int {
     return 5
 }
+
 // Missing else evaluates to null.
 missing_else = if (false) {
     1
 }
-// One compact integer checksum.
+
+// Phase 8: typed parameter reassignment.
+fn typed_increment(int value) returns int {
+    value = value + 1
+    value
+}
+
+// Phase 8: parameter and return unions.
+fn preserve(int|bool value) returns int|bool {
+    value
+}
+
+// Phase 8: nullable return union.
+fn positive_or_null(int value) returns int|null {
+    if (value > 0) {
+        return value
+    }
+
+    null
+}
+
+// Phase 8: a union parameter may change to another union member.
+fn switch_type(int|bool value) returns int|bool {
+    value = true
+    value
+}
+
+// Phase 8: explicit any produces normal warnings.
+fn explicit_any(any value) returns any {
+    value
+}
+
+// Phase 8: omitted annotations become any and produce strong warnings.
+fn implicit_any(value) {
+    value
+}
+
+// Phase 8: whitespace around each union separator is valid but warns.
+fn spaced_union(int | bool value) returns int | null {
+    if (value == true) {
+        return 6
+    }
+
+    null
+}
+
+// Existing feature checksum.
 checksum = arithmetic + smoke_value_2 + conditional_result + branch_result + branch_value + selected_branch + nested_result + chain_counter + add(2, 3) + implicit_result() + local_scope() + local_value + increment_global() + $global_value + recurse(3) + forward_result
-// One compact Boolean check.
+
 all_features_work = comparison_result and logical_result and chain_result and chain_short_circuit and is_even(10) and not is_even(9)
-print(checksum)
-print(all_features_work)
-print(missing_else)
-// Execute return-without-value without adding another output.
+
+// Convert Boolean and null checks into integer checksum contributions.
+existing_boolean_score = if (all_features_work) {
+    1
+} else {
+    0
+}
+
+existing_null_score = if (missing_else == null) {
+    1
+} else {
+    0
+}
+
+// Phase 8 contributions.
+typed_reassignment_score = typed_increment(1)
+union_integer_score = preserve(3)
+
+union_boolean_score = if (preserve(true)) {
+    1
+} else {
+    0
+}
+
+nullable_score = if (positive_or_null(-1) == null) {
+    1
+} else {
+    0
+}
+
+union_reassignment_score = if (switch_type(1)) {
+    1
+} else {
+    0
+}
+
+explicit_any_score = explicit_any(4)
+implicit_any_score = implicit_any(5)
+spaced_union_score = spaced_union(true)
+
+// One final, visually checkable result.
+result = checksum + existing_boolean_score + existing_null_score + typed_reassignment_score + union_integer_score + union_boolean_score + nullable_score + union_reassignment_score + explicit_any_score + implicit_any_score + spaced_union_score
+
+print(result)
+
+// Execute bare return without adding another printed result.
 unused_null = return_null()

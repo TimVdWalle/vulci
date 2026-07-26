@@ -1,4 +1,4 @@
-// Phase 7
+// Phase 8
 
 import { Token } from "./token.js";
 
@@ -53,11 +53,20 @@ export interface AssignmentExpression {
   value: Expression;
 }
 
+export type BuiltInTypeName =
+  "int" | "bool" | "str" | "list" | "set" | "map" | "any" | "null";
+
+export interface TypeAnnotation {
+  members: Token[];
+}
+
 export interface FunctionDeclaration {
   type: "FunctionDeclaration";
   keyword: Token;
   name: Token;
   parameters: Token[];
+  parameterTypes?: (TypeAnnotation | null)[];
+  returnType?: TypeAnnotation;
   expressions: Expression[];
 }
 
