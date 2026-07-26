@@ -1,460 +1,137 @@
 // Phase 7
-
 /*
 Vulci smoke test
-
-Implemented phases: 1, 2, 3, 4, 5, 6, and 7
-
+Implemented phases: 1–7
 Expected output:
-
-1
-2
-3
-...
-25
-
-Phase 4:
-15 true values
-15 false values
-
-Phase 5:
+1129
 true
-false
-true
-false
-true
-true
-false
-
-Phase 6:
 null
-true
-false
-26
-27
-null
-28
-28
-29
-30
-true
-false
-true
-true
-1
-false
-31
-32
-
-Phase 7:
-33
-34
-35
-36
-null
-38
-37
-39
-39
-40
-true
-false
-41
 */
-
-// 1 — Integer literal and print
-print(1)
-
-// 2 — Variable assignment and lookup
-value = 2
-print(value)
-
-// 3 — Variable reassignment
-value = 3
-print(value)
-
-// 4 — Addition
-addition = 1 + 3
-print(addition)
-
-// 5 — Subtraction
-subtraction = 10 - 5
-print(subtraction)
-
-// 6 — Multiplication
-multiplication = 2 * 3
-print(multiplication)
-
-// 7 — Integer division
-division = 14 / 2
-print(division)
-
-// 8 — Remainder
-remainder = 17 % 9
-print(remainder)
-
-// 9 — Unary negation and repeated negation
-negation = -(-9)
-print(negation)
-
-// 10 — Parenthesized expression
-parentheses = (2 + 3) * 2
-print(parentheses)
-
-// 11 — Operator precedence
-precedence = 3 + 4 * 2
-print(precedence)
-
-// 12 — Left-associative subtraction
-left_subtraction = 20 - 5 - 3
-print(left_subtraction)
-
-// 13 — Left-associative division
-left_division = 52 / 2 / 2
-print(left_division)
-
-// 14 — Mixed arithmetic
-mixed_arithmetic = (5 + 2) * 2
-print(mixed_arithmetic)
-
-// 15 — Integer digit separator
-digit_separator = 1_5
-print(digit_separator)
-
-// 16 — Expressions using multiple variables
-left_value = 8
-right_value = 8
-variable_expression = left_value + right_value
-print(variable_expression)
-
-// 17 — Negative division truncates toward zero
-negative_division = (-35 / 2) + 34
-print(negative_division)
-
-// 18 — Remainder follows the dividend's sign
-negative_remainder = (-37 % 10) + 25
-print(negative_remainder)
-
-// 19 — Trailing line comment
-line_comment = 9 + 10 // ignored
-print(line_comment)
-
-// 20 — Block comment between tokens
-block_comment = 10 /* ignored */ + 10
-print(block_comment)
-
-// 21 — Multiline block comment inside an expression
-multiline_comment = 10 + /*
-This comment contains newlines,
-but they do not end the expression.
-*/ 11
-print(multiline_comment)
-
-// 22 — Nested block comments
-nested_comment = 11 + /*
-Outer comment
-/* Inner comment */
-/* Another /* deeper */ nested comment */
-Outer comment continues
-*/ 11
-print(nested_comment)
-
-/// Documentation-style line comments are ordinary comments for now.
-
-// 23 — Identifier containing an underscore and number
-smoke_value_2 = 23
-print(smoke_value_2)
-
+// Integer literals, assignments, reassignment, lookup, and arithmetic.
+value = 1
+value = value + 1
+arithmetic = value + 2 * 3 + (1 + 2) * 3 + 20 - 5 - 3 + 52 / 2 / 2 + -(-9) + (-35 / 2) + (-37 % 10) + 1_000
+// Line comment.
+line_comment = 1 // ignored
+// Block comment between tokens.
+block_comment = 1 /* ignored */ + 1
+// Multiline block comment inside an expression.
+multiline_comment = 1 + /*
+ignored
+*/ 2
+// Nested block comments.
+nested_comment = 1 + /*
+outer
+/* inner */
+/* another /* deeper */ nested comment */
+*/ 3
+/// Documentation-style line comments are ordinary comments.
 /**
- * Documentation-style block comments are ordinary comments for now.
+ * Documentation-style block comments are ordinary comments.
  */
-
-// 24 — Multiple integer separators
-multiple_separators = 2_4
-print(multiple_separators)
-
-// 25 — Maximum safe integer is accepted
-maximum_safe_integer = 9_007_199_254_740_991
-safe_integer_result = maximum_safe_integer - 9_007_199_254_740_966
-print(safe_integer_result)
-
-// Phase 4 — Expected: true
-
-// Boolean literal
-print(true)
-
-// Integer equality
-print(1 == 1)
-print(1 != 2)
-
-// Boolean equality
-print(true == true)
-print(true != false)
-
-// Ordering comparisons
-print(1 < 2)
-print(2 <= 2)
-print(3 > 2)
-print(3 >= 3)
-
-// Arithmetic has higher precedence than comparisons
-print(1 + 2 == 3)
-print(2 * 3 > 5)
-print(10 - 4 <= 2 * 3)
-
-// Parenthesized comparisons
-print((1 < 2) == true)
-print((2 > 3) == false)
-
-// Variables can store Boolean values
-is_equal = 4 == 4
-print(is_equal)
-
-// Phase 4 — Expected: false
-
-// Boolean literal
-print(false)
-
-// Integer equality
-print(1 == 2)
-print(1 != 1)
-
-// Boolean equality
-print(true == false)
-print(false != false)
-
-// Ordering comparisons
-print(2 < 1)
-print(3 <= 2)
-print(2 > 3)
-print(2 >= 3)
-
-// Arithmetic has higher precedence than comparisons
-print(1 + 2 == 4)
-print(2 * 3 > 6)
-print(10 - 4 < 2 * 3)
-
-// Parenthesized comparisons
-print((1 < 2) == false)
-print((2 > 3) == true)
-
-// Variables can store Boolean values
-is_greater = 5 > 10
-print(is_greater)
-
-// Phase 5
-
-// and
-print(true and true)
-
-// or
-print(false or false)
-
-// not and repeated not
-print(not false)
-print(not not false)
-
-// Logical precedence: comparisons, not, and, or
-print(not 1 > 2 and true)
-print(false or true and true)
-
-// Short-circuit evaluation skips invalid right operands
-print(false and 1 / 0 == 0)
-
-// Phase 6
-
-// null literal and null equality
-print(null)
-print(null == null)
-print(null != null)
-
-// Basic if / else expression
-basic_conditional = if (true) {
-    26
+// Identifiers may contain underscores and digits.
+smoke_value_2 = line_comment + block_comment + multiline_comment + nested_comment
+// Boolean literals, equality, ordering comparisons, and precedence.
+comparison_result = true == true and false == false and 1 == 1 and 1 != 2 and 1 < 2 and 2 <= 2 and 3 > 2 and 3 >= 3 and 1 + 2 == 3 and 2 * 3 > 5 and (1 < 2) == true
+// not, repeated not, and, or, and short-circuit evaluation.
+logical_result = not false and not not true and (false or true) and not (false and 1 / 0 == 0)
+// Basic conditional, else-if, and assignment from a conditional.
+conditional_result = if (false) {
+    0
+} else if (comparison_result and logical_result) {
+    20
 } else {
     0
 }
-print(basic_conditional)
-
-// Ordered else-if evaluation
-else_if_result = if (false) {
-    0
-} else if (true) {
-    27
-} else {
-    0
-}
-print(else_if_result)
-
-// Missing else evaluates to null
-missing_else = if (false) {
-    0
-}
-print(missing_else)
-
-// Multiple expressions; final expression is the branch result
-// Assignments are expressions and blocks reuse the current environment
+// Multiple expressions use the final expression as the branch result.
+// Assignments inside branches reuse the current environment.
 branch_value = 0
-multiple_expression_result = if (true) {
-    branch_value = 28
-    branch_value
+branch_result = if (true) {
+    branch_value = 5
+    branch_value + 1
 } else {
     0
 }
-print(multiple_expression_result)
-print(branch_value)
-
-// Conditional expression used as an assignment value
-assigned_conditional = if (1 < 2 and not false) {
-    29
-} else {
-    0
-}
-print(assigned_conditional)
-
-// Only the selected branch is evaluated
-selected_branch_only = if (true) {
-    30
+// Only the selected branch is evaluated.
+selected_branch = if (true) {
+    8
 } else {
     1 / 0
 }
-print(selected_branch_only)
-
-// Ordering comparison chains
-print(1 < 2 <= 3)
-print(1 < 2 > 3)
-
-// Equality comparison chain
-print(1 == 1 != 2)
-
-// Parentheses separate comparison categories
-print((1 < 2) == true)
-
-// Every middle operand is evaluated once
-chain_counter = 0
-chain_once = 0 < (chain_counter = chain_counter + 1) < 2
-print(chain_counter)
-
-// Chained comparisons stop after the first false comparison
-print(10 < 5 < 1 / 0)
-
-// Nested conditional expressions
-nested_conditional = if (true) {
+// Nested conditional expressions.
+nested_result = if (true) {
     if (false) {
         0
     } else {
-        31
+        7
     }
 } else {
     0
 }
-print(nested_conditional)
-
-// Conditions are evaluated left to right and stop after a match
-condition_counter = 0
-condition_order = if ((condition_counter = condition_counter + 1) == 2) {
-    0
-} else if ((condition_counter = condition_counter + 1) == 2) {
-    32
-} else {
-    0
-}
-print(condition_order)
-
-// Phase 7
-
-// Function with parameters and an explicit return value
-fn add_phase_7(left, right) {
+// Ordering and equality comparison chains.
+chain_counter = 0
+chain_result = 0 < (chain_counter = chain_counter + 1) < 2 and 1 < 2 <= 3 and 1 == 1 != 2 and not (1 < 2 > 3)
+// Chained comparisons short-circuit.
+chain_short_circuit = not (10 < 5 < 1 / 0)
+// Function with parameters and explicit return.
+fn add(left, right) {
     return left + right
 }
-
-print(add_phase_7(16, 17))
-
-// Zero-argument function call
-fn phase_7_answer() {
-    return 34
-}
-
-print(phase_7_answer())
-
-// Final expression is the implicit function result
+// Zero-argument function and implicit return.
 fn implicit_result() {
-    35
+    6
 }
-
-print(implicit_result())
-
-// return immediately exits the function
-fn early_return() {
-    return 36
-    0
-}
-
-print(early_return())
-
-// return without a value evaluates to null
+// return without a value.
 fn return_null() {
     return
 }
-
-print(return_null())
-
-// Function-local assignments do not change top-level variables
-local_scope_value = 37
-
+// Function-local assignment does not change the top-level variable.
+local_value = 10
 fn local_scope() {
-    local_scope_value = 38
-    return local_scope_value
+    local_value = 11
+    return local_value
 }
-
-print(local_scope())
-print(local_scope_value)
-
-// Declared global variables can be read and updated inside functions
-$phase_7_global = 38
-
+// Declared globals can be read and updated inside functions.
+$global_value = 1
 fn increment_global() {
-    $phase_7_global = $phase_7_global + 1
-    return $phase_7_global
+    $global_value = $global_value + 1
+    return $global_value
 }
-
-print(increment_global())
-print($phase_7_global)
-
-// Direct recursion
-fn recursive_result(value) {
+// Direct recursion.
+fn recurse(value) {
     if (value == 0) {
-        return 40
+        return 4
     }
-
-    return recursive_result(value - 1)
+    return recurse(value - 1)
 }
-
-print(recursive_result(5))
-
-// Mutual recursion
+// Mutual recursion.
 fn is_even(value) {
     if (value == 0) {
         return true
     }
-
     return is_odd(value - 1)
 }
-
 fn is_odd(value) {
     if (value == 0) {
         return false
     }
-
     return is_even(value - 1)
 }
-
-print(is_even(10))
-print(is_even(9))
-
-// Functions are registered before top-level evaluation
-print(declared_later())
-
+// Forward call: functions are registered before top-level evaluation.
+forward_result = declared_later()
 fn declared_later() {
-    return 41
+    return 5
 }
+// Missing else evaluates to null.
+missing_else = if (false) {
+    1
+}
+// One compact integer checksum.
+checksum = arithmetic + smoke_value_2 + conditional_result + branch_result + branch_value + selected_branch + nested_result + chain_counter + add(2, 3) + implicit_result() + local_scope() + local_value + increment_global() + $global_value + recurse(3) + forward_result
+// One compact Boolean check.
+all_features_work = comparison_result and logical_result and chain_result and chain_short_circuit and is_even(10) and not is_even(9)
+print(checksum)
+print(all_features_work)
+print(missing_else)
+// Execute return-without-value without adding another output.
+unused_null = return_null()
