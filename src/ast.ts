@@ -1,4 +1,4 @@
-// Phase 6
+// Phase 7
 
 import { Token } from "./token.js";
 
@@ -20,7 +20,9 @@ export type Expression =
   | NullLiteral
   | VariableReference
   | AssignmentExpression
+  | FunctionDeclaration
   | FunctionCall
+  | ReturnExpression
   | UnaryExpression
   | BinaryExpression
   | ComparisonChainExpression
@@ -51,10 +53,25 @@ export interface AssignmentExpression {
   value: Expression;
 }
 
+export interface FunctionDeclaration {
+  type: "FunctionDeclaration";
+  keyword: Token;
+  name: Token;
+  parameters: Token[];
+  expressions: Expression[];
+}
+
 export interface FunctionCall {
   type: "FunctionCall";
   callee: string;
+  calleeToken: Token;
   arguments: Expression[];
+}
+
+export interface ReturnExpression {
+  type: "ReturnExpression";
+  keyword: Token;
+  value: Expression | null;
 }
 
 export interface UnaryExpression {

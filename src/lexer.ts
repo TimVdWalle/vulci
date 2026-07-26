@@ -1,4 +1,4 @@
-// Phase 6
+// Phase 7
 
 import { Token, TokenType } from "./token.js";
 
@@ -138,6 +138,10 @@ export class Lexer {
         this.addToken(TokenType.Comma, c, startLine, startColumn);
         return;
 
+      case "$":
+        this.globalIdentifier(startLine, startColumn);
+        return;
+
       default:
         if (this.isDigit(c)) {
           this.integer(startLine, startColumn);
@@ -257,6 +261,14 @@ export class Lexer {
         type = TokenType.Else;
         break;
 
+      case "fn":
+        type = TokenType.Fn;
+        break;
+
+      case "return":
+        type = TokenType.Return;
+        break;
+
       case "and":
         type = TokenType.And;
         break;
@@ -274,6 +286,25 @@ export class Lexer {
     }
 
     this.addToken(type, lexeme, line, column);
+  }
+
+  private globalIdentifier(line: number, column: number): void {
+    const start = this.current - 1;
+
+    if (!this.isIdentifierStart(this.peek())) {
+      throw new Error(`Invalid global identifier at ${line}:${column}`);
+    }
+
+    while (this.isIdentifierPart(this.peek())) {
+      this.advance();
+    }
+
+    this.addToken(
+      TokenType.Identifier,
+      this.source.slice(start, this.current),
+      line,
+      column,
+    );
   }
 
   private addToken(

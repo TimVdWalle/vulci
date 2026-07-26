@@ -1,9 +1,9 @@
-// Phase 6
+// Phase 7
 
 /*
 Vulci smoke test
 
-Implemented phases: 1, 2, 3, 4, 5, and 6
+Implemented phases: 1, 2, 3, 4, 5, 6, and 7
 
 Expected output:
 
@@ -45,6 +45,21 @@ true
 false
 31
 32
+
+Phase 7:
+33
+34
+35
+36
+null
+38
+37
+39
+39
+40
+true
+false
+41
 */
 
 // 1 — Integer literal and print
@@ -345,3 +360,101 @@ condition_order = if ((condition_counter = condition_counter + 1) == 2) {
     0
 }
 print(condition_order)
+
+// Phase 7
+
+// Function with parameters and an explicit return value
+fn add_phase_7(left, right) {
+    return left + right
+}
+
+print(add_phase_7(16, 17))
+
+// Zero-argument function call
+fn phase_7_answer() {
+    return 34
+}
+
+print(phase_7_answer())
+
+// Final expression is the implicit function result
+fn implicit_result() {
+    35
+}
+
+print(implicit_result())
+
+// return immediately exits the function
+fn early_return() {
+    return 36
+    0
+}
+
+print(early_return())
+
+// return without a value evaluates to null
+fn return_null() {
+    return
+}
+
+print(return_null())
+
+// Function-local assignments do not change top-level variables
+local_scope_value = 37
+
+fn local_scope() {
+    local_scope_value = 38
+    return local_scope_value
+}
+
+print(local_scope())
+print(local_scope_value)
+
+// Declared global variables can be read and updated inside functions
+$phase_7_global = 38
+
+fn increment_global() {
+    $phase_7_global = $phase_7_global + 1
+    return $phase_7_global
+}
+
+print(increment_global())
+print($phase_7_global)
+
+// Direct recursion
+fn recursive_result(value) {
+    if (value == 0) {
+        return 40
+    }
+
+    return recursive_result(value - 1)
+}
+
+print(recursive_result(5))
+
+// Mutual recursion
+fn is_even(value) {
+    if (value == 0) {
+        return true
+    }
+
+    return is_odd(value - 1)
+}
+
+fn is_odd(value) {
+    if (value == 0) {
+        return false
+    }
+
+    return is_even(value - 1)
+}
+
+print(is_even(10))
+print(is_even(9))
+
+// Functions are registered before top-level evaluation
+print(declared_later())
+
+fn declared_later() {
+    return 41
+}

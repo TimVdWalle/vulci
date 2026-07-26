@@ -1,0 +1,95 @@
+// Phase 7
+
+$argumentOrder = 0
+$recursionCount = 0
+
+print(callBeforeDeclaration())
+
+fn callBeforeDeclaration() {
+    1
+}
+
+fn zeroArguments() {
+    2
+}
+
+fn add(left, right) {
+    left + right
+}
+
+fn implicitReturn() {
+    4
+}
+
+fn explicitReturn() {
+    return 5
+}
+
+fn bareReturn() {
+    return
+}
+
+fn localScope(value) {
+    local = value + 1
+    local
+}
+
+fn updateGlobal() {
+    $recursionCount = $recursionCount + 1
+}
+
+fn firstArgument() {
+    $argumentOrder = $argumentOrder * 10 + 1
+    10
+}
+
+fn secondArgument() {
+    $argumentOrder = $argumentOrder * 10 + 2
+    20
+}
+
+fn subtract(left, right) {
+    left - right
+}
+
+fn countdown(number) {
+    updateGlobal()
+
+    if (number == 0) {
+        return 0
+    }
+
+    countdown(number - 1)
+}
+
+fn isEven(number) {
+    if (number == 0) {
+        true
+    } else {
+        isOdd(number - 1)
+    }
+}
+
+fn isOdd(number) {
+    if (number == 0) {
+        false
+    } else {
+        isEven(number - 1)
+    }
+}
+
+print(zeroArguments())
+print(add(1, 2))
+print(implicitReturn())
+print(explicitReturn())
+print(bareReturn())
+print(localScope(5))
+
+print(subtract(firstArgument(), secondArgument()))
+print($argumentOrder)
+
+print(countdown(3))
+print($recursionCount)
+
+print(isEven(10))
+print(isOdd(10))
