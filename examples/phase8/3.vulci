@@ -1,0 +1,54 @@
+// Phase 8
+
+// Single parameter and return types.
+fn double(int value) returns int {
+    value = value * 2
+    value
+}
+
+// Union parameter and return types.
+fn preserve(int|bool value) returns int|bool {
+    value
+}
+
+// Nullable return type.
+fn positiveOrNull(int value) returns int|null {
+    if (value > 0) {
+        return value
+    }
+
+    return null
+}
+
+// Explicit any produces a normal warning.
+fn explicitAny(any value) returns any {
+    value
+}
+
+// Omitted parameter and return types produce strong warnings.
+fn implicitAny(value) {
+    value
+}
+
+// A union-typed parameter may be reassigned to another union member.
+fn switchType(int|bool value) returns int|bool {
+    value = true
+    value
+}
+
+// Whitespace around | is valid but produces warnings.
+fn spacedUnion(int | bool value) returns int | null {
+    if (value == true) {
+        return 1
+    }
+
+    return null
+}
+
+print(double(5))
+print(preserve(true))
+print(positiveOrNull(-1))
+print(explicitAny(10))
+print(implicitAny(false))
+print(switchType(20))
+print(spacedUnion(true))

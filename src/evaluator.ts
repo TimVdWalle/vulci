@@ -1,4 +1,4 @@
-// Phase 7
+// Phase 8
 
 import {
   ComparisonChainExpression,
@@ -8,6 +8,7 @@ import {
   FunctionDeclaration,
   Program,
   Statement,
+  TypeAnnotation,
 } from "./ast.js";
 import { Environment } from "./environment.js";
 import {
@@ -31,6 +32,10 @@ export class Evaluator {
   private currentEnvironment: Environment;
 
   private functionDepth = 0;
+
+  private currentFunction: FunctionDeclaration | null = null;
+
+  private currentParameterTypes = new Map<string, TypeAnnotation | null>();
 
   constructor(private readonly environment: Environment) {
     this.currentEnvironment = environment;
@@ -250,22 +255,43 @@ export class Evaluator {
     }
 
     const previousEnvironment = this.currentEnvironment;
+    const previousFunction = this.currentFunction;
+    const previousParameterTypes = this.currentParameterTypes;
     const localEnvironment = new Environment();
+    const parameterTypes = new Map<string, TypeAnnotation | null>();
 
     for (let index = 0; index < declaration.parameters.length; index++) {
       const parameter = declaration.parameters[index]!;
       const argument = arguments_[index]!;
+      const parameterType = declaration.parameterTypes?.[index] ?? null;
+
+      this.assertParameterType(
+        declaration,
+        parameter,
+        parameterType,
+        argument,
+        callExpression,
+      );
 
       localEnvironment.define(parameter.lexeme, argument);
+      parameterTypes.set(parameter.lexeme, parameterType);
     }
 
     this.currentEnvironment = localEnvironment;
+    this.currentFunction = declaration;
+    this.currentParameterTypes = parameterTypes;
     this.functionDepth++;
 
     try {
-      return this.evaluateExpressionBlock(declaration.expressions);
+      const result = this.evaluateExpressionBlock(declaration.expressions);
+
+      this.assertReturnType(declaration, result);
+
+      return result;
     } catch (error) {
       if (error instanceof ReturnSignal) {
+        this.assertReturnType(declaration, error.value);
+
         return error.value;
       }
 
@@ -282,6 +308,8 @@ export class Evaluator {
     } finally {
       this.functionDepth--;
       this.currentEnvironment = previousEnvironment;
+      this.currentFunction = previousFunction;
+      this.currentParameterTypes = previousParameterTypes;
     }
   }
 
@@ -317,7 +345,98 @@ export class Evaluator {
       throw new Error(`Name '${name}' is already defined as a function.`);
     }
 
+    const parameterType = this.currentParameterTypes.get(name);
+
+    if (parameterType !== undefined && parameterType !== null) {
+      if (!this.valueMatchesType(value, parameterType)) {
+        const declaration = this.currentFunction;
+        const parameter = declaration?.parameters.find(
+          (candidate) => candidate.lexeme === name,
+        );
+
+        throw new Error(
+          `Cannot assign ${this.runtimeTypeName(value)} to parameter '${name}' ` +
+            `of function '${declaration?.name.lexeme ?? "<unknown>"}': expected ` +
+            `${this.typeAnnotationName(parameterType)}. at ` +
+            `${parameter?.line ?? 0}:${parameter?.column ?? 0}`,
+        );
+      }
+    }
+
     this.currentEnvironment.define(name, value);
+  }
+
+  private assertParameterType(
+    declaration: FunctionDeclaration,
+    parameter: Token,
+    parameterType: TypeAnnotation | null,
+    value: RuntimeValue,
+    callExpression: FunctionCall,
+  ): void {
+    if (parameterType === null || this.valueMatchesType(value, parameterType)) {
+      return;
+    }
+
+    throw new Error(
+      `Function '${declaration.name.lexeme}' parameter '${parameter.lexeme}' ` +
+        `expects ${this.typeAnnotationName(parameterType)}, but received ` +
+        `${this.runtimeTypeName(value)}. at ` +
+        `${callExpression.calleeToken.line}:${callExpression.calleeToken.column}`,
+    );
+  }
+
+  private assertReturnType(
+    declaration: FunctionDeclaration,
+    value: RuntimeValue,
+  ): void {
+    if (
+      declaration.returnType === undefined ||
+      this.valueMatchesType(value, declaration.returnType)
+    ) {
+      return;
+    }
+
+    const location = declaration.returnType.members[0] ?? declaration.name;
+
+    throw new Error(
+      `Function '${declaration.name.lexeme}' expects return type ` +
+        `${this.typeAnnotationName(declaration.returnType)}, but returned ` +
+        `${this.runtimeTypeName(value)}. at ${location.line}:${location.column}`,
+    );
+  }
+
+  private valueMatchesType(
+    value: RuntimeValue,
+    annotation: TypeAnnotation,
+  ): boolean {
+    return annotation.members.some((member) => {
+      switch (member.lexeme) {
+        case "any":
+          return true;
+
+        case "int":
+          return value.type === "Integer";
+
+        case "bool":
+          return value.type === "Boolean";
+
+        case "null":
+          return value.type === "Null";
+
+        case "str":
+        case "list":
+        case "set":
+        case "map":
+          return false;
+
+        default:
+          return false;
+      }
+    });
+  }
+
+  private typeAnnotationName(annotation: TypeAnnotation): string {
+    return annotation.members.map((member) => member.lexeme).join("|");
   }
 
   private findValue(

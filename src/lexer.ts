@@ -1,4 +1,4 @@
-// Phase 7
+// Phase 8
 
 import { Token, TokenType } from "./token.js";
 
@@ -38,7 +38,11 @@ export class Lexer {
 
     switch (c) {
       case " ":
+        return;
+
       case "\t":
+        return;
+
       case "\r":
         return;
 
@@ -116,6 +120,17 @@ export class Lexer {
 
       case "%":
         this.addToken(TokenType.Percent, c, startLine, startColumn);
+        return;
+
+      case "|":
+        this.addToken(
+          TokenType.Pipe,
+          c,
+          startLine,
+          startColumn,
+          this.hasWhitespaceBeforeCurrentToken(),
+          this.hasWhitespaceAfterCurrentToken(),
+        );
         return;
 
       case "(":
@@ -269,6 +284,10 @@ export class Lexer {
         type = TokenType.Return;
         break;
 
+      case "returns":
+        type = TokenType.Returns;
+        break;
+
       case "and":
         type = TokenType.And;
         break;
@@ -312,13 +331,37 @@ export class Lexer {
     lexeme: string,
     line: number,
     column: number,
+    whitespaceBefore?: boolean,
+    whitespaceAfter?: boolean,
   ): void {
-    this.tokens.push({
+    const token: Token = {
       type,
       lexeme,
       line,
       column,
-    });
+    };
+
+    if (whitespaceBefore !== undefined) {
+      token.whitespaceBefore = whitespaceBefore;
+    }
+
+    if (whitespaceAfter !== undefined) {
+      token.whitespaceAfter = whitespaceAfter;
+    }
+
+    this.tokens.push(token);
+  }
+
+  private hasWhitespaceBeforeCurrentToken(): boolean {
+    const previous = this.source[this.current - 2];
+
+    return previous === " " || previous === "\t" || previous === "\r";
+  }
+
+  private hasWhitespaceAfterCurrentToken(): boolean {
+    const next = this.source[this.current];
+
+    return next === " " || next === "\t" || next === "\r";
   }
 
   private advance(): string {

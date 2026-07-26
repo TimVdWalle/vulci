@@ -1,4 +1,4 @@
-// Phase 7
+// Phase 8
 
 export enum TokenType {
   Integer,
@@ -10,6 +10,7 @@ export enum TokenType {
   Else,
   Fn,
   Return,
+  Returns,
   And,
   Or,
   Not,
@@ -25,6 +26,7 @@ export enum TokenType {
   Star,
   Slash,
   Percent,
+  Pipe,
   LeftParen,
   RightParen,
   LeftBrace,
@@ -39,4 +41,6 @@ export interface Token {
   lexeme: string;
   line: number;
   column: number;
+  whitespaceBefore?: boolean;
+  whitespaceAfter?: boolean;
 }
