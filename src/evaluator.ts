@@ -1,9 +1,11 @@
-// Phase 6
+// Phase 7
 
 import {
   ComparisonChainExpression,
   ConditionalExpression,
   Expression,
+  FunctionCall,
+  FunctionDeclaration,
   Program,
   Statement,
 } from "./ast.js";
@@ -17,10 +19,26 @@ import {
 } from "./runtime-value.js";
 import { Token, TokenType } from "./token.js";
 
+class ReturnSignal {
+  constructor(public readonly value: RuntimeValue) {}
+}
+
 export class Evaluator {
-  constructor(private readonly environment: Environment) {}
+  private static readonly MAX_FUNCTION_DEPTH = 1_000;
+
+  private readonly functions = new Map<string, FunctionDeclaration>();
+
+  private currentEnvironment: Environment;
+
+  private functionDepth = 0;
+
+  constructor(private readonly environment: Environment) {
+    this.currentEnvironment = environment;
+  }
 
   public evaluate(program: Program): RuntimeValue {
+    this.registerFunctions(program);
+
     let result: RuntimeValue = NULL_VALUE;
 
     for (const statement of program.statements) {
@@ -28,6 +46,33 @@ export class Evaluator {
     }
 
     return result;
+  }
+
+  private registerFunctions(program: Program): void {
+    for (const statement of program.statements) {
+      if (statement.expression.type !== "FunctionDeclaration") {
+        continue;
+      }
+
+      const declaration = statement.expression;
+      const name = declaration.name.lexeme;
+
+      if (this.functions.has(name)) {
+        throw new Error(
+          `Function '${name}' is already defined. at ` +
+            `${declaration.name.line}:${declaration.name.column}`,
+        );
+      }
+
+      if (this.findValue(this.environment, name) !== undefined) {
+        throw new Error(
+          `Name '${name}' is already defined. at ` +
+            `${declaration.name.line}:${declaration.name.column}`,
+        );
+      }
+
+      this.functions.set(name, declaration);
+    }
   }
 
   private evaluateStatement(statement: Statement): RuntimeValue {
@@ -55,28 +100,36 @@ export class Evaluator {
         return NULL_VALUE;
 
       case "VariableReference":
-        return this.environment.get(expression.name);
+        return this.getVariable(expression.name);
 
       case "AssignmentExpression": {
         const value = this.evaluateExpression(expression.value);
 
-        this.environment.define(expression.name, value);
+        this.assignVariable(expression.name, value);
 
         return value;
       }
 
-      case "FunctionCall": {
-        const callee = this.environment.get(expression.callee);
+      case "FunctionDeclaration":
+        return NULL_VALUE;
 
-        if (callee.type !== "NativeFunction") {
-          throw new Error(`'${expression.callee}' is not callable.`);
+      case "FunctionCall":
+        return this.evaluateFunctionCall(expression);
+
+      case "ReturnExpression": {
+        if (this.functionDepth === 0) {
+          throw new Error(
+            `'return' can only be used inside a function. at ` +
+              `${expression.keyword.line}:${expression.keyword.column}`,
+          );
         }
 
-        const arguments_ = expression.arguments.map((argument) =>
-          this.evaluateExpression(argument),
-        );
+        const value =
+          expression.value === null
+            ? NULL_VALUE
+            : this.evaluateExpression(expression.value);
 
-        return callee.call(arguments_);
+        throw new ReturnSignal(value);
       }
 
       case "UnaryExpression":
@@ -108,6 +161,180 @@ export class Evaluator {
 
       case "ConditionalExpression":
         return this.evaluateConditionalExpression(expression);
+    }
+  }
+
+  private evaluateFunctionCall(expression: FunctionCall): RuntimeValue {
+    const localValue = this.findValue(
+      this.currentEnvironment,
+      expression.callee,
+    );
+
+    if (
+      localValue !== undefined &&
+      this.currentEnvironment !== this.environment
+    ) {
+      if (localValue.type !== "NativeFunction") {
+        throw new Error(
+          `Cannot call '${expression.callee}': value is not a function. at ` +
+            `${expression.calleeToken.line}:${expression.calleeToken.column}`,
+        );
+      }
+
+      const arguments_ = this.evaluateArguments(expression);
+
+      return localValue.call(arguments_);
+    }
+
+    const globalValue = this.findValue(this.environment, expression.callee);
+
+    if (globalValue !== undefined) {
+      if (globalValue.type !== "NativeFunction") {
+        throw new Error(
+          `Cannot call '${expression.callee}': value is not a function. at ` +
+            `${expression.calleeToken.line}:${expression.calleeToken.column}`,
+        );
+      }
+
+      const arguments_ = this.evaluateArguments(expression);
+
+      return globalValue.call(arguments_);
+    }
+
+    const declaration = this.functions.get(expression.callee);
+
+    if (declaration === undefined) {
+      throw new Error(
+        `Undefined function '${expression.callee}'. at ` +
+          `${expression.calleeToken.line}:${expression.calleeToken.column}`,
+      );
+    }
+
+    const arguments_ = this.evaluateArguments(expression);
+
+    return this.callFunction(declaration, arguments_, expression);
+  }
+
+  private evaluateArguments(expression: FunctionCall): RuntimeValue[] {
+    const arguments_: RuntimeValue[] = [];
+
+    for (const argument of expression.arguments) {
+      arguments_.push(this.evaluateExpression(argument));
+    }
+
+    return arguments_;
+  }
+
+  private callFunction(
+    declaration: FunctionDeclaration,
+    arguments_: RuntimeValue[],
+    callExpression: FunctionCall,
+  ): RuntimeValue {
+    if (arguments_.length !== declaration.parameters.length) {
+      throw new Error(
+        `Function '${declaration.name.lexeme}' expects ` +
+          `${declaration.parameters.length} argument(s), but received ` +
+          `${arguments_.length}. at ` +
+          `${callExpression.calleeToken.line}:` +
+          `${callExpression.calleeToken.column}`,
+      );
+    }
+
+    if (this.functionDepth >= Evaluator.MAX_FUNCTION_DEPTH) {
+      throw new Error(
+        "Maximum function call depth exceeded while calling " +
+          `'${declaration.name.lexeme}'. at ` +
+          `${callExpression.calleeToken.line}:` +
+          `${callExpression.calleeToken.column}`,
+      );
+    }
+
+    const previousEnvironment = this.currentEnvironment;
+    const localEnvironment = new Environment();
+
+    for (let index = 0; index < declaration.parameters.length; index++) {
+      const parameter = declaration.parameters[index]!;
+      const argument = arguments_[index]!;
+
+      localEnvironment.define(parameter.lexeme, argument);
+    }
+
+    this.currentEnvironment = localEnvironment;
+    this.functionDepth++;
+
+    try {
+      return this.evaluateExpressionBlock(declaration.expressions);
+    } catch (error) {
+      if (error instanceof ReturnSignal) {
+        return error.value;
+      }
+
+      if (error instanceof RangeError) {
+        throw new Error(
+          "Maximum function call depth exceeded while calling " +
+            `'${declaration.name.lexeme}'. at ` +
+            `${callExpression.calleeToken.line}:` +
+            `${callExpression.calleeToken.column}`,
+        );
+      }
+
+      throw error;
+    } finally {
+      this.functionDepth--;
+      this.currentEnvironment = previousEnvironment;
+    }
+  }
+
+  private getVariable(name: string): RuntimeValue {
+    if (name.startsWith("$")) {
+      return this.environment.get(name);
+    }
+
+    return this.currentEnvironment.get(name);
+  }
+
+  private assignVariable(name: string, value: RuntimeValue): void {
+    if (name.startsWith("$")) {
+      if (
+        this.currentEnvironment !== this.environment &&
+        this.findValue(this.environment, name) === undefined
+      ) {
+        throw new Error(
+          `Global variable '${name}' must be declared at the top level ` +
+            "before it can be assigned inside a function.",
+        );
+      }
+
+      this.environment.define(name, value);
+
+      return;
+    }
+
+    if (
+      this.currentEnvironment === this.environment &&
+      this.functions.has(name)
+    ) {
+      throw new Error(`Name '${name}' is already defined as a function.`);
+    }
+
+    this.currentEnvironment.define(name, value);
+  }
+
+  private findValue(
+    environment: Environment,
+    name: string,
+  ): RuntimeValue | undefined {
+    try {
+      return environment.get(name);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === `Undefined variable '${name}'.`
+      ) {
+        return undefined;
+      }
+
+      throw error;
     }
   }
 

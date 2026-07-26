@@ -1,0 +1,39 @@
+// Phase 7
+
+$counter = 0
+
+fn increaseCounter() {
+    $counter = $counter + 1
+}
+
+fn absolute(number) {
+    if (number < 0) {
+        return -number
+    }
+
+    number
+}
+
+fn stopEarly() {
+    return 30
+}
+
+fn implicitReturn() {
+    implicitReturn = $counter + 1
+}
+
+fn returnNothing() {
+    return
+}
+
+increaseCounter()
+increaseCounter()
+increaseCounter()
+
+print($counter)
+print(absolute(-12))
+print(absolute(8))
+print(stopEarly())
+print(returnNothing())
+
+print(implicitReturn())

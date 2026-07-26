@@ -1,0 +1,7 @@
+// Phase 7
+
+fn add(left, right) {
+    left + right
+}
+
+print(add(20, 22))

@@ -48,7 +48,7 @@ test("reports undefined variables", () => {
   const environment = new Environment();
   assert.throws(
     () => evaluate("print(answer)", environment),
-    /Undefined variable 'print'/,
+    /Undefined function 'print'/,
   );
 });
 test("reports values that are not callable", () => {
@@ -61,7 +61,7 @@ answer()
 `,
         environment,
       ),
-    /'answer' is not callable/,
+    /Cannot call 'answer': value is not a function/,
   );
 });
 test("evaluates addition", () => {

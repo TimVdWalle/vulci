@@ -1,4 +1,4 @@
-// Phase 6
+// Phase 7
 
 import {
   AssignmentExpression,
@@ -10,9 +10,11 @@ import {
   Expression,
   ExpressionStatement,
   FunctionCall,
+  FunctionDeclaration,
   IntegerLiteral,
   NullLiteral,
   Program,
+  ReturnExpression,
   Statement,
   UnaryExpression,
   VariableReference,
@@ -42,6 +44,13 @@ export class Parser {
   }
 
   private statement(): Statement {
+    if (this.match(TokenType.Fn)) {
+      return {
+        type: "ExpressionStatement",
+        expression: this.functionDeclaration(this.previous()),
+      };
+    }
+
     return this.expressionStatement();
   }
 
@@ -287,11 +296,15 @@ export class Parser {
       return this.conditionalExpression(this.previous());
     }
 
+    if (this.match(TokenType.Return)) {
+      return this.returnExpression(this.previous());
+    }
+
     if (this.match(TokenType.Identifier)) {
       const identifier = this.previous();
 
       if (this.match(TokenType.LeftParen)) {
-        return this.finishFunctionCall(identifier.lexeme);
+        return this.finishFunctionCall(identifier);
       }
 
       const node: VariableReference = {
@@ -311,6 +324,83 @@ export class Parser {
     }
 
     throw this.error(this.peek(), "Expected expression.");
+  }
+
+  private functionDeclaration(keyword: Token): FunctionDeclaration {
+    const name = this.consume(
+      TokenType.Identifier,
+      "Expected function name after 'fn'.",
+    );
+
+    if (name.lexeme.startsWith("$")) {
+      throw this.error(name, "Function names cannot be global identifiers.");
+    }
+
+    this.consume(TokenType.LeftParen, "Expected '(' after function name.");
+
+    const parameters: Token[] = [];
+    const parameterNames = new Set<string>();
+
+    if (!this.check(TokenType.RightParen)) {
+      do {
+        const parameter = this.consume(
+          TokenType.Identifier,
+          "Expected parameter name.",
+        );
+
+        if (parameter.lexeme.startsWith("$")) {
+          throw this.error(
+            parameter,
+            "Function parameters cannot be global identifiers.",
+          );
+        }
+
+        if (parameterNames.has(parameter.lexeme)) {
+          throw this.error(
+            parameter,
+            `Duplicate parameter '${parameter.lexeme}'.`,
+          );
+        }
+
+        parameterNames.add(parameter.lexeme);
+        parameters.push(parameter);
+      } while (this.match(TokenType.Comma));
+    }
+
+    this.consume(
+      TokenType.RightParen,
+      "Expected ')' after function parameters.",
+    );
+
+    const node: FunctionDeclaration = {
+      type: "FunctionDeclaration",
+      keyword,
+      name,
+      parameters,
+      expressions: this.functionExpressionBlock(),
+    };
+
+    return node;
+  }
+
+  private returnExpression(keyword: Token): ReturnExpression {
+    if (
+      this.check(TokenType.Newline) ||
+      this.check(TokenType.RightBrace) ||
+      this.check(TokenType.EOF)
+    ) {
+      return {
+        type: "ReturnExpression",
+        keyword,
+        value: null,
+      };
+    }
+
+    return {
+      type: "ReturnExpression",
+      keyword,
+      value: this.expression(),
+    };
   }
 
   private conditionalExpression(firstKeyword: Token): ConditionalExpression {
@@ -384,7 +474,9 @@ export class Parser {
     const expressions: Expression[] = [];
 
     while (!this.check(TokenType.RightBrace) && !this.isAtEnd()) {
-      expressions.push(this.expression());
+      const expression = this.expression();
+
+      expressions.push(expression);
 
       if (this.check(TokenType.RightBrace)) {
         break;
@@ -397,6 +489,16 @@ export class Parser {
       this.consume(TokenType.Newline, "Expected a newline after expression.");
 
       this.skipNewlines();
+
+      if (
+        expression.type === "ReturnExpression" &&
+        !this.check(TokenType.RightBrace)
+      ) {
+        throw this.error(
+          this.peek(),
+          "Unreachable expression after unconditional return.",
+        );
+      }
     }
 
     this.consume(TokenType.RightBrace, "Expected '}' after branch body.");
@@ -404,7 +506,53 @@ export class Parser {
     return expressions;
   }
 
-  private finishFunctionCall(callee: string): FunctionCall {
+  private functionExpressionBlock(): Expression[] {
+    this.skipNewlines();
+
+    this.consume(TokenType.LeftBrace, "Expected '{' before function body.");
+
+    this.skipNewlines();
+
+    if (this.check(TokenType.RightBrace)) {
+      throw this.error(this.peek(), "Function bodies cannot be empty.");
+    }
+
+    const expressions: Expression[] = [];
+
+    while (!this.check(TokenType.RightBrace) && !this.isAtEnd()) {
+      const expression = this.expression();
+
+      expressions.push(expression);
+
+      if (this.check(TokenType.RightBrace)) {
+        break;
+      }
+
+      if (this.isAtEnd()) {
+        throw this.error(this.peek(), "Expected '}' after function body.");
+      }
+
+      this.consume(TokenType.Newline, "Expected a newline after expression.");
+
+      this.skipNewlines();
+
+      if (
+        expression.type === "ReturnExpression" &&
+        !this.check(TokenType.RightBrace)
+      ) {
+        throw this.error(
+          this.peek(),
+          "Unreachable expression after unconditional return.",
+        );
+      }
+    }
+
+    this.consume(TokenType.RightBrace, "Expected '}' after function body.");
+
+    return expressions;
+  }
+
+  private finishFunctionCall(calleeToken: Token): FunctionCall {
     const arguments_: Expression[] = [];
 
     if (!this.check(TokenType.RightParen)) {
@@ -420,7 +568,8 @@ export class Parser {
 
     return {
       type: "FunctionCall",
-      callee,
+      callee: calleeToken.lexeme,
+      calleeToken,
       arguments: arguments_,
     };
   }

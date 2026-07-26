@@ -1,4 +1,4 @@
-// Phase 6
+// Phase 7
 
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -30,6 +30,12 @@ print(answer)
         expression: {
           type: "FunctionCall",
           callee: "print",
+          calleeToken: {
+            type: TokenType.Identifier,
+            lexeme: "print",
+            line: 2,
+            column: 1,
+          },
           arguments: [
             {
               type: "VariableReference",
@@ -49,6 +55,12 @@ test("parses function calls with multiple arguments", () => {
     expression: {
       type: "FunctionCall",
       callee: "print",
+      calleeToken: {
+        type: TokenType.Identifier,
+        lexeme: "print",
+        line: 1,
+        column: 1,
+      },
       arguments: [
         {
           type: "IntegerLiteral",

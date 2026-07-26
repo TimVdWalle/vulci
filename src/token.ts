@@ -1,4 +1,4 @@
-// Phase 6
+// Phase 7
 
 export enum TokenType {
   Integer,
@@ -8,6 +8,8 @@ export enum TokenType {
   Null,
   If,
   Else,
+  Fn,
+  Return,
   And,
   Or,
   Not,
