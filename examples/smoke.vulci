@@ -1,10 +1,10 @@
-// Phase 8
+// Phase 9
 /*
 Vulci smoke test
-Implemented phases: 1–8
+Implemented phases: 1–9
 
 Expected standard output:
-1154
+1277
 
 Expected warnings:
 - Explicit any parameter
@@ -17,17 +17,17 @@ Expected warnings:
 // Integer literals, assignments, reassignment, lookup, and arithmetic.
 value = 1
 value = value + 1
-arithmetic = value 
-    + 2 * 3 
-   + (1 + 2) * 3 
-   + 20 
-   - 5 
-   - 3 
-   + 52 / 2 / 2 
-   + -(-9) 
-   + (-35 / 2) 
-   + (-37 % 10) 
-   + 1_000
+arithmetic = value
+    + 2 * 3
+    + (1 + 2) * 3
+    + 20
+    - 5
+    - 3
+    + 52 / 2 / 2
+    + -(-9)
+    + (-35 / 2)
+    + (-37 % 10)
+    + 1_000
 
 // Line comment.
 line_comment = 1 // ignored
@@ -54,13 +54,29 @@ outer
  */
 
 // Identifiers may contain underscores and digits.
-smoke_value_2 = line_comment + block_comment + multiline_comment + nested_comment
+smoke_value_2 = line_comment
+    + block_comment
+    + multiline_comment
+    + nested_comment
 
 // Boolean literals, equality, ordering comparisons, and precedence.
-comparison_result = true == true and false == false and 1 == 1 and 1 != 2 and 1 < 2 and 2 <= 2 and 3 > 2 and 3 >= 3 and 1 + 2 == 3 and 2 * 3 > 5 and (1 < 2) == true
+comparison_result = true == true
+    and false == false
+    and 1 == 1
+    and 1 != 2
+    and 1 < 2
+    and 2 <= 2
+    and 3 > 2
+    and 3 >= 3
+    and 1 + 2 == 3
+    and 2 * 3 > 5
+    and (1 < 2) == true
 
 // not, repeated not, and, or, and short-circuit evaluation.
-logical_result = not false and not not true and (false or true) and not (false and 1 / 0 == 0)
+logical_result = not false
+    and not not true
+    and (false or true)
+    and not (false and 1 / 0 == 0)
 
 // Basic conditional, else-if, and assignment from a conditional.
 conditional_result = if (false) {
@@ -100,7 +116,10 @@ nested_result = if (true) {
 
 // Ordering and equality comparison chains.
 chain_counter = 0
-chain_result = 0 < (chain_counter = chain_counter + 1) < 2 and 1 < 2 <= 3 and 1 == 1 != 2 and not (1 < 2 > 3)
+chain_result = 0 < (chain_counter = chain_counter + 1) < 2
+    and 1 < 2 <= 3
+    and 1 == 1 != 2
+    and not (1 < 2 > 3)
 
 // Chained comparisons short-circuit.
 chain_short_circuit = not (10 < 5 < 1 / 0)
@@ -174,18 +193,18 @@ missing_else = if (false) {
     1
 }
 
-// Phase 8: typed parameter reassignment.
+// Typed parameter reassignment.
 fn typed_increment(int value) returns int {
     value = value + 1
     value
 }
 
-// Phase 8: parameter and return unions.
+// Parameter and return unions.
 fn preserve(int|bool value) returns int|bool {
     value
 }
 
-// Phase 8: nullable return union.
+// Nullable return union.
 fn positive_or_null(int value) returns int|null {
     if (value > 0) {
         return value
@@ -194,23 +213,23 @@ fn positive_or_null(int value) returns int|null {
     null
 }
 
-// Phase 8: a union parameter may change to another union member.
+// A union parameter may change to another union member.
 fn switch_type(int|bool value) returns int|bool {
     value = true
     value
 }
 
-// Phase 8: explicit any produces normal warnings.
+// Explicit any produces normal warnings.
 fn explicit_any(any value) returns any {
     value
 }
 
-// Phase 8: omitted annotations become any and produce strong warnings.
+// Omitted annotations become any and produce strong warnings.
 fn implicit_any(value) {
     value
 }
 
-// Phase 8: whitespace around each union separator is valid but warns.
+// Whitespace around each union separator is valid but warns.
 fn spaced_union(int | bool value) returns int | null {
     if (value == true) {
         return 6
@@ -219,10 +238,89 @@ fn spaced_union(int | bool value) returns int | null {
     null
 }
 
-// Existing feature checksum.
-checksum = arithmetic + smoke_value_2 + conditional_result + branch_result + branch_value + selected_branch + nested_result + chain_counter + add(2, 3) + implicit_result() + local_scope() + local_value + increment_global() + $global_value + recurse(3) + forward_result
+// Phase 9: optional parameters, defaults, and trailing parameter comma.
+fn phase9_calculate(
+    int left,
+    int right,
+    int multiplier=2,
+    int offset=declared_later(),
+) returns int {
+    (left + right) * multiplier + offset
+}
 
-all_features_work = comparison_result and logical_result and chain_result and chain_short_circuit and is_even(10) and not is_even(9)
+// Phase 9: defaults are evaluated separately for each omission.
+$default_counter = 0
+
+fn next_default() returns int {
+    $default_counter = $default_counter + 1
+    $default_counter
+}
+
+fn phase9_default(int value=next_default()) returns int {
+    value
+}
+
+// Named required arguments may be reordered.
+phase9_named = phase9_calculate(
+    right: 3,
+    left: 4,
+    multiplier: 5,
+    offset: 1,
+)
+
+// Up to two required arguments may be positional.
+// Optional arguments are named.
+phase9_mixed = phase9_calculate(
+    4,
+    3,
+    multiplier: 5,
+    offset: 1,
+)
+
+// Omitted optional arguments use their defaults.
+phase9_defaults = phase9_calculate(4, 3)
+
+// Trailing argument comma.
+phase9_trailing = phase9_calculate(
+    4,
+    3,
+    multiplier: 1,
+)
+
+// Defaults are evaluated once per omission.
+phase9_first_default = phase9_default()
+phase9_second_default = phase9_default()
+
+// Supplying the optional argument prevents default evaluation.
+phase9_supplied_default = phase9_default(value: 10)
+
+// Bare zero-argument function call.
+phase9_bare_call = declared_later
+
+// Existing feature checksum.
+checksum = arithmetic
+    + smoke_value_2
+    + conditional_result
+    + branch_result
+    + branch_value
+    + selected_branch
+    + nested_result
+    + chain_counter
+    + add(2, 3)
+    + implicit_result()
+    + local_scope()
+    + local_value
+    + increment_global()
+    + $global_value
+    + recurse(3)
+    + forward_result
+
+all_features_work = comparison_result
+    and logical_result
+    and chain_result
+    and chain_short_circuit
+    and is_even(10)
+    and not is_even(9)
 
 // Convert Boolean and null checks into integer checksum contributions.
 existing_boolean_score = if (all_features_work) {
@@ -263,10 +361,33 @@ explicit_any_score = explicit_any(4)
 implicit_any_score = implicit_any(5)
 spaced_union_score = spaced_union(true)
 
-// One final, visually checkable result.
-result = checksum + existing_boolean_score + existing_null_score + typed_reassignment_score + union_integer_score + union_boolean_score + nullable_score + union_reassignment_score + explicit_any_score + implicit_any_score + spaced_union_score
+// Phase 9 contribution.
+phase9_score = phase9_named
+    + phase9_mixed
+    + phase9_defaults
+    + phase9_trailing
+    + phase9_first_default
+    + phase9_second_default
+    + phase9_supplied_default
+    + phase9_bare_call
+    + $default_counter
 
-print(result)
+// One final, visually checkable result.
+result = checksum
+    + existing_boolean_score
+    + existing_null_score
+    + typed_reassignment_score
+    + union_integer_score
+    + union_boolean_score
+    + nullable_score
+    + union_reassignment_score
+    + explicit_any_score
+    + implicit_any_score
+    + spaced_union_score
+    + phase9_score
+
+// Named native argument.
+print(value: result)
 
 // Execute bare return without adding another printed result.
 unused_null = return_null()
