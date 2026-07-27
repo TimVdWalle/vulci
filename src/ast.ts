@@ -1,4 +1,4 @@
-// Phase 8
+// Phase 9
 
 import { Token } from "./token.js";
 
@@ -45,6 +45,7 @@ export interface NullLiteral {
 export interface VariableReference {
   type: "VariableReference";
   name: string;
+  token: Token;
 }
 
 export interface AssignmentExpression {
@@ -66,6 +67,7 @@ export interface FunctionDeclaration {
   name: Token;
   parameters: Token[];
   parameterTypes?: (TypeAnnotation | null)[];
+  parameterDefaults: (Expression | null)[];
   returnType?: TypeAnnotation;
   expressions: Expression[];
 }
@@ -75,6 +77,7 @@ export interface FunctionCall {
   callee: string;
   calleeToken: Token;
   arguments: Expression[];
+  argumentNames: (Token | null)[];
 }
 
 export interface ReturnExpression {

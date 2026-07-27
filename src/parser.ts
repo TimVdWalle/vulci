@@ -1,4 +1,4 @@
-// Phase 8
+// Phase 9
 
 import {
   AssignmentExpression,
@@ -386,6 +386,7 @@ export class Parser {
       const node: VariableReference = {
         type: "VariableReference",
         name: identifier.lexeme,
+        token: identifier,
       };
 
       return node;
@@ -420,60 +421,103 @@ export class Parser {
 
     const parameters: Token[] = [];
     const parameterTypes: (TypeAnnotation | null)[] = [];
+    const parameterDefaults: (Expression | null)[] = [];
     const parameterNames = new Set<string>();
+
     let hasExplicitParameterType = false;
+    let hasOptionalParameter = false;
 
-    if (!this.check(TokenType.RightParen)) {
-      do {
-        if (this.check(TokenType.Pipe)) {
-          throw this.error(this.peek(), "A union type cannot start with '|'.");
-        }
+    this.skipNewlines();
 
-        const first = this.consumeTypeName("Expected parameter name or type.");
+    while (!this.check(TokenType.RightParen)) {
+      if (this.check(TokenType.Comma)) {
+        throw this.error(this.peek(), "Expected parameter before ','.");
+      }
 
-        let parameter: Token;
-        let parameterType: TypeAnnotation | null = null;
+      if (this.check(TokenType.Pipe)) {
+        throw this.error(this.peek(), "A union type cannot start with '|'.");
+      }
 
-        const startsTypedParameter =
-          Parser.BUILT_IN_TYPE_NAMES.has(first.lexeme) ||
-          this.check(TokenType.Pipe) ||
-          this.check(TokenType.Identifier);
+      const first = this.consumeTypeName("Expected parameter name or type.");
 
-        if (startsTypedParameter) {
-          parameterType = this.finishTypeAnnotation(first);
-          hasExplicitParameterType = true;
+      let parameter: Token;
+      let parameterType: TypeAnnotation | null = null;
 
-          parameter = this.consume(
-            TokenType.Identifier,
-            "Expected parameter name after type declaration.",
-          );
-        } else {
-          parameter = first;
+      const startsTypedParameter =
+        Parser.BUILT_IN_TYPE_NAMES.has(first.lexeme) ||
+        this.check(TokenType.Pipe) ||
+        this.check(TokenType.Identifier);
 
-          this.emitStrongWarning(
-            `parameter '${parameter.lexeme}' has no declared type and is treated as 'any'`,
-            parameter,
-          );
-        }
+      if (startsTypedParameter) {
+        parameterType = this.finishTypeAnnotation(first);
+        hasExplicitParameterType = true;
 
-        if (parameter.lexeme.startsWith("$")) {
+        parameter = this.consume(
+          TokenType.Identifier,
+          "Expected parameter name after type declaration.",
+        );
+      } else {
+        parameter = first;
+
+        this.emitStrongWarning(
+          `parameter '${parameter.lexeme}' has no declared type and is treated as 'any'`,
+          parameter,
+        );
+      }
+
+      if (parameter.lexeme.startsWith("$")) {
+        throw this.error(
+          parameter,
+          "Function parameters cannot be global identifiers.",
+        );
+      }
+
+      if (parameterNames.has(parameter.lexeme)) {
+        throw this.error(
+          parameter,
+          `Duplicate parameter '${parameter.lexeme}'.`,
+        );
+      }
+
+      parameterNames.add(parameter.lexeme);
+      parameters.push(parameter);
+      parameterTypes.push(parameterType);
+
+      let parameterDefault: Expression | null = null;
+
+      if (this.match(TokenType.Assign)) {
+        this.skipNewlines();
+
+        parameterDefault = this.expression();
+
+        if (this.containsAssignment(parameterDefault)) {
           throw this.error(
             parameter,
-            "Function parameters cannot be global identifiers.",
+            "Assignments are not allowed in default parameter values.",
           );
         }
 
-        if (parameterNames.has(parameter.lexeme)) {
-          throw this.error(
-            parameter,
-            `Duplicate parameter '${parameter.lexeme}'.`,
-          );
-        }
+        hasOptionalParameter = true;
+      } else if (hasOptionalParameter) {
+        throw this.error(
+          parameter,
+          "Required parameters must appear before optional parameters.",
+        );
+      }
 
-        parameterNames.add(parameter.lexeme);
-        parameters.push(parameter);
-        parameterTypes.push(parameterType);
-      } while (this.match(TokenType.Comma));
+      parameterDefaults.push(parameterDefault);
+
+      this.skipNewlines();
+
+      if (!this.match(TokenType.Comma)) {
+        break;
+      }
+
+      this.skipNewlines();
+
+      if (this.check(TokenType.RightParen)) {
+        break;
+      }
     }
 
     this.consume(
@@ -505,6 +549,7 @@ export class Parser {
       keyword,
       name,
       parameters,
+      parameterDefaults,
       expressions: this.functionExpressionBlock(),
     };
 
@@ -639,14 +684,12 @@ export class Parser {
       break;
     }
 
-    const node: ConditionalExpression = {
+    return {
       type: "ConditionalExpression",
       branches,
       elseKeyword,
       elseExpressions,
     };
-
-    return node;
   }
 
   private conditionalBranch(keyword: Token): ConditionalBranch {
@@ -761,18 +804,57 @@ export class Parser {
 
   private finishFunctionCall(calleeToken: Token): FunctionCall {
     const arguments_: Expression[] = [];
+    const argumentNames: (Token | null)[] = [];
+    const namedArguments = new Set<string>();
+
+    let hasNamedArgument = false;
 
     this.skipNewlines();
 
-    if (!this.check(TokenType.RightParen)) {
-      do {
+    while (!this.check(TokenType.RightParen)) {
+      if (this.check(TokenType.Comma)) {
+        throw this.error(this.peek(), "Expected argument before ','.");
+      }
+
+      let argumentName: Token | null = null;
+
+      if (this.check(TokenType.Identifier) && this.checkNext(TokenType.Colon)) {
+        argumentName = this.advance();
+
+        this.advance();
         this.skipNewlines();
-        arguments_.push(this.expression());
-        this.skipNewlines();
-      } while (this.match(TokenType.Comma));
+
+        if (namedArguments.has(argumentName.lexeme)) {
+          throw this.error(
+            argumentName,
+            `Duplicate argument '${argumentName.lexeme}'.`,
+          );
+        }
+
+        namedArguments.add(argumentName.lexeme);
+        hasNamedArgument = true;
+      } else if (hasNamedArgument) {
+        throw this.error(
+          this.peek(),
+          "Positional arguments cannot follow named arguments.",
+        );
+      }
+
+      arguments_.push(this.expression());
+      argumentNames.push(argumentName);
+
+      this.skipNewlines();
+
+      if (!this.match(TokenType.Comma)) {
+        break;
+      }
+
+      this.skipNewlines();
+
+      if (this.check(TokenType.RightParen)) {
+        break;
+      }
     }
-
-    this.skipNewlines();
 
     this.consume(
       TokenType.RightParen,
@@ -784,7 +866,65 @@ export class Parser {
       callee: calleeToken.lexeme,
       calleeToken,
       arguments: arguments_,
+      argumentNames,
     };
+  }
+
+  private containsAssignment(expression: Expression): boolean {
+    switch (expression.type) {
+      case "AssignmentExpression":
+        return true;
+
+      case "UnaryExpression":
+        return this.containsAssignment(expression.operand);
+
+      case "BinaryExpression":
+        return (
+          this.containsAssignment(expression.left) ||
+          this.containsAssignment(expression.right)
+        );
+
+      case "ComparisonChainExpression":
+        return expression.operands.some((operand) =>
+          this.containsAssignment(operand),
+        );
+
+      case "ConditionalExpression":
+        return (
+          expression.branches.some(
+            (branch) =>
+              this.containsAssignment(branch.condition) ||
+              branch.expressions.some((branchExpression) =>
+                this.containsAssignment(branchExpression),
+              ),
+          ) ||
+          (expression.elseExpressions?.some((elseExpression) =>
+            this.containsAssignment(elseExpression),
+          ) ??
+            false)
+        );
+
+      case "FunctionCall":
+        return expression.arguments.some((argument) =>
+          this.containsAssignment(argument),
+        );
+
+      case "ReturnExpression":
+        return (
+          expression.value !== null && this.containsAssignment(expression.value)
+        );
+
+      case "FunctionDeclaration":
+        return expression.expressions.some((bodyExpression) =>
+          this.containsAssignment(bodyExpression),
+        );
+
+      case "IntegerLiteral":
+      case "BooleanLiteral":
+      case "NullLiteral":
+      case "VariableReference":
+        return false;
+    }
   }
 
   private consumeStatementEnd(): void {
@@ -867,6 +1007,12 @@ export class Parser {
     }
 
     return this.peek().type === type;
+  }
+
+  private checkNext(type: TokenType): boolean {
+    const token = this.tokens[this.current + 1];
+
+    return token?.type === type;
   }
 
   private advance(): Token {

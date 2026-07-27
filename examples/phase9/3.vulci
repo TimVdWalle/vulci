@@ -1,0 +1,50 @@
+// Phase 9
+
+$default_bonus = 5
+
+fn default_bonus() returns int {
+    $default_bonus
+}
+
+fn calculate(
+    int left,
+    int right,
+    int multiplier = 2,
+    int bonus = default_bonus,
+) returns int {
+    (left + right) * multiplier + bonus
+}
+
+fn start() returns int {
+    10
+}
+
+// Bare zero-argument call.
+started = start
+
+// First two required parameters supplied positionally.
+// Optional parameters use their defaults.
+first = calculate(10, 20)
+
+// Mixed positional and named arguments.
+second = calculate(
+    10,
+    20,
+    multiplier: 3,
+    bonus: 1,
+)
+
+// Required and optional parameters supplied by name.
+// Named arguments may be reordered.
+third = calculate(
+    bonus: 0,
+    right: 4,
+    multiplier: 2,
+    left: 6,
+)
+
+// Native function called with a named argument.
+print(value: started)
+print(value: first)
+print(value: second)
+print(value: third)

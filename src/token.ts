@@ -1,4 +1,4 @@
-// Phase 8
+// Phase 9
 
 export enum TokenType {
   Integer,
@@ -32,6 +32,7 @@ export enum TokenType {
   LeftBrace,
   RightBrace,
   Comma,
+  Colon,
   Newline,
   EOF,
 }

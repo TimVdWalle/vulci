@@ -1,4 +1,4 @@
-// Phase 7
+// Phase 9
 
 export type RuntimeValue =
   IntegerValue | BooleanValue | NullValue | NativeFunctionValue;
@@ -17,8 +17,14 @@ export interface NullValue {
   type: "Null";
 }
 
+export interface NativeFunctionParameter {
+  name: string;
+  required: boolean;
+}
+
 export interface NativeFunctionValue {
   type: "NativeFunction";
+  parameters: NativeFunctionParameter[];
   call(arguments_: RuntimeValue[]): RuntimeValue;
 }
 

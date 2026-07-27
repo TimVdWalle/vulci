@@ -1,4 +1,4 @@
-// Phase 6
+// Phase 9
 
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -184,6 +184,12 @@ test("parses multiple expressions inside a branch", () => {
     left: {
       type: "VariableReference",
       name: "value",
+      token: {
+        type: TokenType.Identifier,
+        lexeme: "value",
+        line: 3,
+        column: 3,
+      },
     },
     operator: {
       type: TokenType.Plus,
