@@ -1,4 +1,5 @@
-// Phase 7
+// Phase 9
+
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Environment } from "../src/environment.js";
@@ -6,14 +7,17 @@ import { Evaluator } from "../src/evaluator.js";
 import { Lexer } from "../src/lexer.js";
 import { Parser } from "../src/parser.js";
 import { RuntimeValue } from "../src/runtime-value.js";
+
 function evaluate(
   source: string,
   environment = new Environment(),
 ): RuntimeValue {
   const tokens = new Lexer(source).lex();
   const program = new Parser(tokens).parse();
+
   return new Evaluator(environment).evaluate(program);
 }
+
 test("calls a function with arguments", () => {
   assert.deepEqual(
     evaluate(`fn add(left, right) {
@@ -26,6 +30,7 @@ add(20, 22)`),
     },
   );
 });
+
 test("calls a function without arguments", () => {
   assert.deepEqual(
     evaluate(`fn answer() {
@@ -38,6 +43,7 @@ answer()`),
     },
   );
 });
+
 test("uses the final expression as the function result", () => {
   assert.deepEqual(
     evaluate(`fn add(left, right) {
@@ -50,6 +56,7 @@ add(20, 22)`),
     },
   );
 });
+
 test("return without a value returns null", () => {
   assert.deepEqual(
     evaluate(`fn stop() {
@@ -61,6 +68,7 @@ stop()`),
     },
   );
 });
+
 test("return immediately exits the function", () => {
   assert.deepEqual(
     evaluate(`fn choose(value) {
@@ -76,6 +84,7 @@ choose(1)`),
     },
   );
 });
+
 test("evaluates function arguments before entering the function", () => {
   assert.deepEqual(
     evaluate(`fn identity(value) {
@@ -88,19 +97,24 @@ identity(20 + 22)`),
     },
   );
 });
+
 test("evaluates function arguments from left to right", () => {
   const environment = new Environment();
   let nextValue = 0;
+
   environment.define("next", {
     type: "NativeFunction",
+
     call() {
       nextValue += 1;
+
       return {
         type: "Integer",
         value: nextValue,
       };
     },
   });
+
   assert.deepEqual(
     evaluate(
       `fn combine(left, right) {
@@ -115,6 +129,7 @@ combine(next(), next())`,
     },
   );
 });
+
 test("function parameters are local variables", () => {
   assert.throws(
     () =>
@@ -126,6 +141,7 @@ value`),
     /Undefined variable 'value'\./,
   );
 });
+
 test("assignments inside functions remain local", () => {
   assert.throws(
     () =>
@@ -138,6 +154,7 @@ localValue`),
     /Undefined variable 'localValue'\./,
   );
 });
+
 test("local variables can shadow similarly named globals", () => {
   assert.deepEqual(
     evaluate(`$value = 10
@@ -153,6 +170,7 @@ $value`),
     },
   );
 });
+
 test("separate function calls use separate local environments", () => {
   assert.deepEqual(
     evaluate(`fn identity(value) {
@@ -167,6 +185,7 @@ identity(42)`),
     },
   );
 });
+
 test("reads a declared global variable inside a function", () => {
   assert.deepEqual(
     evaluate(`$value = 42
@@ -180,6 +199,7 @@ readGlobal()`),
     },
   );
 });
+
 test("updates a declared global variable inside a function", () => {
   assert.deepEqual(
     evaluate(`$counter = 0
@@ -196,6 +216,7 @@ $counter`),
     },
   );
 });
+
 test("rejects assigning an undeclared global inside a function", () => {
   assert.throws(
     () =>
@@ -206,18 +227,23 @@ createGlobal()`),
     /Global variable '\$value' must be declared at the top level before it can be assigned inside a function\./,
   );
 });
+
 test("functions can call native functions", () => {
   const environment = new Environment();
   let captured: RuntimeValue[] = [];
+
   environment.define("capture", {
     type: "NativeFunction",
+
     call(arguments_) {
       captured = arguments_;
+
       return {
         type: "Null",
       };
     },
   });
+
   evaluate(
     `fn send(value) {
   capture(value)
@@ -225,6 +251,7 @@ test("functions can call native functions", () => {
 send(42)`,
     environment,
   );
+
   assert.deepEqual(captured, [
     {
       type: "Integer",
@@ -232,16 +259,20 @@ send(42)`,
     },
   ]);
 });
+
 test("rejects a function name that collides with a native function", () => {
   const environment = new Environment();
+
   environment.define("capture", {
     type: "NativeFunction",
+
     call() {
       return {
         type: "Null",
       };
     },
   });
+
   assert.throws(
     () =>
       evaluate(
@@ -253,6 +284,7 @@ test("rejects a function name that collides with a native function", () => {
     /Name 'capture' is already defined\. at 1:4/,
   );
 });
+
 test("function declarations evaluate to null", () => {
   assert.deepEqual(
     evaluate(`fn answer() {
@@ -263,6 +295,7 @@ test("function declarations evaluate to null", () => {
     },
   );
 });
+
 test("supports calling a function declared later in the file", () => {
   assert.deepEqual(
     evaluate(`result = first()
@@ -276,6 +309,7 @@ result`),
     },
   );
 });
+
 test("supports direct recursion", () => {
   assert.deepEqual(
     evaluate(`fn factorial(value) {
@@ -291,6 +325,7 @@ factorial(5)`),
     },
   );
 });
+
 test("supports mutual recursion", () => {
   assert.deepEqual(
     evaluate(`fn isEven(value) {
@@ -312,12 +347,14 @@ isEven(10)`),
     },
   );
 });
+
 test("reports an undefined function", () => {
   assert.throws(
     () => evaluate("missing()"),
     /Undefined function 'missing'\. at 1:1/,
   );
 });
+
 test("reports a global value that is not a function", () => {
   assert.throws(
     () =>
@@ -326,6 +363,7 @@ value()`),
     /Cannot call 'value': value is not a function\./,
   );
 });
+
 test("reports a local value that is not a function", () => {
   assert.throws(
     () =>
@@ -336,6 +374,7 @@ run(42)`),
     /Cannot call 'value': value is not a function\./,
   );
 });
+
 test("reports too few arguments", () => {
   assert.throws(
     () =>
@@ -343,9 +382,10 @@ test("reports too few arguments", () => {
   return left + right
 }
 add(1)`),
-    /Function 'add' expects 2 argument\(s\), but received 1\./,
+    /Function 'add' is missing required argument 'right'\./,
   );
 });
+
 test("reports too many arguments", () => {
   assert.throws(
     () =>
@@ -353,9 +393,10 @@ test("reports too many arguments", () => {
   return value
 }
 identity(1, 2)`),
-    /Function 'identity' expects 1 argument\(s\), but received 2\./,
+    /Function 'identity' received too many positional arguments\./,
   );
 });
+
 test("rejects duplicate function names", () => {
   assert.throws(
     () =>
@@ -368,6 +409,7 @@ fn answer() {
     /Function 'answer' is already defined\./,
   );
 });
+
 test("rejects assigning a top-level value to a function name", () => {
   assert.throws(
     () =>
@@ -378,12 +420,14 @@ answer = 43`),
     /Name 'answer' is already defined as a function\./,
   );
 });
+
 test("rejects return outside a function", () => {
   assert.throws(
     () => evaluate("return 42"),
     /'return' can only be used inside a function\./,
   );
 });
+
 test("reports excessive recursion as a Vulci runtime error", () => {
   assert.throws(
     () =>
@@ -394,8 +438,10 @@ loop()`),
     /Maximum function call depth exceeded while calling 'loop'\. at 2:3/,
   );
 });
+
 test("does not leak the host stack-overflow diagnostic", () => {
   let thrown: unknown;
+
   try {
     evaluate(`fn loop() {
   loop()
@@ -404,11 +450,14 @@ loop()`);
   } catch (error) {
     thrown = error;
   }
+
   assert.ok(thrown instanceof Error);
+
   assert.match(
     thrown.message,
     /Maximum function call depth exceeded while calling 'loop'\./,
   );
+
   assert.doesNotMatch(thrown.message, /RangeError/);
   assert.doesNotMatch(thrown.message, /Maximum call stack size exceeded/);
 });

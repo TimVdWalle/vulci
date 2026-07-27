@@ -1,16 +1,19 @@
-// Phase 7
+// Phase 9
 
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Lexer } from "../src/lexer.js";
 import { Parser } from "../src/parser.js";
 import { TokenType } from "../src/token.js";
+
 test("parses a Phase 1 program", () => {
   const source = `answer = 42
 print(answer)
 `;
+
   const tokens = new Lexer(source).lex();
   const program = new Parser(tokens).parse();
+
   assert.deepEqual(program, {
     type: "Program",
     statements: [
@@ -40,16 +43,25 @@ print(answer)
             {
               type: "VariableReference",
               name: "answer",
+              token: {
+                type: TokenType.Identifier,
+                lexeme: "answer",
+                line: 2,
+                column: 7,
+              },
             },
           ],
+          argumentNames: [null],
         },
       },
     ],
   });
 });
+
 test("parses function calls with multiple arguments", () => {
   const tokens = new Lexer("print(1, 2)").lex();
   const program = new Parser(tokens).parse();
+
   assert.deepEqual(program.statements[0], {
     type: "ExpressionStatement",
     expression: {
@@ -71,6 +83,7 @@ test("parses function calls with multiple arguments", () => {
           value: 2,
         },
       ],
+      argumentNames: [null, null],
     },
   });
 });

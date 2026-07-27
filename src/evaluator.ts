@@ -1,4 +1,4 @@
-// Phase 8
+// Phase 9
 
 import {
   ComparisonChainExpression,
@@ -9,11 +9,14 @@ import {
   Program,
   Statement,
   TypeAnnotation,
+  VariableReference,
 } from "./ast.js";
 import { Environment } from "./environment.js";
 import {
   FALSE_VALUE,
   IntegerValue,
+  NativeFunctionParameter,
+  NativeFunctionValue,
   NULL_VALUE,
   RuntimeValue,
   TRUE_VALUE,
@@ -105,7 +108,7 @@ export class Evaluator {
         return NULL_VALUE;
 
       case "VariableReference":
-        return this.getVariable(expression.name);
+        return this.evaluateBareIdentifier(expression);
 
       case "AssignmentExpression": {
         const value = this.evaluateExpression(expression.value);
@@ -169,6 +172,63 @@ export class Evaluator {
     }
   }
 
+  private evaluateBareIdentifier(expression: VariableReference): RuntimeValue {
+    if (expression.name.startsWith("$")) {
+      return this.environment.get(expression.name);
+    }
+
+    const localValue = this.findValue(this.currentEnvironment, expression.name);
+
+    if (localValue !== undefined) {
+      if (localValue.type === "NativeFunction") {
+        return this.callNativeFunction(localValue, {
+          type: "FunctionCall",
+          callee: expression.name,
+          calleeToken: expression.token,
+          arguments: [],
+          argumentNames: [],
+        });
+      }
+
+      return localValue;
+    }
+
+    if (this.currentEnvironment !== this.environment) {
+      const globalValue = this.findValue(this.environment, expression.name);
+
+      if (globalValue !== undefined) {
+        if (globalValue.type === "NativeFunction") {
+          return this.callNativeFunction(globalValue, {
+            type: "FunctionCall",
+            callee: expression.name,
+            calleeToken: expression.token,
+            arguments: [],
+            argumentNames: [],
+          });
+        }
+
+        return globalValue;
+      }
+    }
+
+    const declaration = this.functions.get(expression.name);
+
+    if (declaration !== undefined) {
+      return this.callFunction(declaration, {
+        type: "FunctionCall",
+        callee: expression.name,
+        calleeToken: expression.token,
+        arguments: [],
+        argumentNames: [],
+      });
+    }
+
+    throw new Error(
+      `Undefined variable '${expression.name}'. at ` +
+        `${expression.token.line}:${expression.token.column}`,
+    );
+  }
+
   private evaluateFunctionCall(expression: FunctionCall): RuntimeValue {
     const localValue = this.findValue(
       this.currentEnvironment,
@@ -186,9 +246,7 @@ export class Evaluator {
         );
       }
 
-      const arguments_ = this.evaluateArguments(expression);
-
-      return localValue.call(arguments_);
+      return this.callNativeFunction(localValue, expression);
     }
 
     const globalValue = this.findValue(this.environment, expression.callee);
@@ -201,9 +259,7 @@ export class Evaluator {
         );
       }
 
-      const arguments_ = this.evaluateArguments(expression);
-
-      return globalValue.call(arguments_);
+      return this.callNativeFunction(globalValue, expression);
     }
 
     const declaration = this.functions.get(expression.callee);
@@ -215,36 +271,70 @@ export class Evaluator {
       );
     }
 
-    const arguments_ = this.evaluateArguments(expression);
-
-    return this.callFunction(declaration, arguments_, expression);
+    return this.callFunction(declaration, expression);
   }
 
-  private evaluateArguments(expression: FunctionCall): RuntimeValue[] {
-    const arguments_: RuntimeValue[] = [];
+  private callNativeFunction(
+    nativeFunction: NativeFunctionValue,
+    callExpression: FunctionCall,
+  ): RuntimeValue {
+    /*
+     * Phase 8 native functions and older test fixtures do not necessarily
+     * provide parameter metadata. Preserve positional native calls for those
+     * functions while Phase 9 metadata-enabled natives support named arguments.
+     */
+    if (nativeFunction.parameters === undefined) {
+      const argumentNames =
+        callExpression.argumentNames ??
+        callExpression.arguments.map(() => null);
 
-    for (const argument of expression.arguments) {
-      arguments_.push(this.evaluateExpression(argument));
+      const namedArgument = argumentNames.find(
+        (argumentName) => argumentName !== null,
+      );
+
+      if (namedArgument !== undefined && namedArgument !== null) {
+        throw new Error(
+          `Native function '${callExpression.callee}' does not declare ` +
+            `named parameters. at ${namedArgument.line}:` +
+            `${namedArgument.column}`,
+        );
+      }
+
+      const arguments_ = callExpression.arguments.map((argument) =>
+        this.evaluateExpression(argument),
+      );
+
+      return nativeFunction.call(arguments_);
     }
 
-    return arguments_;
+    const boundArguments = this.bindSuppliedArguments(
+      callExpression.callee,
+      nativeFunction.parameters,
+      callExpression,
+    );
+
+    const arguments_: RuntimeValue[] = boundArguments.map((argument, index) => {
+      if (argument !== undefined) {
+        return argument;
+      }
+
+      const parameter = nativeFunction.parameters?.[index];
+
+      throw new Error(
+        `Native function '${callExpression.callee}' has no value for ` +
+          `parameter '${parameter?.name ?? index}'. at ` +
+          `${callExpression.calleeToken.line}:` +
+          `${callExpression.calleeToken.column}`,
+      );
+    });
+
+    return nativeFunction.call(arguments_);
   }
 
   private callFunction(
     declaration: FunctionDeclaration,
-    arguments_: RuntimeValue[],
     callExpression: FunctionCall,
   ): RuntimeValue {
-    if (arguments_.length !== declaration.parameters.length) {
-      throw new Error(
-        `Function '${declaration.name.lexeme}' expects ` +
-          `${declaration.parameters.length} argument(s), but received ` +
-          `${arguments_.length}. at ` +
-          `${callExpression.calleeToken.line}:` +
-          `${callExpression.calleeToken.column}`,
-      );
-    }
-
     if (this.functionDepth >= Evaluator.MAX_FUNCTION_DEPTH) {
       throw new Error(
         "Maximum function call depth exceeded while calling " +
@@ -252,6 +342,43 @@ export class Evaluator {
           `${callExpression.calleeToken.line}:` +
           `${callExpression.calleeToken.column}`,
       );
+    }
+
+    const parameterDefaults =
+      declaration.parameterDefaults ?? declaration.parameters.map(() => null);
+
+    const parameters: NativeFunctionParameter[] = declaration.parameters.map(
+      (parameter, index) => ({
+        name: parameter.lexeme,
+        required: parameterDefaults[index] === null,
+      }),
+    );
+
+    const boundArguments = this.bindSuppliedArguments(
+      declaration.name.lexeme,
+      parameters,
+      callExpression,
+    );
+
+    for (let index = 0; index < declaration.parameters.length; index++) {
+      if (boundArguments[index] !== undefined) {
+        continue;
+      }
+
+      const defaultExpression = parameterDefaults[index];
+
+      if (defaultExpression === null || defaultExpression === undefined) {
+        const parameter = declaration.parameters[index]!;
+
+        throw new Error(
+          `Function '${declaration.name.lexeme}' is missing required argument ` +
+            `'${parameter.lexeme}'. at ` +
+            `${callExpression.calleeToken.line}:` +
+            `${callExpression.calleeToken.column}`,
+        );
+      }
+
+      boundArguments[index] = this.evaluateDefaultExpression(defaultExpression);
     }
 
     const previousEnvironment = this.currentEnvironment;
@@ -262,7 +389,7 @@ export class Evaluator {
 
     for (let index = 0; index < declaration.parameters.length; index++) {
       const parameter = declaration.parameters[index]!;
-      const argument = arguments_[index]!;
+      const argument = boundArguments[index]!;
       const parameterType = declaration.parameterTypes?.[index] ?? null;
 
       this.assertParameterType(
@@ -313,12 +440,123 @@ export class Evaluator {
     }
   }
 
-  private getVariable(name: string): RuntimeValue {
-    if (name.startsWith("$")) {
-      return this.environment.get(name);
+  private bindSuppliedArguments(
+    functionName: string,
+    parameters: NativeFunctionParameter[],
+    callExpression: FunctionCall,
+  ): (RuntimeValue | undefined)[] {
+    const argumentNames =
+      callExpression.argumentNames ?? callExpression.arguments.map(() => null);
+
+    const parameterIndexes = new Map<string, number>();
+
+    const boundArguments: (RuntimeValue | undefined)[] = parameters.map(
+      () => undefined,
+    );
+
+    let positionalIndex = 0;
+
+    parameters.forEach((parameter, index) => {
+      parameterIndexes.set(parameter.name, index);
+    });
+
+    for (let index = 0; index < callExpression.arguments.length; index++) {
+      const argumentExpression = callExpression.arguments[index]!;
+      const argumentName = argumentNames[index] ?? null;
+
+      const value = this.evaluateExpression(argumentExpression);
+
+      let parameterIndex: number;
+
+      if (argumentName === null) {
+        if (positionalIndex >= 2) {
+          throw new Error(
+            `Function '${functionName}' accepts at most two positional ` +
+              `arguments. at ${callExpression.calleeToken.line}:` +
+              `${callExpression.calleeToken.column}`,
+          );
+        }
+
+        parameterIndex = positionalIndex;
+        positionalIndex++;
+
+        const parameter = parameters[parameterIndex];
+
+        if (parameter === undefined) {
+          throw new Error(
+            `Function '${functionName}' received too many positional ` +
+              `arguments. at ${callExpression.calleeToken.line}:` +
+              `${callExpression.calleeToken.column}`,
+          );
+        }
+
+        if (!parameter.required) {
+          throw new Error(
+            `Optional argument '${parameter.name}' of function ` +
+              `'${functionName}' must be named. at ` +
+              `${callExpression.calleeToken.line}:` +
+              `${callExpression.calleeToken.column}`,
+          );
+        }
+      } else {
+        const matchedIndex = parameterIndexes.get(argumentName.lexeme);
+
+        if (matchedIndex === undefined) {
+          throw new Error(
+            `Function '${functionName}' has no parameter named ` +
+              `'${argumentName.lexeme}'. at ${argumentName.line}:` +
+              `${argumentName.column}`,
+          );
+        }
+
+        parameterIndex = matchedIndex;
+      }
+
+      if (boundArguments[parameterIndex] !== undefined) {
+        const parameter = parameters[parameterIndex]!;
+
+        throw new Error(
+          `Argument '${parameter.name}' is supplied more than once to ` +
+            `function '${functionName}'. at ` +
+            `${callExpression.calleeToken.line}:` +
+            `${callExpression.calleeToken.column}`,
+        );
+      }
+
+      boundArguments[parameterIndex] = value;
     }
 
-    return this.currentEnvironment.get(name);
+    for (let index = 0; index < parameters.length; index++) {
+      const parameter = parameters[index]!;
+
+      if (parameter.required && boundArguments[index] === undefined) {
+        throw new Error(
+          `Function '${functionName}' is missing required argument ` +
+            `'${parameter.name}'. at ${callExpression.calleeToken.line}:` +
+            `${callExpression.calleeToken.column}`,
+        );
+      }
+    }
+
+    return boundArguments;
+  }
+
+  private evaluateDefaultExpression(expression: Expression): RuntimeValue {
+    const previousEnvironment = this.currentEnvironment;
+    const previousFunction = this.currentFunction;
+    const previousParameterTypes = this.currentParameterTypes;
+
+    this.currentEnvironment = this.environment;
+    this.currentFunction = null;
+    this.currentParameterTypes = new Map<string, TypeAnnotation | null>();
+
+    try {
+      return this.evaluateExpression(expression);
+    } finally {
+      this.currentEnvironment = previousEnvironment;
+      this.currentFunction = previousFunction;
+      this.currentParameterTypes = previousParameterTypes;
+    }
   }
 
   private assignVariable(name: string, value: RuntimeValue): void {
@@ -350,6 +588,7 @@ export class Evaluator {
     if (parameterType !== undefined && parameterType !== null) {
       if (!this.valueMatchesType(value, parameterType)) {
         const declaration = this.currentFunction;
+
         const parameter = declaration?.parameters.find(
           (candidate) => candidate.lexeme === name,
         );
@@ -709,7 +948,7 @@ export class Evaluator {
       case TokenType.Slash:
         if (rightInteger.value === 0) {
           throw new Error(
-            `Division by zero at ` + `${operator.line}:${operator.column}`,
+            `Division by zero at ${operator.line}:${operator.column}`,
           );
         }
 
@@ -719,7 +958,7 @@ export class Evaluator {
       case TokenType.Percent:
         if (rightInteger.value === 0) {
           throw new Error(
-            `Remainder by zero at ` + `${operator.line}:${operator.column}`,
+            `Remainder by zero at ${operator.line}:${operator.column}`,
           );
         }
 

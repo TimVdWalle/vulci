@@ -1,4 +1,4 @@
-// Phase 8
+// Phase 9
 
 import { Token, TokenType } from "./token.js";
 
@@ -151,6 +151,10 @@ export class Lexer {
 
       case ",":
         this.addToken(TokenType.Comma, c, startLine, startColumn);
+        return;
+
+      case ":":
+        this.addToken(TokenType.Colon, c, startLine, startColumn);
         return;
 
       case "$":

@@ -1,0 +1,9 @@
+// Phase 9
+
+fn resize(int width, int height) returns int {
+    width * height
+}
+
+area = resize(10, height: 20)
+
+print(value=area)

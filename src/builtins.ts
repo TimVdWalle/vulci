@@ -1,9 +1,18 @@
+// Phase 9
+
 import { Environment } from "./environment.js";
 import { NULL_VALUE, RuntimeValue } from "./runtime-value.js";
 
 export function registerBuiltins(environment: Environment): void {
   environment.define("print", {
     type: "NativeFunction",
+
+    parameters: [
+      {
+        name: "value",
+        required: true,
+      },
+    ],
 
     call(arguments_: RuntimeValue[]): RuntimeValue {
       const output = arguments_.map(formatValue);
