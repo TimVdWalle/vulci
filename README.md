@@ -90,3 +90,24 @@ A programming language should reduce the number of things a programmer needs to 
 If a language feature makes programs easier to understand, more consistent, and more expressive without increasing the programmer’s mental burden, it probably belongs in Vulci.
 
 If it does not, it probably doesn’t.
+
+⸻
+
+Development
+
+Install the project dependencies:
+
+```bash
+npm ci
+```
+
+Available development commands:
+
+```bash
+npm run dev         # Run the interpreter from source.
+npm run build       # Compile the interpreter.
+npm test            # Run the automated test suite.
+npm run coverage    # Run the test suite with coverage reporting.
+npm run smoke       # Run the end-to-end smoke test.
+npm run check       # Run formatting, linting, type checking, tests, and the smoke test.
+```

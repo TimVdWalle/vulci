@@ -11,14 +11,15 @@
     "dev": "tsx src/cli.ts",
     "build": "tsc",
     "start": "node dist/cli.js",
-    "smoke": "tsx src/cli.ts examples/smoke.vulci",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/**/*.test.ts",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm test"
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run smoke",
+    "coverage": "node --experimental-test-coverage --import tsx --test tests/**/*.test.ts",
+    "smoke": "tsx src/cli.ts examples/smoke.vulci"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
