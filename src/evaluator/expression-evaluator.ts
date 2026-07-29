@@ -1,0 +1,203 @@
+// Phase 9
+
+import {
+  ConditionalExpression,
+  Expression,
+  Statement,
+  VariableReference,
+} from "../ast.js";
+import {
+  FALSE_VALUE,
+  IntegerValue,
+  NULL_VALUE,
+  RuntimeValue,
+  TRUE_VALUE,
+} from "../runtime-value.js";
+import { TokenType } from "../token.js";
+import { FunctionEvaluator } from "./function-evaluator.js";
+import { ReturnSignal } from "./return-signal.js";
+
+export abstract class ExpressionEvaluator extends FunctionEvaluator {
+  protected evaluateStatement(statement: Statement): RuntimeValue {
+    switch (statement.type) {
+      case "ExpressionStatement":
+        return this.evaluateExpression(statement.expression);
+    }
+  }
+
+  protected evaluateExpression(expression: Expression): RuntimeValue {
+    switch (expression.type) {
+      case "IntegerLiteral": {
+        const value: IntegerValue = {
+          type: "Integer",
+          value: expression.value,
+        };
+
+        return value;
+      }
+
+      case "BooleanLiteral":
+        return expression.value ? TRUE_VALUE : FALSE_VALUE;
+
+      case "NullLiteral":
+        return NULL_VALUE;
+
+      case "VariableReference":
+        return this.evaluateBareIdentifier(expression);
+
+      case "AssignmentExpression": {
+        const value = this.evaluateExpression(expression.value);
+
+        this.assignVariable(expression.name, value);
+
+        return value;
+      }
+
+      case "FunctionDeclaration":
+        return NULL_VALUE;
+
+      case "FunctionCall":
+        return this.evaluateFunctionCall(expression);
+
+      case "ReturnExpression": {
+        if (this.functionDepth === 0) {
+          throw new Error(
+            `'return' can only be used inside a function. at ` +
+              `${expression.keyword.line}:${expression.keyword.column}`,
+          );
+        }
+
+        const value =
+          expression.value === null
+            ? NULL_VALUE
+            : this.evaluateExpression(expression.value);
+
+        throw new ReturnSignal(value);
+      }
+
+      case "UnaryExpression":
+        return this.evaluateUnaryExpression(
+          expression.operator,
+          this.evaluateExpression(expression.operand),
+        );
+
+      case "BinaryExpression":
+        if (
+          expression.operator.type === TokenType.And ||
+          expression.operator.type === TokenType.Or
+        ) {
+          return this.evaluateLogicalExpression(
+            expression.operator,
+            expression.left,
+            expression.right,
+          );
+        }
+
+        return this.evaluateBinaryExpression(
+          expression.operator,
+          this.evaluateExpression(expression.left),
+          this.evaluateExpression(expression.right),
+        );
+
+      case "ComparisonChainExpression":
+        return this.evaluateComparisonChain(expression);
+
+      case "ConditionalExpression":
+        return this.evaluateConditionalExpression(expression);
+    }
+  }
+
+  protected evaluateBareIdentifier(
+    expression: VariableReference,
+  ): RuntimeValue {
+    if (expression.name.startsWith("$")) {
+      return this.environment.get(expression.name);
+    }
+
+    const localValue = this.findValue(this.currentEnvironment, expression.name);
+
+    if (localValue !== undefined) {
+      if (localValue.type === "NativeFunction") {
+        return this.callNativeFunction(localValue, {
+          type: "FunctionCall",
+          callee: expression.name,
+          calleeToken: expression.token,
+          arguments: [],
+          argumentNames: [],
+        });
+      }
+
+      return localValue;
+    }
+
+    if (this.currentEnvironment !== this.environment) {
+      const globalValue = this.findValue(this.environment, expression.name);
+
+      if (globalValue !== undefined) {
+        if (globalValue.type === "NativeFunction") {
+          return this.callNativeFunction(globalValue, {
+            type: "FunctionCall",
+            callee: expression.name,
+            calleeToken: expression.token,
+            arguments: [],
+            argumentNames: [],
+          });
+        }
+
+        return globalValue;
+      }
+    }
+
+    const declaration = this.functions.get(expression.name);
+
+    if (declaration !== undefined) {
+      return this.callFunction(declaration, {
+        type: "FunctionCall",
+        callee: expression.name,
+        calleeToken: expression.token,
+        arguments: [],
+        argumentNames: [],
+      });
+    }
+
+    throw new Error(
+      `Undefined variable '${expression.name}'. at ` +
+        `${expression.token.line}:${expression.token.column}`,
+    );
+  }
+
+  protected evaluateConditionalExpression(
+    expression: ConditionalExpression,
+  ): RuntimeValue {
+    for (const branch of expression.branches) {
+      const condition = this.evaluateExpression(branch.condition);
+
+      if (condition.type !== "Boolean") {
+        throw new Error(
+          "Conditional expression requires a Boolean condition. " +
+            `at ${branch.keyword.line}:${branch.keyword.column}`,
+        );
+      }
+
+      if (condition.value) {
+        return this.evaluateExpressionBlock(branch.expressions);
+      }
+    }
+
+    if (expression.elseExpressions !== null) {
+      return this.evaluateExpressionBlock(expression.elseExpressions);
+    }
+
+    return NULL_VALUE;
+  }
+
+  protected evaluateExpressionBlock(expressions: Expression[]): RuntimeValue {
+    let result: RuntimeValue = NULL_VALUE;
+
+    for (const expression of expressions) {
+      result = this.evaluateExpression(expression);
+    }
+
+    return result;
+  }
+}
