@@ -11,6 +11,7 @@
     "dev": "tsx src/cli.ts",
     "build": "tsc",
     "start": "node dist/cli.js",
+    "smoke": "tsx src/cli.ts examples/smoke.vulci",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",

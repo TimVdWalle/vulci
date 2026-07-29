@@ -4,7 +4,7 @@ Vulci smoke test
 Implemented phases: 1–10
 
 Expected standard output:
-1285
+SMOKE OK: 1285
 
 Expected warnings:
 - Omitted parameter types
@@ -216,17 +216,17 @@ fn switch_type(int|bool value) returns int|bool {
     value
 }
 
-// Explicit any produces normal warnings.
+// Explicit any is accepted without a warning.
 fn explicit_any(any value) returns any {
     value
 }
 
-// Omitted annotations become any and produce strong warnings.
+// Omitted annotations become any and produce normal warnings.
 fn implicit_any(value) {
     value
 }
 
-// Whitespace around each union separator is valid but warns.
+// Whitespace around union separators is valid without warnings.
 fn spaced_union(int | bool value) returns int | null {
     if (value == true) {
         return 6
@@ -362,11 +362,14 @@ spaced_union_score = spaced_union(true)
 phase10_name = "Vulci"
 phase10_literal = '{{phase10_name}}'
 phase10_joined = "Hello" ~ phase10_name + "!"
+
 phase10_multiline = """
     {{phase10_name}}
     text
 """
+
 phase10_interpolation = "n={{1 + 2}}, b={{true}}"
+
 phase10_score = "👨‍👩‍👧‍👦á".count()
     + if (phase10_joined.contains("Vulci")) { 1 } else { 0 }
     + if ("A" < "a") { 1 } else { 0 }
@@ -401,8 +404,8 @@ result = checksum
     + phase9_score
     + phase10_score
 
-// Named native argument.
-print(value: result)
+// Named native argument, string output, and interpolation.
+print(value: "SMOKE OK: {{result}}")
 
 // Execute bare return without adding another printed result.
 unused_null = return_null()
