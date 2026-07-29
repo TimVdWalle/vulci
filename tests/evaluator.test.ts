@@ -307,11 +307,11 @@ test("evaluates ordering comparisons", () => {
 test("rejects non-integer ordering operands", () => {
   assert.throws(
     () => evaluate("true < false", new Environment()),
-    /Operator '<' requires integer operands\. at 1:6/,
+    /Operator '<' requires two integers or two strings\. at 1:6/,
   );
   assert.throws(
     () => evaluate("1 >= false", new Environment()),
-    /Operator '>=' requires integer operands\. at 1:3/,
+    /Operator '>=' requires two integers or two strings\. at 1:3/,
   );
 });
 test("evaluates arithmetic before comparisons", () => {

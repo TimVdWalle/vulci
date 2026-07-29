@@ -282,25 +282,20 @@ test("rejects a missing parameter name after a type", () => {
   );
 });
 
-test("warns for an explicit any parameter", () => {
+test("does not warn for an explicit any parameter", () => {
   const warnings = captureWarnings(`fn identity(any value) returns int {
   1
 }`);
 
-  assert.equal(warnings.length, 1);
-  assert.match(warnings[0]!, /^warning:/);
-  assert.match(warnings[0]!, /explicit 'any' type declaration/);
-  assert.match(warnings[0]!, /1:13/);
+  assert.equal(warnings.length, 0);
 });
 
-test("warns for an explicit any return type", () => {
+test("does not warn for an explicit any return type", () => {
   const warnings = captureWarnings(`fn identity(int value) returns any {
   value
 }`);
 
-  assert.equal(warnings.length, 1);
-  assert.match(warnings[0]!, /^warning:/);
-  assert.match(warnings[0]!, /explicit 'any' type declaration/);
+  assert.equal(warnings.length, 0);
 });
 
 test("warns separately for every omitted annotation", () => {
@@ -310,33 +305,29 @@ test("warns separately for every omitted annotation", () => {
 
   assert.equal(warnings.length, 3);
 
-  assert.match(warnings[0]!, /^strong warning:/);
+  assert.match(warnings[0]!, /^warning:/);
   assert.match(warnings[0]!, /parameter 'left'/);
   assert.match(warnings[0]!, /1:12/);
 
-  assert.match(warnings[1]!, /^strong warning:/);
+  assert.match(warnings[1]!, /^warning:/);
   assert.match(warnings[1]!, /parameter 'right'/);
   assert.match(warnings[1]!, /1:18/);
 
-  assert.match(warnings[2]!, /^strong warning:/);
+  assert.match(warnings[2]!, /^warning:/);
   assert.match(warnings[2]!, /function 'combine'/);
   assert.match(warnings[2]!, /1:4/);
 });
 
-test("warns once for each spaced union separator", () => {
+test("does not warn for spaced union separators", () => {
   const warnings = captureWarnings(
     `fn convert(int | bool value) returns int | null {
+
   1
+
 }`,
   );
 
-  assert.equal(warnings.length, 2);
-
-  assert.match(warnings[0]!, /^warning:/);
-  assert.match(warnings[0]!, /whitespace around union separator/);
-
-  assert.match(warnings[1]!, /^warning:/);
-  assert.match(warnings[1]!, /whitespace around union separator/);
+  assert.equal(warnings.length, 0);
 });
 
 test("does not warn for compact unions", () => {

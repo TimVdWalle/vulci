@@ -1,7 +1,8 @@
-// Phase 9
+// Phase 10
 
 export enum TokenType {
   Integer,
+  String,
   Identifier,
   True,
   False,
@@ -23,10 +24,12 @@ export enum TokenType {
   GreaterEqual,
   Plus,
   Minus,
+  Tilde,
   Star,
   Slash,
   Percent,
   Pipe,
+  Dot,
   LeftParen,
   RightParen,
   LeftBrace,
@@ -37,11 +40,27 @@ export enum TokenType {
   EOF,
 }
 
+export interface ScannedStringTextSegment {
+  type: "Text";
+  value: string;
+}
+
+export interface ScannedStringInterpolationSegment {
+  type: "Interpolation";
+  source: string;
+  line: number;
+  column: number;
+}
+
+export type ScannedStringSegment =
+  ScannedStringTextSegment | ScannedStringInterpolationSegment;
+
 export interface Token {
   type: TokenType;
   lexeme: string;
   line: number;
   column: number;
+  stringSegments?: ScannedStringSegment[];
   whitespaceBefore?: boolean;
   whitespaceAfter?: boolean;
 }

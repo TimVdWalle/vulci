@@ -65,7 +65,10 @@ test("rejects ordering comparisons with null", () => {
   const cases = ["null < 1", "null <= 1", "null > 1", "null >= 1"];
 
   for (const source of cases) {
-    assert.throws(() => evaluate(source), /requires integer operands/);
+    assert.throws(
+      () => evaluate(source),
+      /requires two integers or two strings/,
+    );
   }
 });
 

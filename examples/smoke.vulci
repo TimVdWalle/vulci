@@ -1,17 +1,14 @@
-// Phase 9
+// Phase 10
 /*
 Vulci smoke test
-Implemented phases: 1–9
+Implemented phases: 1–10
 
 Expected standard output:
-1277
+1285
 
 Expected warnings:
-- Explicit any parameter
-- Explicit any return type
-- Omitted parameter type
-- Omitted return type
-- Two spaced union separators
+- Omitted parameter types
+- Omitted return types
 */
 
 // Integer literals, assignments, reassignment, lookup, and arithmetic.
@@ -361,6 +358,23 @@ explicit_any_score = explicit_any(4)
 implicit_any_score = implicit_any(5)
 spaced_union_score = spaced_union(true)
 
+// Phase 10 strings.
+phase10_name = "Vulci"
+phase10_literal = '{{phase10_name}}'
+phase10_joined = "Hello" ~ phase10_name + "!"
+phase10_multiline = """
+    {{phase10_name}}
+    text
+"""
+phase10_interpolation = "n={{1 + 2}}, b={{true}}"
+phase10_score = "👨‍👩‍👧‍👦á".count()
+    + if (phase10_joined.contains("Vulci")) { 1 } else { 0 }
+    + if ("A" < "a") { 1 } else { 0 }
+    + if (phase10_literal == '{{phase10_name}}') { 1 } else { 0 }
+    + if (phase10_multiline == "Vulci\ntext") { 1 } else { 0 }
+    + if (phase10_interpolation == "n=3, b=true") { 1 } else { 0 }
+    + if (phase10_joined == "Hello Vulci!") { 1 } else { 0 }
+
 // Phase 9 contribution.
 phase9_score = phase9_named
     + phase9_mixed
@@ -385,6 +399,7 @@ result = checksum
     + implicit_any_score
     + spaced_union_score
     + phase9_score
+    + phase10_score
 
 // Named native argument.
 print(value: result)

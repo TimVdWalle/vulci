@@ -1,4 +1,4 @@
-// Phase 9
+// Phase 10
 
 import { BuiltInTypeName, TypeAnnotation } from "../ast.js";
 import { Token, TokenType } from "../token.js";
@@ -12,15 +12,6 @@ export abstract class TypeParser extends ParserContext {
     const memberNames = new Set<string>([first.lexeme]);
 
     while (this.match(TokenType.Pipe)) {
-      const separator = this.previous();
-
-      if (separator.whitespaceBefore || separator.whitespaceAfter) {
-        this.emitWarning(
-          "whitespace around union separator '|' is valid but discouraged",
-          separator,
-        );
-      }
-
       if (this.check(TokenType.Pipe)) {
         throw this.error(
           this.peek(),
@@ -44,10 +35,6 @@ export abstract class TypeParser extends ParserContext {
       const anyMember = members.find((member) => member.lexeme === "any")!;
 
       throw this.error(anyMember, "'any' cannot appear inside a union type.");
-    }
-
-    if (members.length === 1 && first.lexeme === "any") {
-      this.emitWarning("explicit 'any' type declaration", first);
     }
 
     return { members };

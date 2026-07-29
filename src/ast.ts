@@ -1,4 +1,4 @@
-// Phase 9
+// Phase 10
 
 import { Token } from "./token.js";
 
@@ -16,12 +16,14 @@ export interface ExpressionStatement {
 
 export type Expression =
   | IntegerLiteral
+  | StringLiteral
   | BooleanLiteral
   | NullLiteral
   | VariableReference
   | AssignmentExpression
   | FunctionDeclaration
   | FunctionCall
+  | MemberCall
   | ReturnExpression
   | UnaryExpression
   | BinaryExpression
@@ -31,6 +33,25 @@ export type Expression =
 export interface IntegerLiteral {
   type: "IntegerLiteral";
   value: number;
+}
+
+export interface StringTextSegment {
+  type: "Text";
+  value: string;
+}
+
+export interface StringInterpolationSegment {
+  type: "Interpolation";
+  expression: Expression;
+  token: Token;
+}
+
+export type StringSegment = StringTextSegment | StringInterpolationSegment;
+
+export interface StringLiteral {
+  type: "StringLiteral";
+  segments: StringSegment[];
+  token: Token;
 }
 
 export interface BooleanLiteral {
@@ -78,6 +99,13 @@ export interface FunctionCall {
   calleeToken: Token;
   arguments: Expression[];
   argumentNames: (Token | null)[];
+}
+
+export interface MemberCall {
+  type: "MemberCall";
+  receiver: Expression;
+  member: Token;
+  arguments: Expression[];
 }
 
 export interface ReturnExpression {

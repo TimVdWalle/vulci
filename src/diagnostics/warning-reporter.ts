@@ -1,9 +1,9 @@
-// Phase 9
+// Phase 10
 
 import { Token } from "../token.js";
 
 export function reportWarning(
-  severity: "warning" | "strong warning",
+  severity: "warning",
   message: string,
   token: Token,
 ): void {

@@ -1,4 +1,4 @@
-// Phase 9
+// Phase 10
 
 import { FunctionCall, FunctionDeclaration, TypeAnnotation } from "../ast.js";
 import { RuntimeValue } from "../runtime-value.js";
@@ -64,6 +64,8 @@ export abstract class TypeChecker extends EvaluatorContext {
           return value.type === "Null";
 
         case "str":
+          return value.type === "String";
+
         case "list":
         case "set":
         case "map":

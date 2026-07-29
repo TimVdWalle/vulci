@@ -1,10 +1,18 @@
-// Phase 9
+// Phase 10
 
 import { ExpressionStatement, Program, Statement } from "./ast.js";
 import { TokenType } from "./token.js";
 import { ExpressionParser } from "./parser/expression-parser.js";
 
 export class Parser extends ExpressionParser {
+  public parseSingleExpression() {
+    this.skipNewlines();
+    const expression = this.expression();
+    this.skipNewlines();
+    this.consume(TokenType.EOF, "Expected end of interpolation expression.");
+    return expression;
+  }
+
   public parse(): Program {
     const statements: Statement[] = [];
 

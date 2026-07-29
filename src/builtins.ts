@@ -1,4 +1,4 @@
-// Phase 9
+// Phase 10
 
 import { Environment } from "./environment.js";
 import { NULL_VALUE, RuntimeValue } from "./runtime-value.js";
@@ -28,6 +28,9 @@ function formatValue(value: RuntimeValue): string {
   switch (value.type) {
     case "Integer":
       return value.value.toString();
+
+    case "String":
+      return value.value;
 
     case "Boolean":
       return value.value ? "true" : "false";

@@ -1,11 +1,16 @@
-// Phase 9
+// Phase 10
 
 export type RuntimeValue =
-  IntegerValue | BooleanValue | NullValue | NativeFunctionValue;
+  IntegerValue | StringValue | BooleanValue | NullValue | NativeFunctionValue;
 
 export interface IntegerValue {
   type: "Integer";
   value: number;
+}
+
+export interface StringValue {
+  type: "String";
+  value: string;
 }
 
 export interface BooleanValue {

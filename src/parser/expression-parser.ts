@@ -1,4 +1,4 @@
-// Phase 9
+// Phase 10
 
 import {
   AssignmentExpression,
@@ -13,6 +13,7 @@ import {
 } from "../ast.js";
 import { Token, TokenType } from "../token.js";
 import { CallParser } from "./call-parser.js";
+import { parseStringLiteral } from "./string-parser.js";
 
 export abstract class ExpressionParser extends CallParser {
   protected expression(): Expression {
@@ -187,9 +188,9 @@ export abstract class ExpressionParser extends CallParser {
     let expression = this.multiplication();
 
     while (true) {
-      this.skipNewlinesBefore(TokenType.Plus, TokenType.Minus);
+      this.skipNewlinesBefore(TokenType.Plus, TokenType.Minus, TokenType.Tilde);
 
-      if (!this.match(TokenType.Plus, TokenType.Minus)) {
+      if (!this.match(TokenType.Plus, TokenType.Minus, TokenType.Tilde)) {
         break;
       }
 
@@ -267,10 +268,24 @@ export abstract class ExpressionParser extends CallParser {
       return node;
     }
 
-    return this.primary();
+    return this.postfix();
+  }
+
+  protected postfix(): Expression {
+    let expression = this.primary();
+
+    while (this.match(TokenType.Dot)) {
+      expression = this.finishMemberCall(expression);
+    }
+
+    return expression;
   }
 
   protected primary(): Expression {
+    if (this.match(TokenType.String)) {
+      return parseStringLiteral(this.previous());
+    }
+
     if (this.match(TokenType.Integer)) {
       const token = this.previous();
       const value = Number.parseInt(token.lexeme.replaceAll("_", ""), 10);

@@ -1,4 +1,4 @@
-// Phase 9
+// Phase 10
 
 import { Expression } from "../ast.js";
 import { Token, TokenType } from "../token.js";
@@ -141,7 +141,7 @@ export abstract class ParserContext {
   }
 
   protected emitStrongWarning(message: string, token: Token): void {
-    reportWarning("strong warning", message, token);
+    reportWarning("warning", message, token);
   }
 
   protected error(token: Token, message: string): Error {
