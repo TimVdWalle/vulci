@@ -13,6 +13,7 @@ export class Parser extends ExpressionParser {
     return expression;
   }
 
+export class Parser extends ExpressionParser {
   public parse(): Program {
     const statements: Statement[] = [];
 
