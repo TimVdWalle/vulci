@@ -1,6 +1,7 @@
-// Phase 9
+// Phase 10
 
 import { Token, TokenType } from "./token.js";
+import { scanStringLiteral } from "./string-lexer.js";
 
 export class Lexer {
   private readonly source: string;
@@ -93,6 +94,10 @@ export class Lexer {
         this.addToken(TokenType.Plus, c, startLine, startColumn);
         return;
 
+      case "~":
+        this.addToken(TokenType.Tilde, c, startLine, startColumn);
+        return;
+
       case "-":
         this.addToken(TokenType.Minus, c, startLine, startColumn);
         return;
@@ -120,6 +125,15 @@ export class Lexer {
 
       case "%":
         this.addToken(TokenType.Percent, c, startLine, startColumn);
+        return;
+
+      case ".":
+        this.addToken(TokenType.Dot, c, startLine, startColumn);
+        return;
+
+      case '"':
+      case "'":
+        this.string(startLine, startColumn);
         return;
 
       case "|":
@@ -182,6 +196,25 @@ export class Lexer {
           `Unexpected character '${c}' at ${startLine}:${startColumn}`,
         );
     }
+  }
+
+  private string(line: number, column: number): void {
+    const start = this.current - 1;
+    const result = scanStringLiteral(this.source, start, line, column);
+
+    this.current = result.end;
+    this.line = result.line;
+    this.column = result.column;
+
+    const token: Token = {
+      type: TokenType.String,
+      lexeme: result.lexeme,
+      line,
+      column,
+      stringSegments: result.segments,
+    };
+
+    this.tokens.push(token);
   }
 
   private blockComment(line: number, column: number): void {

@@ -129,21 +129,21 @@ test("does not evaluate an invalid skipped operand", () => {
 test("rejects a Boolean operand in an ordering chain", () => {
   assert.throws(
     () => evaluate("1 < true < 3"),
-    /Invalid operand type in chained comparison: operator '<' requires integer operands\. at 1:3/,
+    /Invalid operand type in chained comparison: operator '<' requires two integers or two strings\. at 1:3/,
   );
 });
 
 test("rejects a null operand in an ordering chain", () => {
   assert.throws(
     () => evaluate("1 < null < 3"),
-    /Invalid operand type in chained comparison: operator '<' requires integer operands\. at 1:3/,
+    /Invalid operand type in chained comparison: operator '<' requires two integers or two strings\. at 1:3/,
   );
 });
 
 test("reports a later invalid ordering operator position", () => {
   assert.throws(
     () => evaluate("1 < 2 < false"),
-    /Invalid operand type in chained comparison: operator '<' requires integer operands\. at 1:7/,
+    /Invalid operand type in chained comparison: operator '<' requires two integers or two strings\. at 1:7/,
   );
 });
 

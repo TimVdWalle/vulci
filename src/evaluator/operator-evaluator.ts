@@ -1,4 +1,4 @@
-// Phase 9
+// Phase 10
 
 import { ComparisonChainExpression, Expression } from "../ast.js";
 import {
@@ -8,9 +8,9 @@ import {
   TRUE_VALUE,
 } from "../runtime-value.js";
 import { Token, TokenType } from "../token.js";
-import { ScopeResolver } from "./scope-resolver.js";
+import { StringEvaluator } from "./string-evaluator.js";
 
-export abstract class OperatorEvaluator extends ScopeResolver {
+export abstract class OperatorEvaluator extends StringEvaluator {
   protected evaluateComparisonChain(
     expression: ComparisonChainExpression,
   ): RuntimeValue {
@@ -53,10 +53,13 @@ export abstract class OperatorEvaluator extends ScopeResolver {
       case TokenType.LessEqual:
       case TokenType.Greater:
       case TokenType.GreaterEqual:
-        if (left.type !== "Integer" || right.type !== "Integer") {
+        if (!(
+          (left.type === "Integer" && right.type === "Integer") ||
+          (left.type === "String" && right.type === "String")
+        )) {
           throw new Error(
             "Invalid operand type in chained comparison: " +
-              `operator '${operator.lexeme}' requires integer operands. ` +
+              `operator '${operator.lexeme}' requires two integers or two strings. ` +
               `at ${operator.line}:${operator.column}`,
           );
         }
@@ -98,6 +101,9 @@ export abstract class OperatorEvaluator extends ScopeResolver {
     switch (left.type) {
       case "Integer":
         return right.type === "Integer" && left.value === right.value;
+
+      case "String":
+        return right.type === "String" && left.value === right.value;
 
       case "Boolean":
         return right.type === "Boolean" && left.value === right.value;
@@ -207,6 +213,25 @@ export abstract class OperatorEvaluator extends ScopeResolver {
         return this.evaluateOrderingComparison(operator, left, right);
     }
 
+    if (operator.type === TokenType.Plus || operator.type === TokenType.Tilde) {
+      if (left.type === "String" && right.type === "String") {
+        return {
+          type: "String",
+          value:
+            operator.type === TokenType.Plus
+              ? left.value + right.value
+              : `${left.value} ${right.value}`,
+        };
+      }
+
+      if (operator.type === TokenType.Tilde) {
+        throw new Error(
+          `Operator '~' requires string operands. at ` +
+            `${operator.line}:${operator.column}`,
+        );
+      }
+    }
+
     const leftInteger = this.requireInteger(left, operator);
     const rightInteger = this.requireInteger(right, operator);
 
@@ -264,6 +289,10 @@ export abstract class OperatorEvaluator extends ScopeResolver {
       return left.value === right.value;
     }
 
+    if (left.type === "String" && right.type === "String") {
+      return left.value === right.value;
+    }
+
     if (left.type === "Boolean" && right.type === "Boolean") {
       return left.value === right.value;
     }
@@ -284,10 +313,12 @@ export abstract class OperatorEvaluator extends ScopeResolver {
     left: RuntimeValue,
     right: RuntimeValue,
   ): RuntimeValue {
-    if (left.type !== "Integer" || right.type !== "Integer") {
+    if (!(
+      (left.type === "Integer" && right.type === "Integer") ||
+      (left.type === "String" && right.type === "String")
+    )) {
       throw new Error(
-        `Operator '${operator.lexeme}' requires integer ` +
-          `operands. at ` +
+        `Operator '${operator.lexeme}' requires two integers or two strings. at ` +
           `${operator.line}:${operator.column}`,
       );
     }

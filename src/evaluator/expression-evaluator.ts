@@ -1,4 +1,4 @@
-// Phase 9
+// Phase 10
 
 import {
   ConditionalExpression,
@@ -27,6 +27,9 @@ export abstract class ExpressionEvaluator extends FunctionEvaluator {
 
   protected evaluateExpression(expression: Expression): RuntimeValue {
     switch (expression.type) {
+      case "StringLiteral":
+        return this.evaluateStringLiteral(expression);
+
       case "IntegerLiteral": {
         const value: IntegerValue = {
           type: "Integer",
@@ -58,6 +61,9 @@ export abstract class ExpressionEvaluator extends FunctionEvaluator {
 
       case "FunctionCall":
         return this.evaluateFunctionCall(expression);
+
+      case "MemberCall":
+        return this.evaluateMemberCall(expression);
 
       case "ReturnExpression": {
         if (this.functionDepth === 0) {
