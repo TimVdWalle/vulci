@@ -1,4 +1,4 @@
-// Phase 10
+// Phase 11
 
 import { Token } from "./token.js";
 
@@ -19,11 +19,13 @@ export type Expression =
   | StringLiteral
   | BooleanLiteral
   | NullLiteral
+  | TupleLiteral
   | VariableReference
   | AssignmentExpression
   | FunctionDeclaration
   | FunctionCall
   | MemberCall
+  | IndexExpression
   | ReturnExpression
   | UnaryExpression
   | BinaryExpression
@@ -63,6 +65,11 @@ export interface NullLiteral {
   type: "NullLiteral";
 }
 
+export interface TupleLiteral {
+  type: "TupleLiteral";
+  members: Expression[];
+}
+
 export interface VariableReference {
   type: "VariableReference";
   name: string;
@@ -78,8 +85,23 @@ export interface AssignmentExpression {
 export type BuiltInTypeName =
   "int" | "bool" | "str" | "list" | "set" | "map" | "any" | "null";
 
+export interface NamedTypeMember {
+  type: "NamedType";
+  lexeme: BuiltInTypeName;
+  token: Token;
+}
+
+export interface TupleTypeMember {
+  type: "TupleType";
+  lexeme: "tuple";
+  token: Token;
+  members: TypeAnnotation[];
+}
+
+export type TypeMember = NamedTypeMember | TupleTypeMember;
+
 export interface TypeAnnotation {
-  members: Token[];
+  members: TypeMember[];
 }
 
 export interface FunctionDeclaration {
@@ -99,6 +121,13 @@ export interface FunctionCall {
   calleeToken: Token;
   arguments: Expression[];
   argumentNames: (Token | null)[];
+}
+
+export interface IndexExpression {
+  type: "IndexExpression";
+  target: Expression;
+  index: Expression;
+  bracket: Token;
 }
 
 export interface MemberCall {

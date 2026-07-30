@@ -1,11 +1,13 @@
-// Phase 9
+// Phase 11
 
 import { Environment } from "../environment.js";
 import { RuntimeValue } from "../runtime-value.js";
 import { TypeChecker } from "./type-checker.js";
+import { copyRuntimeValue } from "./value-copy.js";
 
 export abstract class ScopeResolver extends TypeChecker {
   protected assignVariable(name: string, value: RuntimeValue): void {
+    value = copyRuntimeValue(value);
     if (name.startsWith("$")) {
       if (
         this.currentEnvironment !== this.environment &&

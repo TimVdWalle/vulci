@@ -1,4 +1,4 @@
-// Phase 10
+// Phase 11
 
 import { ComparisonChainExpression, Expression } from "../ast.js";
 import {
@@ -110,6 +110,13 @@ export abstract class OperatorEvaluator extends StringEvaluator {
 
       case "Null":
         return right.type === "Null";
+
+      case "Tuple":
+        throw new Error(
+          "Invalid operand type in chained comparison: " +
+            `operator '${operator.lexeme}' does not support tuples. at ` +
+            `${operator.line}:${operator.column}`,
+        );
 
       case "NativeFunction":
         return left === right;

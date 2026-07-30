@@ -1,4 +1,4 @@
-// Phase 10
+// Phase 11
 
 import { Token, TokenType } from "./token.js";
 import { scanStringLiteral } from "./string-lexer.js";
@@ -153,6 +153,14 @@ export class Lexer {
 
       case ")":
         this.addToken(TokenType.RightParen, c, startLine, startColumn);
+        return;
+
+      case "[":
+        this.addToken(TokenType.LeftBracket, c, startLine, startColumn);
+        return;
+
+      case "]":
+        this.addToken(TokenType.RightBracket, c, startLine, startColumn);
         return;
 
       case "{":

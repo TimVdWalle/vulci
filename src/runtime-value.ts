@@ -1,7 +1,12 @@
-// Phase 10
+// Phase 11
 
 export type RuntimeValue =
-  IntegerValue | StringValue | BooleanValue | NullValue | NativeFunctionValue;
+  | IntegerValue
+  | StringValue
+  | BooleanValue
+  | NullValue
+  | TupleValue
+  | NativeFunctionValue;
 
 export interface IntegerValue {
   type: "Integer";
@@ -20,6 +25,11 @@ export interface BooleanValue {
 
 export interface NullValue {
   type: "Null";
+}
+
+export interface TupleValue {
+  type: "Tuple";
+  members: RuntimeValue[];
 }
 
 export interface NativeFunctionParameter {
