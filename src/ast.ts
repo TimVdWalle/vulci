@@ -1,4 +1,4 @@
-// Phase 11
+// Phase 12
 
 import { Token } from "./token.js";
 
@@ -20,11 +20,13 @@ export type Expression =
   | BooleanLiteral
   | NullLiteral
   | TupleLiteral
+  | AnonymousObjectLiteral
   | VariableReference
   | AssignmentExpression
   | FunctionDeclaration
   | FunctionCall
   | MemberCall
+  | MemberAccess
   | IndexExpression
   | ReturnExpression
   | UnaryExpression
@@ -68,6 +70,17 @@ export interface NullLiteral {
 export interface TupleLiteral {
   type: "TupleLiteral";
   members: Expression[];
+}
+
+export interface AnonymousObjectField {
+  name: Token;
+  value: Expression;
+}
+
+export interface AnonymousObjectLiteral {
+  type: "AnonymousObjectLiteral";
+  keyword: Token;
+  fields: AnonymousObjectField[];
 }
 
 export interface VariableReference {
@@ -128,6 +141,12 @@ export interface IndexExpression {
   target: Expression;
   index: Expression;
   bracket: Token;
+}
+
+export interface MemberAccess {
+  type: "MemberAccess";
+  receiver: Expression;
+  member: Token;
 }
 
 export interface MemberCall {

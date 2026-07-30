@@ -1,6 +1,6 @@
-// Phase 10
+// Phase 12
 
-import { MemberCall, StringLiteral } from "../ast.js";
+import { MemberAccess, MemberCall, StringLiteral } from "../ast.js";
 import {
   FALSE_VALUE,
   IntegerValue,
@@ -46,6 +46,30 @@ export abstract class StringEvaluator extends ScopeResolver {
     return { type: "String", value };
   }
 
+  protected evaluateMemberAccess(expression: MemberAccess): RuntimeValue {
+    const receiver = this.evaluateExpression(expression.receiver);
+
+    if (receiver.type !== "AnonymousObject") {
+      throw new Error(
+        `E_MEM_TYPE: Type '${this.runtimeTypeName(receiver)}' does not support ` +
+          `member '${expression.member.lexeme}'. at ` +
+          `${expression.member.line}:${expression.member.column}`,
+      );
+    }
+
+    const field = receiver.fields.find(
+      (candidate) => candidate.name === expression.member.lexeme,
+    );
+
+    if (field === undefined) {
+      throw new Error(
+        `E_MEM_UNKNOWN: Unknown object field '${expression.member.lexeme}'. at ` +
+          `${expression.member.line}:${expression.member.column}`,
+      );
+    }
+
+    return field.value;
+  }
   protected evaluateMemberCall(expression: MemberCall): RuntimeValue {
     const receiver = this.evaluateExpression(expression.receiver);
 
