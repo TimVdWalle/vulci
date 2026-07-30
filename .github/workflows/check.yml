@@ -1,3 +1,5 @@
+# Phase 12
+
 name: Checks
 
 on:
@@ -31,3 +33,21 @@ jobs:
 
       - name: Run formatting, linting, type checks, and tests
         run: npm run check
+
+      - name: Run coverage
+        shell: bash
+        run: |
+          set +e
+          npm run coverage 2>&1 | tee coverage.txt
+          coverage_status=${PIPESTATUS[0]}
+          set -e
+
+          {
+            echo "## Test coverage"
+            echo
+            echo '```text'
+            cat coverage.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$coverage_status"
