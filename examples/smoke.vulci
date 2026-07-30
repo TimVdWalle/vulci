@@ -1,4 +1,4 @@
-// Phase 10
+// Phase 11
 /*
 Vulci smoke test
 Implemented phases: 1–10
@@ -235,7 +235,7 @@ fn spaced_union(int | bool value) returns int | null {
     null
 }
 
-// Phase 9: optional parameters, defaults, and trailing parameter comma.
+// Phase 11: optional parameters, defaults, and trailing parameter comma.
 fn phase9_calculate(
     int left,
     int right,
@@ -332,7 +332,7 @@ existing_null_score = if (missing_else == null) {
     0
 }
 
-// Phase 8 contributions.
+// Phase 11 contributions.
 typed_reassignment_score = typed_increment(1)
 union_integer_score = preserve(3)
 
@@ -389,6 +389,15 @@ phase9_score = phase9_named
     + phase9_bare_call
     + $default_counter
 
+
+// Phase 11 tuples, indexing, nested printing support, and tuple types.
+fn phase11_swap(tuple(int, str) value) returns tuple(str, int) {
+    (value[1], value[0])
+}
+
+phase11_tuple = phase11_swap((11, "tuple"))
+phase11_score = phase11_tuple[1]
+
 // One final, visually checkable result.
 result = checksum
     + existing_boolean_score
@@ -403,6 +412,7 @@ result = checksum
     + spaced_union_score
     + phase9_score
     + phase10_score
+    + phase11_score
 
 // Named native argument, string output, and interpolation.
 print(value: "SMOKE OK: {{result}}")

@@ -1,4 +1,4 @@
-// Phase 9
+// Phase 11
 
 import {
   Expression,
@@ -48,6 +48,7 @@ export abstract class FunctionParser extends BlockParser {
 
       const startsTypedParameter =
         FunctionParser.BUILT_IN_TYPE_NAMES.has(first.lexeme) ||
+        first.lexeme === "tuple" ||
         this.check(TokenType.Pipe) ||
         this.check(TokenType.Identifier);
 

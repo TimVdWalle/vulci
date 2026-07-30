@@ -1,4 +1,4 @@
-// Phase 10
+// Phase 11
 
 import { Expression, FunctionCall, MemberCall } from "../ast.js";
 import { Token, TokenType } from "../token.js";
@@ -160,6 +160,17 @@ export abstract class CallParser extends FunctionParser {
           expression.arguments.some((argument) =>
             this.containsAssignment(argument),
           )
+        );
+
+      case "IndexExpression":
+        return (
+          this.containsAssignment(expression.target) ||
+          this.containsAssignment(expression.index)
+        );
+
+      case "TupleLiteral":
+        return expression.members.some((member) =>
+          this.containsAssignment(member),
         );
 
       case "ReturnExpression":

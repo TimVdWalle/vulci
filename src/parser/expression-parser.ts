@@ -1,21 +1,16 @@
-// Phase 10
+// Phase 11
 
 import {
   AssignmentExpression,
   BinaryExpression,
-  BooleanLiteral,
   ComparisonChainExpression,
   Expression,
-  IntegerLiteral,
-  NullLiteral,
   UnaryExpression,
-  VariableReference,
 } from "../ast.js";
 import { Token, TokenType } from "../token.js";
-import { CallParser } from "./call-parser.js";
-import { parseStringLiteral } from "./string-parser.js";
+import { PrimaryExpressionParser } from "./primary-expression-parser.js";
 
-export abstract class ExpressionParser extends CallParser {
+export abstract class ExpressionParser extends PrimaryExpressionParser {
   protected expression(): Expression {
     return this.assignment();
   }
@@ -271,95 +266,4 @@ export abstract class ExpressionParser extends CallParser {
     return this.postfix();
   }
 
-  protected postfix(): Expression {
-    let expression = this.primary();
-
-    while (this.match(TokenType.Dot)) {
-      expression = this.finishMemberCall(expression);
-    }
-
-    return expression;
-  }
-
-  protected primary(): Expression {
-    if (this.match(TokenType.String)) {
-      return parseStringLiteral(this.previous());
-    }
-
-    if (this.match(TokenType.Integer)) {
-      const token = this.previous();
-      const value = Number.parseInt(token.lexeme.replaceAll("_", ""), 10);
-
-      if (!Number.isSafeInteger(value)) {
-        throw this.error(
-          token,
-          "Integer literal is outside the supported range.",
-        );
-      }
-
-      const node: IntegerLiteral = {
-        type: "IntegerLiteral",
-        value,
-      };
-
-      return node;
-    }
-
-    if (this.match(TokenType.True, TokenType.False)) {
-      const token = this.previous();
-
-      const node: BooleanLiteral = {
-        type: "BooleanLiteral",
-        value: token.type === TokenType.True,
-      };
-
-      return node;
-    }
-
-    if (this.match(TokenType.Null)) {
-      const node: NullLiteral = {
-        type: "NullLiteral",
-      };
-
-      return node;
-    }
-
-    if (this.match(TokenType.If)) {
-      return this.conditionalExpression(this.previous());
-    }
-
-    if (this.match(TokenType.Return)) {
-      return this.returnExpression(this.previous());
-    }
-
-    if (this.match(TokenType.Identifier)) {
-      const identifier = this.previous();
-
-      if (this.match(TokenType.LeftParen)) {
-        return this.finishFunctionCall(identifier);
-      }
-
-      const node: VariableReference = {
-        type: "VariableReference",
-        name: identifier.lexeme,
-        token: identifier,
-      };
-
-      return node;
-    }
-
-    if (this.match(TokenType.LeftParen)) {
-      this.skipNewlines();
-
-      const expression = this.expression();
-
-      this.skipNewlines();
-
-      this.consume(TokenType.RightParen, "Expected ')' after expression.");
-
-      return expression;
-    }
-
-    throw this.error(this.peek(), "Expected expression.");
-  }
 }
