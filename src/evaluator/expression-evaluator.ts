@@ -79,13 +79,17 @@ export abstract class ExpressionEvaluator extends FunctionEvaluator {
         const location = `${expression.bracket.line}:${expression.bracket.column}`;
 
         if (target.type !== "Tuple") {
-          throw new Error(`IDX_TARGET: Value does not support indexing. at ${location}`);
+          throw new Error(
+            `IDX_TARGET: Value does not support indexing. at ${location}`,
+          );
         }
         if (index.type !== "Integer") {
           throw new Error(`IDX_TYPE: Index must be an integer. at ${location}`);
         }
         if (index.value < 0 || index.value >= target.members.length) {
-          throw new Error(`IDX_RANGE: Index ${index.value} is outside the valid range. at ${location}`);
+          throw new Error(
+            `IDX_RANGE: Index ${index.value} is outside the valid range. at ${location}`,
+          );
         }
         return target.members[index.value]!;
       }

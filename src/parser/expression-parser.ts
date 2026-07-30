@@ -265,5 +265,4 @@ export abstract class ExpressionParser extends PrimaryExpressionParser {
 
     return this.postfix();
   }
-
 }
