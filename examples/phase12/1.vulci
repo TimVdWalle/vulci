@@ -1,0 +1,26 @@
+// Phase 12
+// Expected output:
+// 1, 2, 3
+// object(first: 1, second: 2, nested: object(third: 3))
+// object(first: 1, second: 2, nested: object(third: 3))
+
+$counter = 0
+
+fn next_value() returns int {
+    $counter = $counter + 1
+    $counter
+}
+
+original = object(
+    first: next_value(),
+    second: next_value(),
+    nested: object(
+        third: next_value(),
+    ),
+)
+
+copied = original
+
+print(value: "{{original.first}}, {{original.second}}, {{original.nested.third}}")
+print(value: original)
+print(value: copied)

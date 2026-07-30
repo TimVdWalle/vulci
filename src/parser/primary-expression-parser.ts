@@ -1,4 +1,4 @@
-// Phase 11
+// Phase 12
 
 import {
   BooleanLiteral,
@@ -19,7 +19,7 @@ export abstract class PrimaryExpressionParser extends CallParser {
 
     while (true) {
       if (this.match(TokenType.Dot)) {
-        expression = this.finishMemberCall(expression);
+        expression = this.finishMember(expression);
         continue;
       }
 
@@ -103,6 +103,10 @@ export abstract class PrimaryExpressionParser extends CallParser {
       const identifier = this.previous();
 
       if (this.match(TokenType.LeftParen)) {
+        if (identifier.lexeme === "object") {
+          return this.finishAnonymousObject(identifier);
+        }
+
         return this.finishFunctionCall(identifier);
       }
 

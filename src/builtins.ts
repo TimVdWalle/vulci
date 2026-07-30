@@ -1,4 +1,4 @@
-// Phase 11
+// Phase 12
 
 import { Environment } from "./environment.js";
 import { NULL_VALUE, RuntimeValue } from "./runtime-value.js";
@@ -40,6 +40,11 @@ function formatValue(value: RuntimeValue): string {
 
     case "Tuple":
       return `(${value.members.map(formatValue).join(", ")})`;
+
+    case "AnonymousObject":
+      return `object(${value.fields
+        .map((field) => `${field.name}: ${formatValue(field.value)}`)
+        .join(", ")})`;
 
     case "NativeFunction":
       return "";

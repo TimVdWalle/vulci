@@ -1,18 +1,18 @@
-// Phase 11
+// Phase 12
 
-import { Expression, FunctionCall, MemberCall } from "../ast.js";
+import { Expression, FunctionCall, MemberAccess, MemberCall } from "../ast.js";
 import { Token, TokenType } from "../token.js";
-import { FunctionParser } from "./function-parser.js";
+import { ObjectParser } from "./object-parser.js";
 
-export abstract class CallParser extends FunctionParser {
-  protected finishMemberCall(receiver: Expression): MemberCall {
+export abstract class CallParser extends ObjectParser {
+  protected finishMember(receiver: Expression): MemberAccess | MemberCall {
     const member = this.consume(
       TokenType.Identifier,
       "Expected member name after '.'.",
     );
 
     if (!this.match(TokenType.LeftParen)) {
-      throw this.error(member, "Member access must be followed by a call.");
+      return { type: "MemberAccess", receiver, member };
     }
 
     const arguments_: Expression[] = [];
@@ -22,29 +22,15 @@ export abstract class CallParser extends FunctionParser {
       if (this.check(TokenType.Comma)) {
         throw this.error(this.peek(), "Expected argument before ','.");
       }
-
       arguments_.push(this.expression());
       this.skipNewlines();
-
-      if (!this.match(TokenType.Comma)) {
-        break;
-      }
-
+      if (!this.match(TokenType.Comma)) break;
       this.skipNewlines();
-
-      if (this.check(TokenType.RightParen)) {
-        break;
-      }
+      if (this.check(TokenType.RightParen)) break;
     }
 
     this.consume(TokenType.RightParen, "Expected ')' after member arguments.");
-
-    return {
-      type: "MemberCall",
-      receiver,
-      member,
-      arguments: arguments_,
-    };
+    return { type: "MemberCall", receiver, member, arguments: arguments_ };
   }
 
   protected finishFunctionCall(calleeToken: Token): FunctionCall {
@@ -154,6 +140,9 @@ export abstract class CallParser extends FunctionParser {
           this.containsAssignment(argument),
         );
 
+      case "MemberAccess":
+        return this.containsAssignment(expression.receiver);
+
       case "MemberCall":
         return (
           this.containsAssignment(expression.receiver) ||
@@ -166,6 +155,11 @@ export abstract class CallParser extends FunctionParser {
         return (
           this.containsAssignment(expression.target) ||
           this.containsAssignment(expression.index)
+        );
+
+      case "AnonymousObjectLiteral":
+        return expression.fields.some((field) =>
+          this.containsAssignment(field.value),
         );
 
       case "TupleLiteral":

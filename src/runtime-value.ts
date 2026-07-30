@@ -1,4 +1,4 @@
-// Phase 11
+// Phase 12
 
 export type RuntimeValue =
   | IntegerValue
@@ -6,6 +6,7 @@ export type RuntimeValue =
   | BooleanValue
   | NullValue
   | TupleValue
+  | AnonymousObjectValue
   | NativeFunctionValue;
 
 export interface IntegerValue {
@@ -30,6 +31,16 @@ export interface NullValue {
 export interface TupleValue {
   type: "Tuple";
   members: RuntimeValue[];
+}
+
+export interface AnonymousObjectFieldValue {
+  name: string;
+  value: RuntimeValue;
+}
+
+export interface AnonymousObjectValue {
+  type: "AnonymousObject";
+  fields: AnonymousObjectFieldValue[];
 }
 
 export interface NativeFunctionParameter {

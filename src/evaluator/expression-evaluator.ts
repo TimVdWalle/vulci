@@ -1,4 +1,4 @@
-// Phase 11
+// Phase 12
 
 import {
   ConditionalExpression,
@@ -45,6 +45,15 @@ export abstract class ExpressionEvaluator extends FunctionEvaluator {
       case "NullLiteral":
         return NULL_VALUE;
 
+      case "AnonymousObjectLiteral":
+        return {
+          type: "AnonymousObject",
+          fields: expression.fields.map((field) => ({
+            name: field.name.lexeme,
+            value: this.evaluateExpression(field.value),
+          })),
+        };
+
       case "TupleLiteral":
         return {
           type: "Tuple",
@@ -69,6 +78,9 @@ export abstract class ExpressionEvaluator extends FunctionEvaluator {
 
       case "FunctionCall":
         return this.evaluateFunctionCall(expression);
+
+      case "MemberAccess":
+        return this.evaluateMemberAccess(expression);
 
       case "MemberCall":
         return this.evaluateMemberCall(expression);
