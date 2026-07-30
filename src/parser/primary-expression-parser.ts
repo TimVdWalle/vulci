@@ -28,7 +28,10 @@ export abstract class PrimaryExpressionParser extends CallParser {
         this.skipNewlines();
         const index = this.expression();
         this.skipNewlines();
-        this.consume(TokenType.RightBracket, "Expected ']' after index expression.");
+        this.consume(
+          TokenType.RightBracket,
+          "Expected ']' after index expression.",
+        );
         const node: IndexExpression = {
           type: "IndexExpression",
           target: expression,
@@ -144,7 +147,10 @@ export abstract class PrimaryExpressionParser extends CallParser {
       this.consume(TokenType.RightParen, "Expected ')' after tuple literal.");
 
       if (members.length < 2) {
-        throw this.error(opening, "Tuple literals require at least two members.");
+        throw this.error(
+          opening,
+          "Tuple literals require at least two members.",
+        );
       }
 
       const node: TupleLiteral = { type: "TupleLiteral", members };

@@ -1,0 +1,18 @@
+// Phase 11
+
+fn swap(tuple(int, str) value) returns tuple(str, int) {
+    return (value[1], value[0])
+}
+
+fn inspect(
+    tuple(tuple(int, int), str|null) value
+) returns tuple(int, str|null) {
+    coordinates = value[0]
+    return (coordinates[0] + coordinates[1], value[1])
+}
+
+swapped = swap((42, "answer"))
+inspected = inspect(((10, 20), "point"))
+
+print(swapped)
+print(inspected)
