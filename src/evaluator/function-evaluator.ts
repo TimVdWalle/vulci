@@ -1,29 +1,157 @@
-// Phase 9
+// Phase 13
 
 import {
   FunctionCall,
   FunctionDeclaration,
+  MemberCall,
   Program,
-  TypeAnnotation,
+  StructDeclaration,
 } from "../ast.js";
-import { Environment } from "../environment.js";
+import { RuntimeValue } from "../runtime-value.js";
+import { BUILT_IN_TYPE_NAMES } from "../type-names.js";
+import { CallExecutor } from "./call-executor.js";
 import {
-  NativeFunctionParameter,
-  NativeFunctionValue,
-  RuntimeValue,
-} from "../runtime-value.js";
-import { ArgumentBinder } from "./argument-binder.js";
-import { ReturnSignal } from "./return-signal.js";
+  findStructBindingConflict,
+  validateStructRecursion,
+} from "./struct-validation.js";
 
-export abstract class FunctionEvaluator extends ArgumentBinder {
-  protected registerFunctions(program: Program): void {
-    for (const statement of program.statements) {
-      if (statement.expression.type !== "FunctionDeclaration") {
-        continue;
+export abstract class FunctionEvaluator extends CallExecutor {
+  protected registerDeclarations(program: Program): void {
+    const structDeclarations = program.statements.flatMap((statement) =>
+      statement.expression.type === "StructDeclaration"
+        ? [statement.expression]
+        : [],
+    );
+    const functionDeclarations = program.statements.flatMap((statement) =>
+      statement.expression.type === "FunctionDeclaration"
+        ? [statement.expression]
+        : [],
+    );
+
+    this.registerStructs(structDeclarations);
+    this.registerFunctions(functionDeclarations);
+    this.validateStructBindings(program, structDeclarations);
+    validateStructRecursion(this.structs);
+  }
+
+  protected evaluateFunctionCall(expression: FunctionCall): RuntimeValue {
+    const localValue = this.findValue(
+      this.currentEnvironment,
+      expression.callee,
+    );
+
+    if (
+      localValue !== undefined &&
+      this.currentEnvironment !== this.environment
+    ) {
+      if (localValue.type !== "NativeFunction") {
+        throw new Error(
+          `Cannot call '${expression.callee}': value is not a function. at ` +
+            `${expression.calleeToken.line}:` +
+            `${expression.calleeToken.column}`,
+        );
       }
 
-      const declaration = statement.expression;
+      return this.callNativeFunction(localValue, expression);
+    }
+
+    const globalValue = this.findValue(this.environment, expression.callee);
+
+    if (globalValue !== undefined) {
+      if (globalValue.type === "NativeFunction") {
+        return this.callNativeFunction(globalValue, expression);
+      }
+
+      if (this.defaultEvaluationContext === null) {
+        throw new Error(
+          `Cannot call '${expression.callee}': value is not a function. at ` +
+            `${expression.calleeToken.line}:` +
+            `${expression.calleeToken.column}`,
+        );
+      }
+    }
+
+    const declaration = this.functions.get(expression.callee);
+
+    if (declaration === undefined) {
+      throw new Error(
+        `Undefined function '${expression.callee}'. at ` +
+          `${expression.calleeToken.line}:${expression.calleeToken.column}`,
+      );
+    }
+
+    return this.callFunction(declaration, expression);
+  }
+
+  protected evaluateMemberCall(expression: MemberCall): RuntimeValue {
+    const receiver = this.evaluateExpression(expression.receiver);
+
+    if (receiver.type === "String") {
+      return this.evaluateStringMemberCall(expression, receiver);
+    }
+
+    if (receiver.type === "Struct") {
+      const method = this.findStructMethod(
+        receiver.name,
+        expression.member.lexeme,
+      );
+
+      if (method === undefined) {
+        throw new Error(
+          `E_MEM_UNKNOWN: Struct '${receiver.name}' has no method ` +
+            `'${expression.member.lexeme}'. at ${expression.member.line}:` +
+            `${expression.member.column}`,
+        );
+      }
+
+      const callExpression: FunctionCall = {
+        type: "FunctionCall",
+        callee: expression.member.lexeme,
+        calleeToken: expression.member,
+        arguments: expression.arguments,
+        argumentNames: expression.argumentNames,
+      };
+
+      return this.callFunction(
+        method,
+        callExpression,
+        receiver,
+        `${receiver.name}.${method.name.lexeme}`,
+      );
+    }
+
+    throw new Error(
+      `E_MEM_TYPE: Type '${this.runtimeTypeName(receiver)}' does not support ` +
+        `member '${expression.member.lexeme}'. at ` +
+        `${expression.member.line}:${expression.member.column}`,
+    );
+  }
+
+  private registerStructs(declarations: StructDeclaration[]): void {
+    for (const declaration of declarations) {
       const name = declaration.name.lexeme;
+
+      if (
+        BUILT_IN_TYPE_NAMES.has(name) ||
+        this.structs.has(name) ||
+        this.findValue(this.environment, name) !== undefined
+      ) {
+        throw this.structDuplicateError(declaration, name);
+      }
+
+      this.validateMemberNames(declaration);
+      this.structs.set(name, declaration);
+    }
+  }
+
+  private registerFunctions(declarations: FunctionDeclaration[]): void {
+    for (const declaration of declarations) {
+      const name = declaration.name.lexeme;
+
+      if (this.structs.has(name)) {
+        const struct = this.structs.get(name)!;
+        throw this.structDuplicateError(struct, name);
+      }
 
       if (this.functions.has(name)) {
         throw new Error(
@@ -43,214 +171,50 @@ export abstract class FunctionEvaluator extends ArgumentBinder {
     }
   }
 
-  protected evaluateFunctionCall(expression: FunctionCall): RuntimeValue {
-    const localValue = this.findValue(
-      this.currentEnvironment,
-      expression.callee,
+  private validateStructBindings(
+    program: Program,
+    declarations: StructDeclaration[],
+  ): void {
+    const structNames = new Set(this.structs.keys());
+    const conflict = findStructBindingConflict(program, structNames);
+
+    if (conflict === null) return;
+
+    const location =
+      conflict.token ??
+      declarations.find(
+        (declaration) => declaration.name.lexeme === conflict.name,
+      )!.name;
+
+    throw new Error(
+      `E_STRUCT_DUP: Struct name '${conflict.name}' cannot be rebound as a ` +
+        `variable or parameter. at ${location.line}:${location.column}`,
     );
-
-    if (
-      localValue !== undefined &&
-      this.currentEnvironment !== this.environment
-    ) {
-      if (localValue.type !== "NativeFunction") {
-        throw new Error(
-          `Cannot call '${expression.callee}': value is not a function. at ` +
-            `${expression.calleeToken.line}:${expression.calleeToken.column}`,
-        );
-      }
-
-      return this.callNativeFunction(localValue, expression);
-    }
-
-    const globalValue = this.findValue(this.environment, expression.callee);
-
-    if (globalValue !== undefined) {
-      if (globalValue.type !== "NativeFunction") {
-        throw new Error(
-          `Cannot call '${expression.callee}': value is not a function. at ` +
-            `${expression.calleeToken.line}:${expression.calleeToken.column}`,
-        );
-      }
-
-      return this.callNativeFunction(globalValue, expression);
-    }
-
-    const declaration = this.functions.get(expression.callee);
-
-    if (declaration === undefined) {
-      throw new Error(
-        `Undefined function '${expression.callee}'. at ` +
-          `${expression.calleeToken.line}:${expression.calleeToken.column}`,
-      );
-    }
-
-    return this.callFunction(declaration, expression);
   }
 
-  protected callNativeFunction(
-    nativeFunction: NativeFunctionValue,
-    callExpression: FunctionCall,
-  ): RuntimeValue {
-    /*
-     * Phase 8 native functions and older test fixtures do not necessarily
-     * provide parameter metadata. Preserve positional native calls for those
-     * functions while Phase 9 metadata-enabled natives support named arguments.
-     */
-    if (nativeFunction.parameters === undefined) {
-      const argumentNames =
-        callExpression.argumentNames ??
-        callExpression.arguments.map(() => null);
+  private validateMemberNames(declaration: StructDeclaration): void {
+    const names = new Set<string>();
 
-      const namedArgument = argumentNames.find(
-        (argumentName) => argumentName !== null,
-      );
-
-      if (namedArgument !== undefined && namedArgument !== null) {
+    for (const member of [...declaration.fields, ...declaration.methods]) {
+      if (names.has(member.name.lexeme)) {
         throw new Error(
-          `Native function '${callExpression.callee}' does not declare ` +
-            `named parameters. at ${namedArgument.line}:` +
-            `${namedArgument.column}`,
+          `E_STRUCT_MEMBER_DUP: Duplicate struct member ` +
+            `'${member.name.lexeme}'. at ${member.name.line}:` +
+            `${member.name.column}`,
         );
       }
 
-      const arguments_ = callExpression.arguments.map((argument) =>
-        this.evaluateExpression(argument),
-      );
-
-      return nativeFunction.call(arguments_);
+      names.add(member.name.lexeme);
     }
-
-    const boundArguments = this.bindSuppliedArguments(
-      callExpression.callee,
-      nativeFunction.parameters,
-      callExpression,
-    );
-
-    const arguments_: RuntimeValue[] = boundArguments.map((argument, index) => {
-      if (argument !== undefined) {
-        return argument;
-      }
-
-      const parameter = nativeFunction.parameters?.[index];
-
-      throw new Error(
-        `Native function '${callExpression.callee}' has no value for ` +
-          `parameter '${parameter?.name ?? index}'. at ` +
-          `${callExpression.calleeToken.line}:` +
-          `${callExpression.calleeToken.column}`,
-      );
-    });
-
-    return nativeFunction.call(arguments_);
   }
 
-  protected callFunction(
-    declaration: FunctionDeclaration,
-    callExpression: FunctionCall,
-  ): RuntimeValue {
-    if (this.functionDepth >= FunctionEvaluator.MAX_FUNCTION_DEPTH) {
-      throw new Error(
-        "Maximum function call depth exceeded while calling " +
-          `'${declaration.name.lexeme}'. at ` +
-          `${callExpression.calleeToken.line}:` +
-          `${callExpression.calleeToken.column}`,
-      );
-    }
-
-    const parameterDefaults =
-      declaration.parameterDefaults ?? declaration.parameters.map(() => null);
-
-    const parameters: NativeFunctionParameter[] = declaration.parameters.map(
-      (parameter, index) => ({
-        name: parameter.lexeme,
-        required: parameterDefaults[index] === null,
-      }),
+  private structDuplicateError(
+    declaration: StructDeclaration,
+    name: string,
+  ): Error {
+    return new Error(
+      `E_STRUCT_DUP: Struct name '${name}' conflicts with an existing type or ` +
+        `value. at ${declaration.name.line}:${declaration.name.column}`,
     );
-
-    const boundArguments = this.bindSuppliedArguments(
-      declaration.name.lexeme,
-      parameters,
-      callExpression,
-    );
-
-    for (let index = 0; index < declaration.parameters.length; index++) {
-      if (boundArguments[index] !== undefined) {
-        continue;
-      }
-
-      const defaultExpression = parameterDefaults[index];
-
-      if (defaultExpression === null || defaultExpression === undefined) {
-        const parameter = declaration.parameters[index]!;
-
-        throw new Error(
-          `Function '${declaration.name.lexeme}' is missing required argument ` +
-            `'${parameter.lexeme}'. at ` +
-            `${callExpression.calleeToken.line}:` +
-            `${callExpression.calleeToken.column}`,
-        );
-      }
-
-      boundArguments[index] = this.evaluateDefaultExpression(defaultExpression);
-    }
-
-    const previousEnvironment = this.currentEnvironment;
-    const previousFunction = this.currentFunction;
-    const previousParameterTypes = this.currentParameterTypes;
-    const localEnvironment = new Environment();
-    const parameterTypes = new Map<string, TypeAnnotation | null>();
-
-    for (let index = 0; index < declaration.parameters.length; index++) {
-      const parameter = declaration.parameters[index]!;
-      const argument = boundArguments[index]!;
-      const parameterType = declaration.parameterTypes?.[index] ?? null;
-
-      this.assertParameterType(
-        declaration,
-        parameter,
-        parameterType,
-        argument,
-        callExpression,
-      );
-
-      localEnvironment.define(parameter.lexeme, argument);
-      parameterTypes.set(parameter.lexeme, parameterType);
-    }
-
-    this.currentEnvironment = localEnvironment;
-    this.currentFunction = declaration;
-    this.currentParameterTypes = parameterTypes;
-    this.functionDepth++;
-
-    try {
-      const result = this.evaluateExpressionBlock(declaration.expressions);
-
-      this.assertReturnType(declaration, result);
-
-      return result;
-    } catch (error) {
-      if (error instanceof ReturnSignal) {
-        this.assertReturnType(declaration, error.value);
-
-        return error.value;
-      }
-
-      if (error instanceof RangeError) {
-        throw new Error(
-          "Maximum function call depth exceeded while calling " +
-            `'${declaration.name.lexeme}'. at ` +
-            `${callExpression.calleeToken.line}:` +
-            `${callExpression.calleeToken.column}`,
-        );
-      }
-
-      throw error;
-    } finally {
-      this.functionDepth--;
-      this.currentEnvironment = previousEnvironment;
-      this.currentFunction = previousFunction;
-      this.currentParameterTypes = previousParameterTypes;
-    }
   }
 }

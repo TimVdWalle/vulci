@@ -1,4 +1,4 @@
-// Phase 11
+// Phase 13
 
 export enum TokenType {
   Integer,
@@ -10,6 +10,7 @@ export enum TokenType {
   If,
   Else,
   Fn,
+  Struct,
   Return,
   Returns,
   And,

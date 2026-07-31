@@ -1,4 +1,4 @@
-// Phase 12
+// Phase 13
 
 import {
   BooleanLiteral,
@@ -105,6 +105,10 @@ export abstract class PrimaryExpressionParser extends CallParser {
       if (this.match(TokenType.LeftParen)) {
         if (identifier.lexeme === "object") {
           return this.finishAnonymousObject(identifier);
+        }
+
+        if (this.isStructName(identifier.lexeme)) {
+          return this.finishStructConstruction(identifier);
         }
 
         return this.finishFunctionCall(identifier);

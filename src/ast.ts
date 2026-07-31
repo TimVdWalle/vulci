@@ -1,4 +1,4 @@
-// Phase 12
+// Phase 13
 
 import { Token } from "./token.js";
 
@@ -21,9 +21,11 @@ export type Expression =
   | NullLiteral
   | TupleLiteral
   | AnonymousObjectLiteral
+  | StructConstruction
   | VariableReference
   | AssignmentExpression
   | FunctionDeclaration
+  | StructDeclaration
   | FunctionCall
   | MemberCall
   | MemberAccess
@@ -83,24 +85,44 @@ export interface AnonymousObjectLiteral {
   fields: AnonymousObjectField[];
 }
 
+export interface StructConstructionField {
+  name: Token;
+  value: Expression;
+}
+
+export interface StructConstruction {
+  type: "StructConstruction";
+  constructor: Token;
+  fields: StructConstructionField[];
+}
+
 export interface VariableReference {
   type: "VariableReference";
   name: string;
   token: Token;
 }
 
-export interface AssignmentExpression {
+export interface VariableAssignmentExpression {
   type: "AssignmentExpression";
   name: string;
   value: Expression;
 }
+
+export interface MemberAssignmentExpression {
+  type: "AssignmentExpression";
+  target: MemberAccess;
+  value: Expression;
+}
+
+export type AssignmentExpression =
+  VariableAssignmentExpression | MemberAssignmentExpression;
 
 export type BuiltInTypeName =
   "int" | "bool" | "str" | "list" | "set" | "map" | "any" | "null";
 
 export interface NamedTypeMember {
   type: "NamedType";
-  lexeme: BuiltInTypeName;
+  lexeme: string;
   token: Token;
 }
 
@@ -126,6 +148,20 @@ export interface FunctionDeclaration {
   parameterDefaults: (Expression | null)[];
   returnType?: TypeAnnotation;
   expressions: Expression[];
+}
+
+export interface StructFieldDeclaration {
+  name: Token;
+  fieldType: TypeAnnotation;
+  defaultValue: Expression | null;
+}
+
+export interface StructDeclaration {
+  type: "StructDeclaration";
+  keyword: Token;
+  name: Token;
+  fields: StructFieldDeclaration[];
+  methods: FunctionDeclaration[];
 }
 
 export interface FunctionCall {
@@ -154,6 +190,7 @@ export interface MemberCall {
   receiver: Expression;
   member: Token;
   arguments: Expression[];
+  argumentNames: (Token | null)[];
 }
 
 export interface ReturnExpression {

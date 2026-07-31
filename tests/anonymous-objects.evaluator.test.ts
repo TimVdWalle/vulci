@@ -1,4 +1,4 @@
-// Phase 12
+// Phase 13
 
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -89,6 +89,15 @@ copy.pair[0]
     type: "Integer",
     value: 1,
   });
+});
+
+test("rejects anonymous-object field assignment at runtime", () => {
+  assert.throws(
+    () =>
+      evaluate(`user = object(name: "Tim")
+user.name = "Bob"`),
+    /E_MEM_TYPE:/,
+  );
 });
 
 test("reports unknown fields", () => {

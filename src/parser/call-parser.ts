@@ -1,8 +1,13 @@
-// Phase 12
+// Phase 13
 
 import { Expression, FunctionCall, MemberAccess, MemberCall } from "../ast.js";
 import { Token, TokenType } from "../token.js";
 import { ObjectParser } from "./object-parser.js";
+
+interface ParsedArguments {
+  arguments: Expression[];
+  argumentNames: (Token | null)[];
+}
 
 export abstract class CallParser extends ObjectParser {
   protected finishMember(receiver: Expression): MemberAccess | MemberCall {
@@ -15,29 +20,118 @@ export abstract class CallParser extends ObjectParser {
       return { type: "MemberAccess", receiver, member };
     }
 
-    const arguments_: Expression[] = [];
-    this.skipNewlines();
+    const parsed = this.finishArguments("Expected ')' after member arguments.");
 
-    while (!this.check(TokenType.RightParen)) {
-      if (this.check(TokenType.Comma)) {
-        throw this.error(this.peek(), "Expected argument before ','.");
-      }
-      arguments_.push(this.expression());
-      this.skipNewlines();
-      if (!this.match(TokenType.Comma)) break;
-      this.skipNewlines();
-      if (this.check(TokenType.RightParen)) break;
-    }
-
-    this.consume(TokenType.RightParen, "Expected ')' after member arguments.");
-    return { type: "MemberCall", receiver, member, arguments: arguments_ };
+    return {
+      type: "MemberCall",
+      receiver,
+      member,
+      arguments: parsed.arguments,
+      argumentNames: parsed.argumentNames,
+    };
   }
 
   protected finishFunctionCall(calleeToken: Token): FunctionCall {
+    const parsed = this.finishArguments(
+      "Expected ')' after function arguments.",
+    );
+
+    return {
+      type: "FunctionCall",
+      callee: calleeToken.lexeme,
+      calleeToken,
+      arguments: parsed.arguments,
+      argumentNames: parsed.argumentNames,
+    };
+  }
+
+  protected containsAssignment(expression: Expression): boolean {
+    switch (expression.type) {
+      case "AssignmentExpression":
+        return true;
+      case "UnaryExpression":
+        return this.containsAssignment(expression.operand);
+      case "BinaryExpression":
+        return (
+          this.containsAssignment(expression.left) ||
+          this.containsAssignment(expression.right)
+        );
+      case "ComparisonChainExpression":
+        return expression.operands.some((operand) =>
+          this.containsAssignment(operand),
+        );
+      case "ConditionalExpression":
+        return (
+          expression.branches.some(
+            (branch) =>
+              this.containsAssignment(branch.condition) ||
+              branch.expressions.some((item) => this.containsAssignment(item)),
+          ) ||
+          (expression.elseExpressions?.some((item) =>
+            this.containsAssignment(item),
+          ) ??
+            false)
+        );
+      case "FunctionCall":
+      case "MemberCall":
+        return (
+          (expression.type === "MemberCall" &&
+            this.containsAssignment(expression.receiver)) ||
+          expression.arguments.some((argument) =>
+            this.containsAssignment(argument),
+          )
+        );
+      case "MemberAccess":
+        return this.containsAssignment(expression.receiver);
+      case "IndexExpression":
+        return (
+          this.containsAssignment(expression.target) ||
+          this.containsAssignment(expression.index)
+        );
+      case "AnonymousObjectLiteral":
+      case "StructConstruction":
+        return expression.fields.some((field) =>
+          this.containsAssignment(field.value),
+        );
+      case "TupleLiteral":
+        return expression.members.some((member) =>
+          this.containsAssignment(member),
+        );
+      case "StringLiteral":
+        return expression.segments.some(
+          (segment) =>
+            segment.type === "Interpolation" &&
+            this.containsAssignment(segment.expression),
+        );
+      case "ReturnExpression":
+        return (
+          expression.value !== null && this.containsAssignment(expression.value)
+        );
+      case "FunctionDeclaration":
+        return expression.expressions.some((item) =>
+          this.containsAssignment(item),
+        );
+      case "StructDeclaration":
+        return (
+          expression.fields.some(
+            (field) =>
+              field.defaultValue !== null &&
+              this.containsAssignment(field.defaultValue),
+          ) ||
+          expression.methods.some((method) => this.containsAssignment(method))
+        );
+      case "IntegerLiteral":
+      case "BooleanLiteral":
+      case "NullLiteral":
+      case "VariableReference":
+        return false;
+    }
+  }
+
+  private finishArguments(closingMessage: string): ParsedArguments {
     const arguments_: Expression[] = [];
     const argumentNames: (Token | null)[] = [];
     const namedArguments = new Set<string>();
-
     let hasNamedArgument = false;
 
     this.skipNewlines();
@@ -51,7 +145,6 @@ export abstract class CallParser extends ObjectParser {
 
       if (this.check(TokenType.Identifier) && this.checkNext(TokenType.Colon)) {
         argumentName = this.advance();
-
         this.advance();
         this.skipNewlines();
 
@@ -73,116 +166,14 @@ export abstract class CallParser extends ObjectParser {
 
       arguments_.push(this.expression());
       argumentNames.push(argumentName);
-
       this.skipNewlines();
 
-      if (!this.match(TokenType.Comma)) {
-        break;
-      }
-
+      if (!this.match(TokenType.Comma)) break;
       this.skipNewlines();
-
-      if (this.check(TokenType.RightParen)) {
-        break;
-      }
+      if (this.check(TokenType.RightParen)) break;
     }
 
-    this.consume(
-      TokenType.RightParen,
-      "Expected ')' after function arguments.",
-    );
-
-    return {
-      type: "FunctionCall",
-      callee: calleeToken.lexeme,
-      calleeToken,
-      arguments: arguments_,
-      argumentNames,
-    };
-  }
-
-  protected containsAssignment(expression: Expression): boolean {
-    switch (expression.type) {
-      case "AssignmentExpression":
-        return true;
-
-      case "UnaryExpression":
-        return this.containsAssignment(expression.operand);
-
-      case "BinaryExpression":
-        return (
-          this.containsAssignment(expression.left) ||
-          this.containsAssignment(expression.right)
-        );
-
-      case "ComparisonChainExpression":
-        return expression.operands.some((operand) =>
-          this.containsAssignment(operand),
-        );
-
-      case "ConditionalExpression":
-        return (
-          expression.branches.some(
-            (branch) =>
-              this.containsAssignment(branch.condition) ||
-              branch.expressions.some((branchExpression) =>
-                this.containsAssignment(branchExpression),
-              ),
-          ) ||
-          (expression.elseExpressions?.some((elseExpression) =>
-            this.containsAssignment(elseExpression),
-          ) ??
-            false)
-        );
-
-      case "FunctionCall":
-        return expression.arguments.some((argument) =>
-          this.containsAssignment(argument),
-        );
-
-      case "MemberAccess":
-        return this.containsAssignment(expression.receiver);
-
-      case "MemberCall":
-        return (
-          this.containsAssignment(expression.receiver) ||
-          expression.arguments.some((argument) =>
-            this.containsAssignment(argument),
-          )
-        );
-
-      case "IndexExpression":
-        return (
-          this.containsAssignment(expression.target) ||
-          this.containsAssignment(expression.index)
-        );
-
-      case "AnonymousObjectLiteral":
-        return expression.fields.some((field) =>
-          this.containsAssignment(field.value),
-        );
-
-      case "TupleLiteral":
-        return expression.members.some((member) =>
-          this.containsAssignment(member),
-        );
-
-      case "ReturnExpression":
-        return (
-          expression.value !== null && this.containsAssignment(expression.value)
-        );
-
-      case "FunctionDeclaration":
-        return expression.expressions.some((bodyExpression) =>
-          this.containsAssignment(bodyExpression),
-        );
-
-      case "IntegerLiteral":
-      case "StringLiteral":
-      case "BooleanLiteral":
-      case "NullLiteral":
-      case "VariableReference":
-        return false;
-    }
+    this.consume(TokenType.RightParen, closingMessage);
+    return { arguments: arguments_, argumentNames };
   }
 }

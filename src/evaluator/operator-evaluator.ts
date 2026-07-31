@@ -1,4 +1,4 @@
-// Phase 12
+// Phase 13
 
 import { Expression } from "../ast.js";
 import {
@@ -9,6 +9,7 @@ import {
 } from "../runtime-value.js";
 import { Token, TokenType } from "../token.js";
 import { ComparisonEvaluator } from "./comparison-evaluator.js";
+import { runtimeValuesEqual } from "./runtime-equality.js";
 
 export abstract class OperatorEvaluator extends ComparisonEvaluator {
   protected evaluateUnaryExpression(
@@ -180,27 +181,15 @@ export abstract class OperatorEvaluator extends ComparisonEvaluator {
     right: RuntimeValue,
     operator: Token,
   ): boolean {
-    if (left.type === "Integer" && right.type === "Integer") {
-      return left.value === right.value;
+    try {
+      return runtimeValuesEqual(left, right);
+    } catch {
+      throw new Error(
+        `Operator '${operator.lexeme}' requires operands ` +
+          `of the same type. at ` +
+          `${operator.line}:${operator.column}`,
+      );
     }
-
-    if (left.type === "String" && right.type === "String") {
-      return left.value === right.value;
-    }
-
-    if (left.type === "Boolean" && right.type === "Boolean") {
-      return left.value === right.value;
-    }
-
-    if (left.type === "Null" && right.type === "Null") {
-      return true;
-    }
-
-    throw new Error(
-      `Operator '${operator.lexeme}' requires operands ` +
-        `of the same type. at ` +
-        `${operator.line}:${operator.column}`,
-    );
   }
 
   protected evaluateOrderingComparison(

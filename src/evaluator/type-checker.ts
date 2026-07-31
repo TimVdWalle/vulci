@@ -1,4 +1,4 @@
-// Phase 12
+// Phase 13
 
 import {
   FunctionCall,
@@ -81,6 +81,8 @@ export abstract class TypeChecker extends EvaluatorContext {
       case "set":
       case "map":
         return false;
+      default:
+        return value.type === "Struct" && value.name === member.lexeme;
     }
   }
 
@@ -96,6 +98,6 @@ export abstract class TypeChecker extends EvaluatorContext {
   }
 
   protected runtimeTypeName(value: RuntimeValue): string {
-    return value.type.toLowerCase();
+    return value.type === "Struct" ? value.name : value.type.toLowerCase();
   }
 }

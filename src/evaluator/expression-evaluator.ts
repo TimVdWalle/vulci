@@ -1,4 +1,4 @@
-// Phase 12
+// Phase 13
 
 import {
   ConditionalExpression,
@@ -54,6 +54,9 @@ export abstract class ExpressionEvaluator extends FunctionEvaluator {
           })),
         };
 
+      case "StructConstruction":
+        return this.evaluateStructConstruction(expression);
+
       case "TupleLiteral":
         return {
           type: "Tuple",
@@ -65,15 +68,33 @@ export abstract class ExpressionEvaluator extends FunctionEvaluator {
       case "VariableReference":
         return this.evaluateBareIdentifier(expression);
 
-      case "AssignmentExpression": {
-        const value = this.evaluateExpression(expression.value);
+      case "AssignmentExpression":
+        if ("target" in expression) {
+          return this.evaluateMemberAssignment(
+            expression.target,
+            expression.value,
+          );
+        }
 
-        this.assignVariable(expression.name, value);
+        if (expression.name === "self") {
+          const code =
+            this.currentSelf === null ? "E_SELF_CONTEXT" : "E_SELF_ASSIGN";
+          const message =
+            this.currentSelf === null
+              ? "'self' can only be used inside a struct method."
+              : "The 'self' binding cannot be reassigned.";
 
-        return value;
-      }
+          throw new Error(`${code}: ${message}`);
+        }
+
+        {
+          const value = this.evaluateExpression(expression.value);
+          this.assignVariable(expression.name, value);
+          return value;
+        }
 
       case "FunctionDeclaration":
+      case "StructDeclaration":
         return NULL_VALUE;
 
       case "FunctionCall":
@@ -157,6 +178,17 @@ export abstract class ExpressionEvaluator extends FunctionEvaluator {
   protected evaluateBareIdentifier(
     expression: VariableReference,
   ): RuntimeValue {
+    if (expression.name === "self") {
+      if (this.currentSelf === null) {
+        throw new Error(
+          `E_SELF_CONTEXT: 'self' can only be used inside a struct method. at ` +
+            `${expression.token.line}:${expression.token.column}`,
+        );
+      }
+
+      return this.currentSelf;
+    }
+
     if (expression.name.startsWith("$")) {
       return this.environment.get(expression.name);
     }
@@ -191,7 +223,7 @@ export abstract class ExpressionEvaluator extends FunctionEvaluator {
           });
         }
 
-        return globalValue;
+        if (this.defaultEvaluationContext === null) return globalValue;
       }
     }
 

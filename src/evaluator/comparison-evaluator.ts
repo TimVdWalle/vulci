@@ -1,8 +1,9 @@
-// Phase 12
+// Phase 13
 
 import { ComparisonChainExpression } from "../ast.js";
 import { FALSE_VALUE, RuntimeValue, TRUE_VALUE } from "../runtime-value.js";
 import { Token, TokenType } from "../token.js";
+import { runtimeValuesEqual } from "./runtime-equality.js";
 import { StringEvaluator } from "./string-evaluator.js";
 
 function booleanValue(value: boolean): typeof TRUE_VALUE | typeof FALSE_VALUE {
@@ -73,32 +74,14 @@ export abstract class ComparisonEvaluator extends StringEvaluator {
     right: RuntimeValue,
     operator: Token,
   ): boolean {
-    if (left.type !== right.type) {
+    try {
+      return runtimeValuesEqual(left, right);
+    } catch {
       throw new Error(
         "Invalid operand type in chained comparison: " +
-          `operator '${operator.lexeme}' requires operands of the same type. ` +
-          `at ${operator.line}:${operator.column}`,
+          `operator '${operator.lexeme}' requires operands of the same ` +
+          `type. at ${operator.line}:${operator.column}`,
       );
-    }
-
-    switch (left.type) {
-      case "Integer":
-        return right.type === "Integer" && left.value === right.value;
-      case "String":
-        return right.type === "String" && left.value === right.value;
-      case "Boolean":
-        return right.type === "Boolean" && left.value === right.value;
-      case "Null":
-        return right.type === "Null";
-      case "Tuple":
-      case "AnonymousObject":
-        throw new Error(
-          "Invalid operand type in chained comparison: " +
-            `operator '${operator.lexeme}' does not support compound values. at ` +
-            `${operator.line}:${operator.column}`,
-        );
-      case "NativeFunction":
-        return left === right;
     }
   }
 }
