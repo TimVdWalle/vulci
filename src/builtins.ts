@@ -1,4 +1,4 @@
-// Phase 12
+// Phase 13
 
 import { Environment } from "./environment.js";
 import { NULL_VALUE, RuntimeValue } from "./runtime-value.js";
@@ -43,6 +43,11 @@ function formatValue(value: RuntimeValue): string {
 
     case "AnonymousObject":
       return `object(${value.fields
+        .map((field) => `${field.name}: ${formatValue(field.value)}`)
+        .join(", ")})`;
+
+    case "Struct":
+      return `${value.name}(${value.fields
         .map((field) => `${field.name}: ${formatValue(field.value)}`)
         .join(", ")})`;
 

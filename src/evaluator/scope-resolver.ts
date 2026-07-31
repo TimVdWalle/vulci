@@ -1,4 +1,4 @@
-// Phase 11
+// Phase 13
 
 import { Environment } from "../environment.js";
 import { RuntimeValue } from "../runtime-value.js";
@@ -7,7 +7,29 @@ import { copyRuntimeValue } from "./value-copy.js";
 
 export abstract class ScopeResolver extends TypeChecker {
   protected assignVariable(name: string, value: RuntimeValue): void {
-    value = copyRuntimeValue(value);
+    if (name === "self") {
+      const code =
+        this.currentSelf === null ? "E_SELF_CONTEXT" : "E_SELF_ASSIGN";
+      const message =
+        this.currentSelf === null
+          ? "'self' can only be used inside a struct method."
+          : "The 'self' binding cannot be reassigned.";
+
+      throw new Error(`${code}: ${message}`);
+    }
+
+    if (this.defaultEvaluationContext !== null) {
+      throw new Error("Assignments are not allowed in default expressions.");
+    }
+
+    if (this.structs.has(name)) {
+      throw new Error(
+        `E_STRUCT_DUP: Struct name '${name}' cannot be rebound as a variable.`,
+      );
+    }
+
+    const assignedValue = copyRuntimeValue(value);
+
     if (name.startsWith("$")) {
       if (
         this.currentEnvironment !== this.environment &&
@@ -19,8 +41,7 @@ export abstract class ScopeResolver extends TypeChecker {
         );
       }
 
-      this.environment.define(name, value);
-
+      this.environment.define(name, assignedValue);
       return;
     }
 
@@ -33,24 +54,26 @@ export abstract class ScopeResolver extends TypeChecker {
 
     const parameterType = this.currentParameterTypes.get(name);
 
-    if (parameterType !== undefined && parameterType !== null) {
-      if (!this.valueMatchesType(value, parameterType)) {
-        const declaration = this.currentFunction;
+    if (
+      parameterType !== undefined &&
+      parameterType !== null &&
+      !this.valueMatchesType(assignedValue, parameterType)
+    ) {
+      const declaration = this.currentFunction;
+      const parameter = declaration?.parameters.find(
+        (candidate) => candidate.lexeme === name,
+      );
 
-        const parameter = declaration?.parameters.find(
-          (candidate) => candidate.lexeme === name,
-        );
-
-        throw new Error(
-          `Cannot assign ${this.runtimeTypeName(value)} to parameter '${name}' ` +
-            `of function '${declaration?.name.lexeme ?? "<unknown>"}': expected ` +
-            `${this.typeAnnotationName(parameterType)}. at ` +
-            `${parameter?.line ?? 0}:${parameter?.column ?? 0}`,
-        );
-      }
+      throw new Error(
+        `Cannot assign ${this.runtimeTypeName(assignedValue)} to parameter ` +
+          `'${name}' of function ` +
+          `'${declaration?.name.lexeme ?? "<unknown>"}': expected ` +
+          `${this.typeAnnotationName(parameterType)}. at ` +
+          `${parameter?.line ?? 0}:${parameter?.column ?? 0}`,
+      );
     }
 
-    this.currentEnvironment.define(name, value);
+    this.currentEnvironment.define(name, assignedValue);
   }
 
   protected findValue(

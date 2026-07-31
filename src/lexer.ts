@@ -1,25 +1,11 @@
-// Phase 11
+// Phase 13
 
+import { LexerState } from "./lexer/lexer-state.js";
 import { Token, TokenType } from "./token.js";
-import { scanStringLiteral } from "./string-lexer.js";
 
-export class Lexer {
-  private readonly source: string;
-
-  private tokens: Token[] = [];
-
-  private current = 0;
-  private line = 1;
-  private column = 1;
-
-  constructor(source: string) {
-    this.source = source;
-  }
-
+export class Lexer extends LexerState {
   public lex(): Token[] {
-    while (!this.isAtEnd()) {
-      this.scanToken();
-    }
+    while (!this.isAtEnd()) this.scanToken();
 
     this.tokens.push({
       type: TokenType.EOF,
@@ -34,434 +20,163 @@ export class Lexer {
   private scanToken(): void {
     const startLine = this.line;
     const startColumn = this.column;
+    const character = this.advance();
 
-    const c = this.advance();
-
-    switch (c) {
+    switch (character) {
       case " ":
-        return;
-
       case "\t":
-        return;
-
       case "\r":
         return;
-
       case "\n":
         this.addToken(TokenType.Newline, "\n", startLine, startColumn);
         this.line++;
         this.column = 1;
         return;
-
       case "=":
-        if (this.match("=")) {
-          this.addToken(TokenType.EqualEqual, "==", startLine, startColumn);
-          return;
-        }
-
-        this.addToken(TokenType.Assign, "=", startLine, startColumn);
+        this.scanEquals(startLine, startColumn);
         return;
-
       case "!":
-        if (this.match("=")) {
-          this.addToken(TokenType.BangEqual, "!=", startLine, startColumn);
-          return;
-        }
-
-        throw new Error(
-          `Unexpected character '${c}' at ${startLine}:${startColumn}`,
+        this.scanBang(startLine, startColumn);
+        return;
+      case "<": {
+        const inclusive = this.match("=");
+        this.addToken(
+          inclusive ? TokenType.LessEqual : TokenType.Less,
+          inclusive ? "<=" : "<",
+          startLine,
+          startColumn,
         );
-
-      case "<":
-        if (this.match("=")) {
-          this.addToken(TokenType.LessEqual, "<=", startLine, startColumn);
-          return;
-        }
-
-        this.addToken(TokenType.Less, c, startLine, startColumn);
         return;
-
-      case ">":
-        if (this.match("=")) {
-          this.addToken(TokenType.GreaterEqual, ">=", startLine, startColumn);
-          return;
-        }
-
-        this.addToken(TokenType.Greater, c, startLine, startColumn);
+      }
+      case ">": {
+        const inclusive = this.match("=");
+        this.addToken(
+          inclusive ? TokenType.GreaterEqual : TokenType.Greater,
+          inclusive ? ">=" : ">",
+          startLine,
+          startColumn,
+        );
         return;
-
+      }
       case "+":
-        this.addToken(TokenType.Plus, c, startLine, startColumn);
+        this.addToken(TokenType.Plus, character, startLine, startColumn);
         return;
-
       case "~":
-        this.addToken(TokenType.Tilde, c, startLine, startColumn);
+        this.addToken(TokenType.Tilde, character, startLine, startColumn);
         return;
-
       case "-":
-        this.addToken(TokenType.Minus, c, startLine, startColumn);
+        this.addToken(TokenType.Minus, character, startLine, startColumn);
         return;
-
       case "*":
-        this.addToken(TokenType.Star, c, startLine, startColumn);
+        this.addToken(TokenType.Star, character, startLine, startColumn);
         return;
-
       case "/":
-        if (this.match("/")) {
-          while (!this.isAtEnd() && this.peek() !== "\n") {
-            this.advance();
-          }
-
-          return;
-        }
-
-        if (this.match("*")) {
-          this.blockComment(startLine, startColumn);
-          return;
-        }
-
-        this.addToken(TokenType.Slash, c, startLine, startColumn);
+        this.scanSlash(startLine, startColumn);
         return;
-
       case "%":
-        this.addToken(TokenType.Percent, c, startLine, startColumn);
+        this.addToken(TokenType.Percent, character, startLine, startColumn);
         return;
-
       case ".":
-        this.addToken(TokenType.Dot, c, startLine, startColumn);
+        this.addToken(TokenType.Dot, character, startLine, startColumn);
         return;
-
       case '"':
       case "'":
-        this.string(startLine, startColumn);
+        this.scanString(startLine, startColumn);
         return;
-
       case "|":
         this.addToken(
           TokenType.Pipe,
-          c,
+          character,
           startLine,
           startColumn,
           this.hasWhitespaceBeforeCurrentToken(),
           this.hasWhitespaceAfterCurrentToken(),
         );
         return;
-
       case "(":
-        this.addToken(TokenType.LeftParen, c, startLine, startColumn);
+        this.addToken(TokenType.LeftParen, character, startLine, startColumn);
         return;
-
       case ")":
-        this.addToken(TokenType.RightParen, c, startLine, startColumn);
+        this.addToken(TokenType.RightParen, character, startLine, startColumn);
         return;
-
       case "[":
-        this.addToken(TokenType.LeftBracket, c, startLine, startColumn);
+        this.addToken(TokenType.LeftBracket, character, startLine, startColumn);
         return;
-
       case "]":
-        this.addToken(TokenType.RightBracket, c, startLine, startColumn);
-        return;
-
-      case "{":
-        this.addToken(TokenType.LeftBrace, c, startLine, startColumn);
-        return;
-
-      case "}":
-        this.addToken(TokenType.RightBrace, c, startLine, startColumn);
-        return;
-
-      case ",":
-        this.addToken(TokenType.Comma, c, startLine, startColumn);
-        return;
-
-      case ":":
-        this.addToken(TokenType.Colon, c, startLine, startColumn);
-        return;
-
-      case "$":
-        this.globalIdentifier(startLine, startColumn);
-        return;
-
-      default:
-        if (this.isDigit(c)) {
-          this.integer(startLine, startColumn);
-          return;
-        }
-
-        if (c === "_" && this.isDigit(this.peek())) {
-          throw new Error(
-            `Invalid integer separator at ${startLine}:${startColumn}`,
-          );
-        }
-
-        if (this.isIdentifierStart(c)) {
-          this.identifier(startLine, startColumn);
-          return;
-        }
-
-        throw new Error(
-          `Unexpected character '${c}' at ${startLine}:${startColumn}`,
+        this.addToken(
+          TokenType.RightBracket,
+          character,
+          startLine,
+          startColumn,
         );
-    }
-  }
-
-  private string(line: number, column: number): void {
-    const start = this.current - 1;
-    const result = scanStringLiteral(this.source, start, line, column);
-
-    this.current = result.end;
-    this.line = result.line;
-    this.column = result.column;
-
-    const token: Token = {
-      type: TokenType.String,
-      lexeme: result.lexeme,
-      line,
-      column,
-      stringSegments: result.segments,
-    };
-
-    this.tokens.push(token);
-  }
-
-  private blockComment(line: number, column: number): void {
-    let depth = 1;
-
-    while (!this.isAtEnd()) {
-      if (this.peek() === "/" && this.peekNext() === "*") {
-        this.advance();
-        this.advance();
-        depth++;
-        continue;
-      }
-
-      if (this.peek() === "*" && this.peekNext() === "/") {
-        this.advance();
-        this.advance();
-        depth--;
-
-        if (depth === 0) {
-          return;
-        }
-
-        continue;
-      }
-
-      const c = this.advance();
-
-      if (c === "\n") {
-        this.line++;
-        this.column = 1;
-      }
-    }
-
-    throw new Error(`Unterminated block comment at ${line}:${column}`);
-  }
-
-  private integer(line: number, column: number): void {
-    const start = this.current - 1;
-
-    while (this.isDigit(this.peek()) || this.peek() === "_") {
-      if (this.peek() === "_") {
-        const separatorLine = this.line;
-        const separatorColumn = this.column;
-
-        this.advance();
-
-        if (!this.isDigit(this.peek())) {
-          throw new Error(
-            `Invalid integer separator at ${separatorLine}:${separatorColumn}`,
-          );
-        }
-
-        continue;
-      }
-
-      this.advance();
-    }
-
-    this.addToken(
-      TokenType.Integer,
-      this.source.slice(start, this.current),
-      line,
-      column,
-    );
-  }
-
-  private identifier(line: number, column: number): void {
-    const start = this.current - 1;
-
-    while (this.isIdentifierPart(this.peek())) {
-      this.advance();
-    }
-
-    const lexeme = this.source.slice(start, this.current);
-
-    let type: TokenType;
-
-    switch (lexeme) {
-      case "true":
-        type = TokenType.True;
-        break;
-
-      case "false":
-        type = TokenType.False;
-        break;
-
-      case "null":
-        type = TokenType.Null;
-        break;
-
-      case "if":
-        type = TokenType.If;
-        break;
-
-      case "else":
-        type = TokenType.Else;
-        break;
-
-      case "fn":
-        type = TokenType.Fn;
-        break;
-
-      case "return":
-        type = TokenType.Return;
-        break;
-
-      case "returns":
-        type = TokenType.Returns;
-        break;
-
-      case "and":
-        type = TokenType.And;
-        break;
-
-      case "or":
-        type = TokenType.Or;
-        break;
-
-      case "not":
-        type = TokenType.Not;
-        break;
-
+        return;
+      case "{":
+        this.addToken(TokenType.LeftBrace, character, startLine, startColumn);
+        return;
+      case "}":
+        this.addToken(TokenType.RightBrace, character, startLine, startColumn);
+        return;
+      case ",":
+        this.addToken(TokenType.Comma, character, startLine, startColumn);
+        return;
+      case ":":
+        this.addToken(TokenType.Colon, character, startLine, startColumn);
+        return;
+      case "$":
+        this.scanGlobalIdentifier(startLine, startColumn);
+        return;
       default:
-        type = TokenType.Identifier;
+        this.scanWordOrNumber(character, startLine, startColumn);
     }
-
-    this.addToken(type, lexeme, line, column);
   }
 
-  private globalIdentifier(line: number, column: number): void {
-    const start = this.current - 1;
-
-    if (!this.isIdentifierStart(this.peek())) {
-      throw new Error(`Invalid global identifier at ${line}:${column}`);
+  private scanEquals(line: number, column: number): void {
+    if (this.match("=")) {
+      this.addToken(TokenType.EqualEqual, "==", line, column);
+      return;
     }
-
-    while (this.isIdentifierPart(this.peek())) {
-      this.advance();
-    }
-
-    this.addToken(
-      TokenType.Identifier,
-      this.source.slice(start, this.current),
-      line,
-      column,
-    );
+    this.addToken(TokenType.Assign, "=", line, column);
   }
 
-  private addToken(
-    type: TokenType,
-    lexeme: string,
+  private scanBang(line: number, column: number): void {
+    if (this.match("=")) {
+      this.addToken(TokenType.BangEqual, "!=", line, column);
+      return;
+    }
+    throw new Error(`Unexpected character '!' at ${line}:${column}`);
+  }
+
+  private scanSlash(line: number, column: number): void {
+    if (this.match("/")) {
+      while (!this.isAtEnd() && this.peek() !== "\n") this.advance();
+      return;
+    }
+    if (this.match("*")) {
+      this.scanBlockComment(line, column);
+      return;
+    }
+    this.addToken(TokenType.Slash, "/", line, column);
+  }
+
+  private scanWordOrNumber(
+    character: string,
     line: number,
     column: number,
-    whitespaceBefore?: boolean,
-    whitespaceAfter?: boolean,
   ): void {
-    const token: Token = {
-      type,
-      lexeme,
-      line,
-      column,
-    };
-
-    if (whitespaceBefore !== undefined) {
-      token.whitespaceBefore = whitespaceBefore;
+    if (this.isDigit(character)) {
+      this.scanInteger(line, column);
+      return;
     }
 
-    if (whitespaceAfter !== undefined) {
-      token.whitespaceAfter = whitespaceAfter;
+    if (character === "_" && this.isDigit(this.peek())) {
+      throw new Error(`Invalid integer separator at ${line}:${column}`);
     }
 
-    this.tokens.push(token);
-  }
-
-  private hasWhitespaceBeforeCurrentToken(): boolean {
-    const previous = this.source[this.current - 2];
-
-    return previous === " " || previous === "\t" || previous === "\r";
-  }
-
-  private hasWhitespaceAfterCurrentToken(): boolean {
-    const next = this.source[this.current];
-
-    return next === " " || next === "\t" || next === "\r";
-  }
-
-  private advance(): string {
-    const c = this.source[this.current];
-
-    this.current++;
-    this.column++;
-
-    return c ?? "\0";
-  }
-
-  private match(expected: string): boolean {
-    if (this.isAtEnd()) {
-      return false;
+    if (this.isIdentifierStart(character)) {
+      this.scanIdentifier(line, column);
+      return;
     }
 
-    if (this.source[this.current] !== expected) {
-      return false;
-    }
-
-    this.current++;
-    this.column++;
-
-    return true;
-  }
-
-  private peek(): string {
-    if (this.isAtEnd()) {
-      return "\0";
-    }
-
-    return this.source[this.current] ?? "\0";
-  }
-
-  private peekNext(): string {
-    if (this.current + 1 >= this.source.length) {
-      return "\0";
-    }
-
-    return this.source[this.current + 1] ?? "\0";
-  }
-
-  private isDigit(c: string): boolean {
-    return c >= "0" && c <= "9";
-  }
-
-  private isIdentifierStart(c: string): boolean {
-    return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z") || c === "_";
-  }
-
-  private isIdentifierPart(c: string): boolean {
-    return this.isIdentifierStart(c) || this.isDigit(c);
-  }
-
-  private isAtEnd(): boolean {
-    return this.current >= this.source.length;
+    throw new Error(`Unexpected character '${character}' at ${line}:${column}`);
   }
 }

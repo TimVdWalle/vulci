@@ -1,9 +1,9 @@
-// Phase 9
+// Phase 13
 
 import { Program } from "./ast.js";
 import { Environment } from "./environment.js";
-import { NULL_VALUE, RuntimeValue } from "./runtime-value.js";
 import { ExpressionEvaluator } from "./evaluator/expression-evaluator.js";
+import { NULL_VALUE, RuntimeValue } from "./runtime-value.js";
 
 export class Evaluator extends ExpressionEvaluator {
   constructor(environment: Environment) {
@@ -11,7 +11,7 @@ export class Evaluator extends ExpressionEvaluator {
   }
 
   public evaluate(program: Program): RuntimeValue {
-    this.registerFunctions(program);
+    this.registerDeclarations(program);
 
     let result: RuntimeValue = NULL_VALUE;
 

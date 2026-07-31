@@ -1,4 +1,4 @@
-// Phase 11
+// Phase 13
 
 import {
   AssignmentExpression,
@@ -28,17 +28,27 @@ export abstract class ExpressionParser extends PrimaryExpressionParser {
 
     const value = this.assignment();
 
-    if (expression.type !== "VariableReference") {
-      throw this.error(operator, "Invalid assignment target.");
+    if (expression.type === "VariableReference") {
+      const node: AssignmentExpression = {
+        type: "AssignmentExpression",
+        name: expression.name,
+        value,
+      };
+
+      return node;
     }
 
-    const node: AssignmentExpression = {
-      type: "AssignmentExpression",
-      name: expression.name,
-      value,
-    };
+    if (expression.type === "MemberAccess") {
+      const node: AssignmentExpression = {
+        type: "AssignmentExpression",
+        target: expression,
+        value,
+      };
 
-    return node;
+      return node;
+    }
+
+    throw this.error(operator, "Invalid assignment target.");
   }
 
   protected or(): Expression {

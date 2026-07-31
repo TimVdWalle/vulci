@@ -1,10 +1,10 @@
-// Phase 12
+// Phase 13
 
 import { AnonymousObjectLiteral } from "../ast.js";
 import { Token, TokenType } from "../token.js";
-import { FunctionParser } from "./function-parser.js";
+import { StructParser } from "./struct-parser.js";
 
-export abstract class ObjectParser extends FunctionParser {
+export abstract class ObjectParser extends StructParser {
   protected finishAnonymousObject(keyword: Token): AnonymousObjectLiteral {
     const fields: AnonymousObjectLiteral["fields"] = [];
     const names = new Set<string>();

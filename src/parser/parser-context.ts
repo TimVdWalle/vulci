@@ -1,25 +1,26 @@
-// Phase 10
+// Phase 13
 
 import { Expression } from "../ast.js";
 import { Token, TokenType } from "../token.js";
 import { sourceError } from "../diagnostics/source-error.js";
 import { reportWarning } from "../diagnostics/warning-reporter.js";
+import { BUILT_IN_TYPE_NAMES } from "../type-names.js";
 
 export abstract class ParserContext {
-  protected static readonly BUILT_IN_TYPE_NAMES = new Set<string>([
-    "int",
-    "bool",
-    "str",
-    "list",
-    "set",
-    "map",
-    "any",
-    "null",
-  ]);
-
+  protected readonly knownTypeNames = new Set<string>(BUILT_IN_TYPE_NAMES);
+  protected readonly knownStructNames = new Set<string>();
   protected current = 0;
 
   constructor(protected readonly tokens: Token[]) {}
+
+  protected registerStructName(name: string): void {
+    this.knownStructNames.add(name);
+    this.knownTypeNames.add(name);
+  }
+
+  protected isStructName(name: string): boolean {
+    return this.knownStructNames.has(name);
+  }
 
   protected abstract expression(): Expression;
   protected abstract containsAssignment(expression: Expression): boolean;

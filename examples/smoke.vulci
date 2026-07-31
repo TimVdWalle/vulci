@@ -1,5 +1,6 @@
-// Phase 12
-// Expected output: SMOKE OK: 1308
+// Phase 13
+// Expected output: Phase13Counter(value: 15, step: 2)
+//                  SMOKE OK: 1325
 value = 1
 value = value + 1
 arithmetic = value
@@ -153,12 +154,7 @@ fn spaced_union(int | bool value) returns int | null {
     }
     null
 }
-fn phase9_calculate(
-    int left,
-    int right,
-    int multiplier=2,
-    int offset=declared_later(),
-) returns int {
+fn phase9_calculate(int left, int right, int multiplier=2, int offset=declared_later()) returns int {
     (left + right) * multiplier + offset
 }
 $default_counter = 0
@@ -169,18 +165,8 @@ fn next_default() returns int {
 fn phase9_default(int value=next_default()) returns int {
     value
 }
-phase9_named = phase9_calculate(
-    right: 3,
-    left: 4,
-    multiplier: 5,
-    offset: 1,
-)
-phase9_mixed = phase9_calculate(
-    4,
-    3,
-    multiplier: 5,
-    offset: 1,
-)
+phase9_named = phase9_calculate(right: 3, left: 4, multiplier: 5, offset: 1)
+phase9_mixed = phase9_calculate(4, 3, multiplier: 5, offset: 1)
 phase9_defaults = phase9_calculate(4, 3)
 phase9_trailing = phase9_calculate(
     4,
@@ -279,6 +265,21 @@ phase12_user = object(
 )
 phase12_score = phase12_user.score
 phase12_city = phase12_user.address.city
+struct Phase13Counter {
+    int value
+    int step = 2
+    fn increment() returns int {
+        self.value = self.value + self.step
+    }
+}
+phase13_counter = Phase13Counter(value: 13)
+phase13_copy = phase13_counter
+phase13_copy.value = 1
+phase13_method_score = phase13_counter.increment()
+phase13_score = phase13_method_score
+    + phase13_copy.value
+    + if (phase13_counter == Phase13Counter(value: 15)) { 1 } else { 0 }
+print(value: phase13_counter)
 result = checksum
     + existing_boolean_score
     + existing_null_score
@@ -294,5 +295,6 @@ result = checksum
     + phase10_score
     + phase11_score
     + phase12_score
+    + phase13_score
 print(value: "SMOKE OK: {{result}}")
 unused_null = return_null()

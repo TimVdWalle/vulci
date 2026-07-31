@@ -1,6 +1,6 @@
-// Phase 12
+// Phase 13
 
-import { MemberAccess, MemberCall, StringLiteral } from "../ast.js";
+import { MemberCall, StringLiteral } from "../ast.js";
 import {
   FALSE_VALUE,
   IntegerValue,
@@ -8,9 +8,9 @@ import {
   StringValue,
   TRUE_VALUE,
 } from "../runtime-value.js";
-import { ScopeResolver } from "./scope-resolver.js";
+import { StructEvaluator } from "./struct-evaluator.js";
 
-export abstract class StringEvaluator extends ScopeResolver {
+export abstract class StringEvaluator extends StructEvaluator {
   protected evaluateStringLiteral(expression: StringLiteral): StringValue {
     let value = "";
 
@@ -26,15 +26,12 @@ export abstract class StringEvaluator extends ScopeResolver {
         case "String":
           value += result.value;
           break;
-
         case "Integer":
           value += result.value.toString();
           break;
-
         case "Boolean":
           value += result.value ? "true" : "false";
           break;
-
         default:
           throw new Error(
             "E_IPL_TYPE: Interpolation result must be str, int, or bool. " +
@@ -46,62 +43,34 @@ export abstract class StringEvaluator extends ScopeResolver {
     return { type: "String", value };
   }
 
-  protected evaluateMemberAccess(expression: MemberAccess): RuntimeValue {
-    const receiver = this.evaluateExpression(expression.receiver);
-
-    if (receiver.type !== "AnonymousObject") {
-      throw new Error(
-        `E_MEM_TYPE: Type '${this.runtimeTypeName(receiver)}' does not support ` +
-          `member '${expression.member.lexeme}'. at ` +
-          `${expression.member.line}:${expression.member.column}`,
-      );
-    }
-
-    const field = receiver.fields.find(
-      (candidate) => candidate.name === expression.member.lexeme,
-    );
-
-    if (field === undefined) {
-      throw new Error(
-        `E_MEM_UNKNOWN: Unknown object field '${expression.member.lexeme}'. at ` +
-          `${expression.member.line}:${expression.member.column}`,
-      );
-    }
-
-    return field.value;
-  }
-  protected evaluateMemberCall(expression: MemberCall): RuntimeValue {
-    const receiver = this.evaluateExpression(expression.receiver);
-
-    if (receiver.type !== "String") {
-      throw new Error(
-        `E_MEM_TYPE: Type '${this.runtimeTypeName(receiver)}' does not support ` +
-          `member '${expression.member.lexeme}'. at ` +
-          `${expression.member.line}:${expression.member.column}`,
-      );
-    }
-
+  protected evaluateStringMemberCall(
+    expression: MemberCall,
+    receiver: StringValue,
+  ): RuntimeValue {
     const arguments_ = expression.arguments.map((argument) =>
       this.evaluateExpression(argument),
     );
 
     switch (expression.member.lexeme) {
-      case "contains":
-        this.requireMemberArgumentCount(expression, arguments_, 1);
+      case "contains": {
+        this.requireMemberArgumentCount(expression, arguments_.length, 1);
+        this.requireNamedMemberArgument(expression, 0, "value");
+        const argument = arguments_[0]!;
 
-        if (arguments_[0]?.type !== "String") {
+        if (argument.type !== "String") {
           throw new Error(
             "E_ARG_TYPE: Member 'contains' expects a str argument. at " +
               `${expression.member.line}:${expression.member.column}`,
           );
         }
 
-        return receiver.value.includes(arguments_[0].value)
+        return receiver.value.includes(argument.value)
           ? TRUE_VALUE
           : FALSE_VALUE;
+      }
 
       case "count": {
-        this.requireMemberArgumentCount(expression, arguments_, 0);
+        this.requireMemberArgumentCount(expression, arguments_.length, 0);
         const segmenter = new Intl.Segmenter(undefined, {
           granularity: "grapheme",
         });
@@ -121,17 +90,32 @@ export abstract class StringEvaluator extends ScopeResolver {
 
   private requireMemberArgumentCount(
     expression: MemberCall,
-    arguments_: RuntimeValue[],
+    received: number,
     expected: number,
   ): void {
-    if (arguments_.length === expected) {
+    if (received === expected) return;
+
+    throw new Error(
+      `E_ARG_COUNT: Member '${expression.member.lexeme}' expects ${expected} ` +
+        `argument${expected === 1 ? "" : "s"}, but received ${received}. ` +
+        `at ${expression.member.line}:${expression.member.column}`,
+    );
+  }
+
+  private requireNamedMemberArgument(
+    expression: MemberCall,
+    index: number,
+    expectedName: string,
+  ): void {
+    const name = expression.argumentNames[index];
+
+    if (name === null || name === undefined || name.lexeme === expectedName) {
       return;
     }
 
     throw new Error(
-      `E_ARG_COUNT: Member '${expression.member.lexeme}' expects ${expected} ` +
-        `argument${expected === 1 ? "" : "s"}, but received ${arguments_.length}. ` +
-        `at ${expression.member.line}:${expression.member.column}`,
+      `Member '${expression.member.lexeme}' has no parameter named ` +
+        `'${name.lexeme}'. at ${name.line}:${name.column}`,
     );
   }
 }

@@ -1,0 +1,30 @@
+// Phase 13
+// Expected output:
+// User(name: Tim, address: Address(city: Paris))
+// User(name: Tim, address: Address(city: Rome))
+// true
+
+struct Address {
+    str city
+
+    fn move(str city) returns str {
+        self.city = city
+    }
+}
+
+struct User {
+    str name
+    Address address
+}
+
+original = User(
+    name: "Tim",
+    address: Address(city: "Rome"),
+)
+
+moved = original
+moved.address.move(city: "Paris")
+
+print(value: moved)
+print(value: original)
+print(value: original == User(name: "Tim", address: Address(city: "Rome")))

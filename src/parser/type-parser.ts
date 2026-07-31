@@ -1,6 +1,6 @@
-// Phase 11
+// Phase 13
 
-import { BuiltInTypeName, TypeAnnotation, TypeMember } from "../ast.js";
+import { TypeAnnotation, TypeMember } from "../ast.js";
 import { Token, TokenType } from "../token.js";
 import { ParserContext } from "./parser-context.js";
 
@@ -101,10 +101,8 @@ export abstract class TypeParser extends ParserContext {
       .join("|");
   }
 
-  protected validateTypeName(
-    token: Token,
-  ): asserts token is Token & { lexeme: BuiltInTypeName } {
-    if (!TypeParser.BUILT_IN_TYPE_NAMES.has(token.lexeme)) {
+  protected validateTypeName(token: Token): void {
+    if (!this.knownTypeNames.has(token.lexeme)) {
       throw this.error(token, `Unknown type name '${token.lexeme}'.`);
     }
   }

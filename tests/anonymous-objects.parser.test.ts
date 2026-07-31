@@ -1,4 +1,4 @@
-// Phase 12
+// Phase 13
 
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -40,12 +40,17 @@ test("rejects duplicate anonymous-object fields", () => {
   );
 });
 
-test("rejects direct and nested field assignment", () => {
-  assert.throws(() => parse("user.name = 1"), /Invalid assignment target/);
-  assert.throws(
-    () => parse("user.address.city = 1"),
-    /Invalid assignment target/,
-  );
+test("parses direct and nested member assignment targets", () => {
+  const direct = parse("user.name = 1").statements[0]!.expression;
+  assert.equal(direct.type, "AssignmentExpression");
+  if (direct.type !== "AssignmentExpression" || !("target" in direct)) return;
+  assert.equal(direct.target.member.lexeme, "name");
+
+  const nested = parse("user.address.city = 1").statements[0]!.expression;
+  assert.equal(nested.type, "AssignmentExpression");
+  if (nested.type !== "AssignmentExpression" || !("target" in nested)) return;
+  assert.equal(nested.target.member.lexeme, "city");
+  assert.equal(nested.target.receiver.type, "MemberAccess");
 });
 
 test("rejects malformed object fields", () => {

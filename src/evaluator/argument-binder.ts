@@ -1,6 +1,7 @@
-// Phase 9
+// Phase 13
 
 import { Expression, FunctionCall, TypeAnnotation } from "../ast.js";
+import { Environment } from "../environment.js";
 import { NativeFunctionParameter, RuntimeValue } from "../runtime-value.js";
 import { OperatorEvaluator } from "./operator-evaluator.js";
 
@@ -10,15 +11,11 @@ export abstract class ArgumentBinder extends OperatorEvaluator {
     parameters: NativeFunctionParameter[],
     callExpression: FunctionCall,
   ): (RuntimeValue | undefined)[] {
-    const argumentNames =
-      callExpression.argumentNames ?? callExpression.arguments.map(() => null);
-
+    const argumentNames = callExpression.argumentNames;
     const parameterIndexes = new Map<string, number>();
-
     const boundArguments: (RuntimeValue | undefined)[] = parameters.map(
       () => undefined,
     );
-
     let positionalIndex = 0;
 
     parameters.forEach((parameter, index) => {
@@ -28,9 +25,7 @@ export abstract class ArgumentBinder extends OperatorEvaluator {
     for (let index = 0; index < callExpression.arguments.length; index++) {
       const argumentExpression = callExpression.arguments[index]!;
       const argumentName = argumentNames[index] ?? null;
-
       const value = this.evaluateExpression(argumentExpression);
-
       let parameterIndex: number;
 
       if (argumentName === null) {
@@ -106,14 +101,21 @@ export abstract class ArgumentBinder extends OperatorEvaluator {
     return boundArguments;
   }
 
-  protected evaluateDefaultExpression(expression: Expression): RuntimeValue {
+  protected evaluateDefaultExpression(
+    expression: Expression,
+    context: "function" | "struct" = "function",
+  ): RuntimeValue {
     const previousEnvironment = this.currentEnvironment;
     const previousFunction = this.currentFunction;
     const previousParameterTypes = this.currentParameterTypes;
+    const previousSelf = this.currentSelf;
+    const previousDefaultContext = this.defaultEvaluationContext;
 
-    this.currentEnvironment = this.environment;
+    this.currentEnvironment = new Environment();
     this.currentFunction = null;
     this.currentParameterTypes = new Map<string, TypeAnnotation | null>();
+    this.currentSelf = null;
+    this.defaultEvaluationContext = context;
 
     try {
       return this.evaluateExpression(expression);
@@ -121,6 +123,8 @@ export abstract class ArgumentBinder extends OperatorEvaluator {
       this.currentEnvironment = previousEnvironment;
       this.currentFunction = previousFunction;
       this.currentParameterTypes = previousParameterTypes;
+      this.currentSelf = previousSelf;
+      this.defaultEvaluationContext = previousDefaultContext;
     }
   }
 }

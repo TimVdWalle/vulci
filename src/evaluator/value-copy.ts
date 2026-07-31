@@ -1,4 +1,4 @@
-// Phase 12
+// Phase 13
 
 import { RuntimeValue } from "../runtime-value.js";
 
@@ -13,6 +13,17 @@ export function copyRuntimeValue(value: RuntimeValue): RuntimeValue {
   if (value.type === "AnonymousObject") {
     return {
       type: "AnonymousObject",
+      fields: value.fields.map((field) => ({
+        name: field.name,
+        value: copyRuntimeValue(field.value),
+      })),
+    };
+  }
+
+  if (value.type === "Struct") {
+    return {
+      type: "Struct",
+      name: value.name,
       fields: value.fields.map((field) => ({
         name: field.name,
         value: copyRuntimeValue(field.value),
