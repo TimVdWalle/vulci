@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import { scanStringLiteral } from "../string-lexer.js";
 import { Token, TokenType } from "../token.js";
@@ -205,6 +205,8 @@ export abstract class LexerState {
         return TokenType.Fn;
       case "struct":
         return TokenType.Struct;
+      case "enum":
+        return TokenType.Enum;
       case "return":
         return TokenType.Return;
       case "returns":

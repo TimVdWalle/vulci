@@ -1,4 +1,4 @@
-// Phase 10
+// Phase 14
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -27,6 +27,11 @@ const cases = [
     name: "wrong string member argument type",
     fixture: "wrong-string-member-argument-type.vulci",
     expected: "E_ARG_TYPE: Member 'contains' expects a str argument. at 3:9",
+  },
+  {
+    name: "unknown enum member",
+    fixture: "unknown-enum-member.vulci",
+    expected: "E_MEM_UNKNOWN: Enum 'Status' has no member 'Missing'. at 5:8",
   },
 ] as const;
 

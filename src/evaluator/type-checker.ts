@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import {
   FunctionCall,
@@ -82,7 +82,10 @@ export abstract class TypeChecker extends EvaluatorContext {
       case "map":
         return false;
       default:
-        return value.type === "Struct" && value.name === member.lexeme;
+        return (
+          (value.type === "Struct" && value.name === member.lexeme) ||
+          (value.type === "Enum" && value.enumName === member.lexeme)
+        );
     }
   }
 
@@ -98,6 +101,8 @@ export abstract class TypeChecker extends EvaluatorContext {
   }
 
   protected runtimeTypeName(value: RuntimeValue): string {
-    return value.type === "Struct" ? value.name : value.type.toLowerCase();
+    if (value.type === "Struct") return value.name;
+    if (value.type === "Enum") return value.enumName;
+    return value.type.toLowerCase();
   }
 }

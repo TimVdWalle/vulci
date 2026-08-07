@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import { Environment } from "../environment.js";
 import { RuntimeValue } from "../runtime-value.js";
@@ -20,6 +20,12 @@ export abstract class ScopeResolver extends TypeChecker {
 
     if (this.defaultEvaluationContext !== null) {
       throw new Error("Assignments are not allowed in default expressions.");
+    }
+
+    if (this.enums.has(name)) {
+      throw new Error(
+        `E_ENUM_DUP: Enum name '${name}' cannot be rebound as a variable.`,
+      );
     }
 
     if (this.structs.has(name)) {

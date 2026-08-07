@@ -1,6 +1,7 @@
-// Phase 13
+// Phase 14
 // Expected output: Phase13Counter(value: 15, step: 2)
-//                  SMOKE OK: 1325
+//                  Phase14Status.Running
+//                  SMOKE OK: 1339
 value = 1
 value = value + 1
 arithmetic = value
@@ -280,6 +281,13 @@ phase13_score = phase13_method_score
     + phase13_copy.value
     + if (phase13_counter == Phase13Counter(value: 15)) { 1 } else { 0 }
 print(value: phase13_counter)
+phase14_forward = Phase14Status.Pending
+enum Phase14Status {
+    Pending
+    Running
+}
+phase14_score = if (phase14_forward == Phase14Status.Pending and "{{phase14_forward}}" == "Pending") { 14 } else { 0 }
+print(value: Phase14Status.Running)
 result = checksum
     + existing_boolean_score
     + existing_null_score
@@ -296,5 +304,6 @@ result = checksum
     + phase11_score
     + phase12_score
     + phase13_score
+    + phase14_score
 print(value: "SMOKE OK: {{result}}")
 unused_null = return_null()

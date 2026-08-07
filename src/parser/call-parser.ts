@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import { Expression, FunctionCall, MemberAccess, MemberCall } from "../ast.js";
 import { Token, TokenType } from "../token.js";
@@ -120,6 +120,7 @@ export abstract class CallParser extends ObjectParser {
           ) ||
           expression.methods.some((method) => this.containsAssignment(method))
         );
+      case "EnumDeclaration":
       case "IntegerLiteral":
       case "BooleanLiteral":
       case "NullLiteral":

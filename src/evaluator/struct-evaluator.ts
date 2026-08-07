@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import {
   Expression,
@@ -9,10 +9,10 @@ import {
   StructFieldDeclaration,
 } from "../ast.js";
 import { RuntimeValue, StructValue } from "../runtime-value.js";
-import { ScopeResolver } from "./scope-resolver.js";
+import { EnumEvaluator } from "./enum-evaluator.js";
 import { copyRuntimeValue } from "./value-copy.js";
 
-export abstract class StructEvaluator extends ScopeResolver {
+export abstract class StructEvaluator extends EnumEvaluator {
   protected evaluateStructConstruction(
     expression: StructConstruction,
   ): StructValue {
@@ -62,6 +62,10 @@ export abstract class StructEvaluator extends ScopeResolver {
   }
 
   protected evaluateMemberAccess(expression: MemberAccess): RuntimeValue {
+    const enumMember = this.evaluateEnumMemberAccess(expression);
+
+    if (enumMember !== null) return enumMember;
+
     const receiver = this.evaluateExpression(expression.receiver);
 
     if (receiver.type === "AnonymousObject") {
@@ -115,6 +119,8 @@ export abstract class StructEvaluator extends ScopeResolver {
     target: MemberAccess,
     valueExpression: Expression,
   ): RuntimeValue {
+    this.rejectEnumMemberAssignment(target);
+
     const receiver = this.evaluateExpression(target.receiver);
 
     if (receiver.type !== "Struct") {

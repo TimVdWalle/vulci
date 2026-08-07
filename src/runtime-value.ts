@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 export type RuntimeValue =
   | IntegerValue
@@ -8,6 +8,7 @@ export type RuntimeValue =
   | TupleValue
   | AnonymousObjectValue
   | StructValue
+  | EnumValue
   | NativeFunctionValue;
 
 export interface IntegerValue {
@@ -53,6 +54,12 @@ export interface StructValue {
   type: "Struct";
   name: string;
   fields: StructFieldValue[];
+}
+
+export interface EnumValue {
+  type: "Enum";
+  enumName: string;
+  memberName: string;
 }
 
 export interface NativeFunctionParameter {

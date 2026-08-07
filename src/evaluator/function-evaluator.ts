@@ -1,6 +1,7 @@
-// Phase 13
+// Phase 14
 
 import {
+  EnumDeclaration,
   FunctionCall,
   FunctionDeclaration,
   MemberCall,
@@ -10,6 +11,7 @@ import {
 import { RuntimeValue } from "../runtime-value.js";
 import { BUILT_IN_TYPE_NAMES } from "../type-names.js";
 import { CallExecutor } from "./call-executor.js";
+import { findEnumBindingConflict } from "./enum-validation.js";
 import {
   findStructBindingConflict,
   validateStructRecursion,
@@ -27,14 +29,28 @@ export abstract class FunctionEvaluator extends CallExecutor {
         ? [statement.expression]
         : [],
     );
+    const enumDeclarations = program.statements.flatMap((statement) =>
+      statement.expression.type === "EnumDeclaration"
+        ? [statement.expression]
+        : [],
+    );
 
     this.registerStructs(structDeclarations);
     this.registerFunctions(functionDeclarations);
+    this.registerEnums(enumDeclarations);
     this.validateStructBindings(program, structDeclarations);
+    this.validateEnumBindings(program, enumDeclarations);
     validateStructRecursion(this.structs);
   }
 
   protected evaluateFunctionCall(expression: FunctionCall): RuntimeValue {
+    if (this.enums.has(expression.callee)) {
+      throw new Error(
+        `Enum '${expression.callee}' is not callable. at ` +
+          `${expression.calleeToken.line}:${expression.calleeToken.column}`,
+      );
+    }
+
     const localValue = this.findValue(
       this.currentEnvironment,
       expression.callee,
@@ -84,6 +100,8 @@ export abstract class FunctionEvaluator extends CallExecutor {
   }
 
   protected evaluateMemberCall(expression: MemberCall): RuntimeValue {
+    this.rejectEnumMemberCall(expression);
+
     const receiver = this.evaluateExpression(expression.receiver);
 
     if (receiver.type === "String") {
@@ -144,6 +162,26 @@ export abstract class FunctionEvaluator extends CallExecutor {
     }
   }
 
+  private registerEnums(declarations: EnumDeclaration[]): void {
+    for (const declaration of declarations) {
+      const name = declaration.name.lexeme;
+
+      if (
+        name === "self" ||
+        BUILT_IN_TYPE_NAMES.has(name) ||
+        this.enums.has(name) ||
+        this.structs.has(name) ||
+        this.functions.has(name) ||
+        this.findValue(this.environment, name) !== undefined
+      ) {
+        throw this.enumDuplicateError(declaration, name);
+      }
+
+      this.validateEnumMemberNames(declaration);
+      this.enums.set(name, declaration);
+    }
+  }
+
   private registerFunctions(declarations: FunctionDeclaration[]): void {
     for (const declaration of declarations) {
       const name = declaration.name.lexeme;
@@ -192,6 +230,42 @@ export abstract class FunctionEvaluator extends CallExecutor {
     );
   }
 
+  private validateEnumBindings(
+    program: Program,
+    declarations: EnumDeclaration[],
+  ): void {
+    const enumNames = new Set(this.enums.keys());
+    const conflict = findEnumBindingConflict(program, enumNames);
+
+    if (conflict === null) return;
+
+    const location =
+      conflict.token ??
+      declarations.find(
+        (declaration) => declaration.name.lexeme === conflict.name,
+      )!.name;
+
+    throw new Error(
+      `E_ENUM_DUP: Enum name '${conflict.name}' cannot be rebound as a ` +
+        `variable or parameter. at ${location.line}:${location.column}`,
+    );
+  }
+
+  private validateEnumMemberNames(declaration: EnumDeclaration): void {
+    const names = new Set<string>();
+
+    for (const member of declaration.members) {
+      if (names.has(member.lexeme)) {
+        throw new Error(
+          `E_ENUM_MEMBER_DUP: Duplicate enum member '${member.lexeme}'. at ` +
+            `${member.line}:${member.column}`,
+        );
+      }
+
+      names.add(member.lexeme);
+    }
+  }
+
   private validateMemberNames(declaration: StructDeclaration): void {
     const names = new Set<string>();
 
@@ -206,6 +280,16 @@ export abstract class FunctionEvaluator extends CallExecutor {
 
       names.add(member.name.lexeme);
     }
+  }
+
+  private enumDuplicateError(
+    declaration: EnumDeclaration,
+    name: string,
+  ): Error {
+    return new Error(
+      `E_ENUM_DUP: Enum name '${name}' conflicts with an existing type or ` +
+        `value. at ${declaration.name.line}:${declaration.name.column}`,
+    );
   }
 
   private structDuplicateError(

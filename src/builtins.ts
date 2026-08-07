@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import { Environment } from "./environment.js";
 import { NULL_VALUE, RuntimeValue } from "./runtime-value.js";
@@ -50,6 +50,9 @@ function formatValue(value: RuntimeValue): string {
       return `${value.name}(${value.fields
         .map((field) => `${field.name}: ${formatValue(field.value)}`)
         .join(", ")})`;
+
+    case "Enum":
+      return `${value.enumName}.${value.memberName}`;
 
     case "NativeFunction":
       return "";

@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import { MemberCall, StringLiteral } from "../ast.js";
 import {
@@ -32,9 +32,13 @@ export abstract class StringEvaluator extends StructEvaluator {
         case "Boolean":
           value += result.value ? "true" : "false";
           break;
+        case "Enum":
+          value += result.memberName;
+          break;
         default:
           throw new Error(
-            "E_IPL_TYPE: Interpolation result must be str, int, or bool. " +
+            "E_IPL_TYPE: Interpolation result must be str, int, bool, or " +
+              "an enum value. " +
               `at ${segment.token.line}:${segment.token.column}`,
           );
       }
