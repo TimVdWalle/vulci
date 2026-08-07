@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Lexer } from "../src/lexer.js";
-import { TokenType } from "../../../../../Downloads/vulci-phase14/src/token.js";
+import { TokenType } from "../src/token.js";
 
 function tokenTypes(source: string): TokenType[] {
   return new Lexer(source).lex().map((token) => token.type);
