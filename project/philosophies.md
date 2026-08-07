@@ -20,7 +20,6 @@ Regardless of whether data comes from memory, files, databases, APIs, streams, o
 
 Differences between data sources should be expressed through explicit characteristics rather than different APIs or programming models. The programmer should adapt to a collection's characteristics, not relearn how to work with it.
 
-
 ## phi2 — Code should be easy to read, understand, and interpret unambiguously.
 
 Developers spend more time reading code than writing it. Favor language features that improve clarity, consistency, and intent over cleverness or brevity.

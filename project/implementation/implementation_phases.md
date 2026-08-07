@@ -551,8 +551,6 @@ concrete numbered phases:
 **Result:** Deferred collection work remains visible until its exact design and
 implementation phase are agreed.
 
-
-
 ## Phase 13 implementation split
 
 **Decision**
@@ -560,6 +558,7 @@ implementation phase are agreed.
 The Struct language feature remains a single agreed language feature. Only its implementation is split.
 
 ### 13A — Struct definitions and construction
+
 - Top-level struct declarations evaluating to `null`
 - Struct type and constructor registration
 - Name-collision and no-rebinding validation
@@ -571,23 +570,27 @@ The Struct language feature remains a single agreed language feature. Only its i
 - Constructor-style printing
 
 ### 13B — Field access
+
 - Member access
 - Mutable field and nested-field assignment
 - Value semantics and independent assignment copies
 
 ### 13C — Struct methods
+
 - Method declarations and member-name uniqueness
 - Method calls
 - Implicit read-only `self` binding with mutable fields
 - Temporary receivers and rejection of method-value access
 
 ### 13D — Remaining struct semantics
+
 - Structural equality
 - Recursive copy behaviour
 - Anonymous-object incompatibility
 - Stable struct, member, and `self` diagnostics
 
 ### 13E — Completion
+
 - Lexer, parser, evaluator, diagnostic, and warning coverage
 - Malformed syntax and edge cases
 - Regression tests

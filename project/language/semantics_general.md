@@ -22,7 +22,7 @@ Local variables do not declare a type. Their type is inferred automatically.
 Local variables are dynamically typed and may later hold a value of another
 type.
 
-------------------------------------------------------------------------
+---
 
 # 2. Function Parameters
 
@@ -43,7 +43,7 @@ are invalid. A function call with too few or too many arguments is invalid and
 is reported when the call executes in the Phase 7 interpreter. Parameter types
 are checked at function-call entry, before the function body executes.
 
-------------------------------------------------------------------------
+---
 
 # 3. Function Return Types
 
@@ -56,7 +56,7 @@ applies to explicit `return value`, bare `return`, and the implicit final-expres
 return. Every possible return path must be allowed by the declared return type.
 A possible `null` result therefore requires a return type that includes `null`.
 
-------------------------------------------------------------------------
+---
 
 # 4. `any` Warnings
 
@@ -76,7 +76,7 @@ omitted return type, the warning points to the function name.
 Warnings do not cause execution failure or change the successful process exit
 status. Warnings are enabled by default.
 
-------------------------------------------------------------------------
+---
 
 # 5. Integer Values
 
@@ -89,7 +89,7 @@ semantics or final range of Vulci integers.
 
 The final range of the `Integer` type remains unspecified.
 
-------------------------------------------------------------------------
+---
 
 # 6. Integer Arithmetic
 
@@ -108,7 +108,7 @@ Every successful binary arithmetic operation and unary negation produces an
 
 Integer division truncates toward zero.
 
-``` text
+```text
 5 / 2    // 2
 -5 / 2   // -2
 5 / -2   // -2
@@ -121,7 +121,7 @@ Division by zero produces a runtime error.
 Remainder uses truncating-division semantics. Its result has the same sign as
 the dividend unless the result is zero.
 
-``` text
+```text
 -5 % 2   // -1
 5 % -2   // 1
 -5 % -2  // -1
@@ -129,7 +129,7 @@ the dividend unless the result is zero.
 
 Remainder by zero produces a runtime error.
 
-------------------------------------------------------------------------
+---
 
 # 7. Phase 2 Type Inference
 
@@ -137,13 +137,13 @@ In Phase 2, a local variable's current type is inferred at runtime from the
 value assigned to it. No separate semantic-analysis or static type-inference
 pass is required in Phase 2.
 
-------------------------------------------------------------------------
+---
 
 # 8. Arithmetic Errors
 
 Runtime arithmetic errors report the source location of the relevant operator.
 
-------------------------------------------------------------------------
+---
 
 # 9. Boolean Values
 
@@ -155,7 +155,7 @@ Vulci has Boolean values `true` and `false`.
 
 Printing Boolean values outputs exactly `true` and `false`.
 
-------------------------------------------------------------------------
+---
 
 # 10. Comparisons
 
@@ -194,19 +194,19 @@ collation.
 Mixed operand types or unsupported operand types produce a runtime error.
 Ordering operators do not perform implicit type conversions.
 
-------------------------------------------------------------------------
+---
 
 ## Chained Comparisons
 
 A chained comparison has mathematical chaining semantics.
 
-``` text
+```text
 1 < value <= 10
 ```
 
 has the same comparison meaning as:
 
-``` text
+```text
 1 < value and value <= 10
 ```
 
@@ -220,7 +220,7 @@ participate in another comparison, subject to the ordinary operand-type rules.
 Each operand is evaluated once, from left to right. Evaluation stops after the
 first false comparison.
 
-------------------------------------------------------------------------
+---
 
 # 11. Comparison Errors
 
@@ -230,14 +230,14 @@ operator.
 Equality type errors use this message format, with the actual operator
 substituted:
 
-``` text
+```text
 Operator '==' requires operands of the same type.
 ```
 
 Ordering type errors use this message format, with the actual operator
 substituted:
 
-``` text
+```text
 Operator '<' requires two integers or two strings.
 ```
 
@@ -247,11 +247,11 @@ failing comparison operator.
 Chained-comparison operand type errors use this message format, with the actual
 operator substituted:
 
-``` text
+```text
 Invalid operand type in chained comparison: operator '<' requires integer operands.
 ```
 
-------------------------------------------------------------------------
+---
 
 # 12. Logical Operators
 
@@ -298,7 +298,7 @@ A skipped right operand is not runtime-type-validated.
 
 When the right operand is evaluated, it must be Boolean.
 
-------------------------------------------------------------------------
+---
 
 # 13. Logical Operator Errors
 
@@ -311,21 +311,21 @@ left or right operand and include only that operand's actual runtime type.
 Invalid left-operand errors use this message format, with the actual operator
 and runtime type substituted:
 
-``` text
+```text
 Operator 'and' requires boolean operands, but the left operand is integer.
 ```
 
 Invalid right-operand errors use this message format, with the actual operator
 and runtime type substituted:
 
-``` text
+```text
 Operator 'or' requires boolean operands, but the right operand is integer.
 ```
 
 Invalid `not` operand errors use this message format, with the runtime type
 substituted:
 
-``` text
+```text
 Operator 'not' requires a boolean operand, but the operand is integer.
 ```
 
@@ -335,7 +335,7 @@ runtime type names currently relevant to these diagnostics are `integer` and
 
 A skipped right operand produces no diagnostic.
 
-------------------------------------------------------------------------
+---
 
 # 14. Conditional Expressions
 
@@ -353,7 +353,7 @@ truthiness or implicit conversion to Boolean values.
 
 A non-Boolean `if` or `else if` condition produces this runtime diagnostic:
 
-``` text
+```text
 Conditional expression requires a Boolean condition.
 ```
 
@@ -363,7 +363,7 @@ keyword.
 A non-preferred `else` or `else if` placement produces this non-fatal style
 warning:
 
-``` text
+```text
 Non-preferred 'else' placement.
 ```
 
@@ -383,7 +383,7 @@ context must allow every possible branch result.
 `null == null` is `true`, `null != null` is `false`, and comparing `null` with a
 non-`null` value is a runtime type error.
 
-------------------------------------------------------------------------
+---
 
 # 15. Assignment Expressions
 
@@ -399,7 +399,7 @@ An assignment directly used as an `if` or `else if` condition produces a
 non-fatal warning. An additional pair of parentheses around the assignment
 explicitly marks it as intentional and suppresses that warning.
 
-------------------------------------------------------------------------
+---
 
 # 16. Functions and Scope
 
@@ -478,7 +478,7 @@ the host reports stack exhaustion.
 Unknown type names are reported as early as Vulci can reliably determine that
 they do not exist.
 
-------------------------------------------------------------------------
+---
 
 # 17. Type Error Diagnostics
 
@@ -488,7 +488,7 @@ the received runtime type, and the source location.
 
 Exact punctuation and final command-line formatting are implementation details.
 
-------------------------------------------------------------------------
+---
 
 # 18. Default Parameters
 
@@ -509,7 +509,7 @@ When a typed argument is omitted, its default expression is evaluated and the
 result is then checked against the parameter type. When the caller supplies the
 argument, the default is neither evaluated nor type-checked for that call.
 
-------------------------------------------------------------------------
+---
 
 # 19. Conditional Chain Steps
 
@@ -530,8 +530,7 @@ Chain steps and their conditions are processed from left to right.
 This rule applies only to method-call chain steps. Conditional property access,
 conditional indexed access, and general postfix conditionals are not accepted.
 
-------------------------------------------------------------------------
-
+---
 
 # 20. Compound Value and Class Semantics
 
@@ -554,9 +553,9 @@ existing member range produces a runtime error.
 
 General indexing diagnostics are shared across indexable value types:
 
--   `IDX_TARGET` — the target value does not support indexing
--   `IDX_TYPE` — the index value is not an integer
--   `IDX_RANGE` — the integer index is outside the valid range
+- `IDX_TARGET` — the target value does not support indexing
+- `IDX_TYPE` — the index value is not an integer
+- `IDX_RANGE` — the integer index is outside the valid range
 
 Tuple literals reuse the ordinary parser diagnostics for malformed
 comma-separated expressions and missing delimiters; they do not introduce
@@ -566,7 +565,7 @@ Printing a tuple writes its members inside parentheses, separated by a comma and
 one space. Each member uses its normal printed representation. Nested tuples are
 printed recursively.
 
-``` text
+```text
 (10, 20)
 ((1, 2), 3)
 ```
@@ -615,17 +614,17 @@ printed in declaration order, separated by a comma and one space. Each field
 value uses its normal printed representation. Nested anonymous objects are
 printed recursively.
 
-``` text
+```text
 object(name: "Tim", age: 30)
 object(name: "Tim", address: object(city: "Rome"))
 ```
 
 Anonymous-object and general member-access diagnostics use these codes:
 
--   `E_OBJ_EMPTY` — an anonymous object contains no fields
--   `E_OBJ_DUP` — an anonymous object contains a duplicate field name
--   `E_MEM_UNKNOWN` — the requested field or method does not exist
--   `E_MEM_TYPE` — the target value does not support member access
+- `E_OBJ_EMPTY` — an anonymous object contains no fields
+- `E_OBJ_DUP` — an anonymous object contains a duplicate field name
+- `E_MEM_UNKNOWN` — the requested field or method does not exist
+- `E_MEM_TYPE` — the target value does not support member access
 
 Anonymous objects cannot declare methods and cannot inherit.
 
@@ -729,19 +728,19 @@ includes `null`.
 
 Struct and `self` diagnostics use these stable codes:
 
--   `E_STRUCT_DUP` — a struct name is duplicated or conflicts with a built-in
-    type, function, variable, or struct constructor
--   `E_STRUCT_MEMBER_DUP` — a field or method name conflicts with another member
-    in the same struct
--   `E_STRUCT_FIELD_MISSING` — a required construction field is omitted
--   `E_STRUCT_FIELD_UNKNOWN` — an unknown construction field is supplied
--   `E_STRUCT_FIELD_DUP` — a construction field is supplied more than once
--   `E_STRUCT_FIELD_TYPE` — a constructed field value does not satisfy its
-    declared type
--   `E_STRUCT_RECURSION` — a direct or indirect recursive cycle has no explicitly
-    nullable field
--   `E_SELF_CONTEXT` — `self` is used outside a struct method
--   `E_SELF_ASSIGN` — the `self` binding is reassigned directly
+- `E_STRUCT_DUP` — a struct name is duplicated or conflicts with a built-in
+  type, function, variable, or struct constructor
+- `E_STRUCT_MEMBER_DUP` — a field or method name conflicts with another member
+  in the same struct
+- `E_STRUCT_FIELD_MISSING` — a required construction field is omitted
+- `E_STRUCT_FIELD_UNKNOWN` — an unknown construction field is supplied
+- `E_STRUCT_FIELD_DUP` — a construction field is supplied more than once
+- `E_STRUCT_FIELD_TYPE` — a constructed field value does not satisfy its
+  declared type
+- `E_STRUCT_RECURSION` — a direct or indirect recursive cycle has no explicitly
+  nullable field
+- `E_SELF_CONTEXT` — `self` is used outside a struct method
+- `E_SELF_ASSIGN` — the `self` binding is reassigned directly
 
 General member access continues to use `E_MEM_UNKNOWN` and `E_MEM_TYPE`.
 
@@ -817,9 +816,9 @@ Invalid enum uses produce clear diagnostics. Existing diagnostics are reused whe
 their accepted meaning precisely covers the failure. Enum-specific diagnostics
 use these stable codes:
 
--   `E_ENUM_DUP` — an enum name is duplicated or conflicts with a built-in type,
-    function, variable, struct constructor, or another enum
--   `E_ENUM_MEMBER_DUP` — an enum contains the same member name more than once
+- `E_ENUM_DUP` — an enum name is duplicated or conflicts with a built-in type,
+  function, variable, struct constructor, or another enum
+- `E_ENUM_MEMBER_DUP` — an enum contains the same member name more than once
 
 Unknown enum members use the existing `E_MEM_UNKNOWN` diagnostic. Ordinary
 syntax, type, operator, argument, return, and unsupported-member failures reuse
@@ -841,4 +840,4 @@ Classes may declare methods and may inherit.
 Class semantics are accepted for the language design but are implemented in a
 later phase than tuples, anonymous objects, and structs.
 
-------------------------------------------------------------------------
+---
