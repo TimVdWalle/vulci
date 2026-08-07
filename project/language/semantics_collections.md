@@ -15,19 +15,19 @@ This document owns accepted semantics for strings as collection-capable scalar v
 
 Vulci defines four distinct value types with collection capabilities:
 
--   `string`
--   `list`
--   `set`
--   `map`
+- `string`
+- `list`
+- `set`
+- `map`
 
 Their accepted fundamental characteristics are:
 
-| Type | Ordered iteration | Direct access | Uniqueness |
-|---|---:|---|---|
-| `string` | Yes | Positional | None |
-| `list` | Yes | Positional | None |
-| `set` | Yes, insertion order | None | Values |
-| `map` | Yes | By key | Keys |
+| Type     |    Ordered iteration | Direct access | Uniqueness |
+| -------- | -------------------: | ------------- | ---------- |
+| `string` |                  Yes | Positional    | None       |
+| `list`   |                  Yes | Positional    | None       |
+| `set`    | Yes, insertion order | None          | Values     |
+| `map`    |                  Yes | By key        | Keys       |
 
 Iteration order is deterministic for all four types.
 
@@ -37,7 +37,7 @@ A `map` supports direct access through its keys.
 
 A `set` does not support bracket or positional access.
 
-------------------------------------------------------------------------
+---
 
 # 2. String Values
 
@@ -84,13 +84,13 @@ same immutable string is O(1).
 String concatenation must account for a grapheme potentially forming across the
 concatenation boundary.
 
-------------------------------------------------------------------------
+---
 
 # 3. Collection Literals
 
 Collection literals use the collection type name followed by brackets.
 
-``` text
+```text
 list[1, 2, 3]
 set[1, 2, 3]
 map["a": 1, "b": 2]
@@ -98,41 +98,41 @@ map["a": 1, "b": 2]
 
 Empty collection literals are valid.
 
-``` text
+```text
 list[]
 set[]
 map[]
 ```
 
-------------------------------------------------------------------------
+---
 
 # 4. Local Collection Values
 
 Local variables do not restrict the types of values contained by a collection.
 
-``` text
+```text
 items = list[1, "hello", true]
 ```
 
 An empty local collection is unrestricted.
 
-``` text
+```text
 items = list[]
 ```
 
-------------------------------------------------------------------------
+---
 
 # 5. Collection Types at Function Boundaries
 
 Collection item types are expressed at function boundaries.
 
-``` text
+```text
 fn process(list<int | str> items) {
     ...
 }
 ```
 
-``` text
+```text
 fn create_items() returns list<int | str> {
     return list[1, "hello"]
 }
@@ -140,7 +140,7 @@ fn create_items() returns list<int | str> {
 
 The equivalent collection type forms are:
 
-``` text
+```text
 list<T>
 set<T>
 map<K, V>
@@ -159,7 +159,7 @@ A bare collection type is allowed at a function boundary and denotes an
 unrestricted collection, but it emits a warning because its contained types are
 unspecified.
 
-``` text
+```text
 fn process(list items) {
     ...
 }
@@ -175,7 +175,7 @@ unrestricted `map` type syntax remains undecided.
 `collection` is a broad runtime boundary type that accepts any recognized
 collection value without requiring a specific concrete collection type.
 
-``` text
+```text
 fn do_something(collection values) {
     ...
 }
@@ -183,7 +183,7 @@ fn do_something(collection values) {
 
 A function may also declare `collection` as its return type.
 
-``` text
+```text
 fn create_values() returns collection {
     return list[1, 2, 3]
 }
@@ -210,7 +210,7 @@ code paths do not produce that error.
 The boolean properties `isList`, `isSet`, and `isMap` may be used to inspect the
 concrete runtime type of a broadly typed collection value.
 
-``` text
+```text
 fn do_something(collection values) {
     values.isMap
 }
@@ -218,7 +218,7 @@ fn do_something(collection values) {
 
 Pattern matching for runtime type handling is deferred to a later phase.
 
-------------------------------------------------------------------------
+---
 
 # 6. Immutability
 
@@ -228,14 +228,14 @@ Collection operations do not mutate an existing collection value.
 
 The initially accepted immutable update operations are:
 
--   `list.add(value)` appends the value and returns a new list.
--   `set.add(value)` adds the value when absent and returns a new set.
--   `map.add(key, value)` adds the key-value pair and returns a new map.
--   Strings do not support generic `add()`.
--   `list.remove(value)` removes the first equal value and returns a new list.
--   `set.remove(value)` removes the matching member and returns a new set.
--   Maps do not remove by value.
--   An unsuccessful `remove()` returns an unchanged equivalent collection.
+- `list.add(value)` appends the value and returns a new list.
+- `set.add(value)` adds the value when absent and returns a new set.
+- `map.add(key, value)` adds the key-value pair and returns a new map.
+- Strings do not support generic `add()`.
+- `list.remove(value)` removes the first equal value and returns a new list.
+- `set.remove(value)` removes the matching member and returns a new set.
+- Maps do not remove by value.
+- An unsuccessful `remove()` returns an unchanged equivalent collection.
 
 Existing nested immutable values may be structurally reused. A collection
 operation creates a new outer collection but does not require deep-copying
@@ -244,16 +244,15 @@ nested collections.
 Explicit mutability may be introduced in a later phase, potentially through a
 `mutable` language feature. No such feature is currently accepted.
 
-------------------------------------------------------------------------
+---
 
-
-------------------------------------------------------------------------
+---
 
 # 8. Direct Access
 
 Strings, lists, and maps use bracket access.
 
-``` text
+```text
 text[0]
 items[0]
 lookup["name"]
@@ -269,16 +268,16 @@ Safe access remains a separate undecided operation or syntax.
 
 Sets do not support bracket access or positional access.
 
-------------------------------------------------------------------------
+---
 
 # 9. Map Keys
 
 The initially valid map-key types are:
 
--   `string`
--   `int`
--   `bool`
--   enum values
+- `string`
+- `int`
+- `bool`
+- enum values
 
 Future enum map-key identity uses the normal enum equality identity: both the
 declaring enum type and member must match. For example, `Status.Pending` and
@@ -288,16 +287,16 @@ part of Phase 15.
 
 The following are not initially valid map keys:
 
--   decimals
--   `null`
--   collections
--   tuples
--   other complex values
+- decimals
+- `null`
+- collections
+- tuples
+- other complex values
 
 Tuple keys are a potential future feature. They may be considered only after
 tuple equality and map-key semantics have been explicitly accepted.
 
-------------------------------------------------------------------------
+---
 
 # 10. String Binary Operations
 
@@ -316,7 +315,7 @@ occurs.
 Existing leading and trailing whitespace is preserved. The operator still
 inserts one space when either operand is empty.
 
-------------------------------------------------------------------------
+---
 
 # 11. Equality and Ordering
 
@@ -337,15 +336,15 @@ Vulci does not introduce `===` for collection identity.
 
 The accepted structural comparison rules are:
 
--   Lists are equal when they contain structurally equal values in the same
-    order.
--   Sets are equal when they contain the same structurally equal members,
-    regardless of iteration order.
--   Maps are equal when they contain the same structurally equal key-value
-    pairs, regardless of entry order.
--   Nested collections are compared recursively.
+- Lists are equal when they contain structurally equal values in the same
+  order.
+- Sets are equal when they contain the same structurally equal members,
+  regardless of iteration order.
+- Maps are equal when they contain the same structurally equal key-value
+  pairs, regardless of entry order.
+- Nested collections are compared recursively.
 
-------------------------------------------------------------------------
+---
 
 # 12. Duplicate Values and Keys
 
@@ -358,19 +357,19 @@ A map cannot contain duplicate keys, but its values may be duplicated.
 
 Duplicate keys in a map literal produce a runtime error.
 
-------------------------------------------------------------------------
+---
 
 # 13. Accepted Collection Operation Semantics
 
 ## `contains`
 
--   `string.contains(value)` accepts only a string and performs exact,
-    case-sensitive substring matching over Unicode code-point sequences. It
-    performs no Unicode normalization and no implicit conversion.
--   `list.contains(value)` checks whether an equal value occurs.
--   `set.contains(value)` checks whether an equal member exists.
--   `map.contains(value)` checks map keys.
--   `map.containsValue(value)` is deferred to a later phase.
+- `string.contains(value)` accepts only a string and performs exact,
+  case-sensitive substring matching over Unicode code-point sequences. It
+  performs no Unicode normalization and no implicit conversion.
+- `list.contains(value)` checks whether an equal value occurs.
+- `set.contains(value)` checks whether an equal member exists.
+- `map.contains(value)` checks map keys.
+- `map.containsValue(value)` is deferred to a later phase.
 
 List, set, and map membership checks use Vulci equality.
 
@@ -378,10 +377,10 @@ List, set, and map membership checks use Vulci equality.
 
 `filter()` preserves the input kind:
 
--   string to string
--   list to list
--   set to set
--   map to map
+- string to string
+- list to list
+- set to set
+- map to map
 
 String filtering traverses Unicode grapheme clusters. A `filter()` callback must
 return a boolean. Map callbacks may receive `(value)` or `(value, key)`.
@@ -400,7 +399,7 @@ implementation may use the Unicode version supplied by its runtime or Unicode
 library. For other collection-capable values, it returns the item count for
 lists, member count for sets, and entry count for maps.
 
-------------------------------------------------------------------------
+---
 
 # 14. String Interpolation
 
@@ -412,12 +411,12 @@ is invoked with zero arguments.
 After evaluation completes, the final result may be converted for insertion
 only when it is one of these types:
 
--   `str`: insert the string contents directly.
--   `int`: insert the decimal representation.
--   `bool`: insert exactly `true` or `false`.
--   enum value: insert the member name exactly as declared, without the declaring
-    enum type name. For example, `OrderStatus.PendingApproval` inserts
-    `PendingApproval`.
+- `str`: insert the string contents directly.
+- `int`: insert the decimal representation.
+- `bool`: insert exactly `true` or `false`.
+- enum value: insert the member name exactly as declared, without the declaring
+  enum type name. For example, `OrderStatus.PendingApproval` inserts
+  `PendingApproval`.
 
 Any other final result type produces a runtime type error. The conversion applies
 only to the final interpolation result and does not introduce implicit
@@ -434,20 +433,20 @@ unmatched interpolation delimiters, and unclosed interpolation are errors.
 Diagnostics include a stable diagnostic code and a source location when the
 implementation can determine one. The accepted codes are:
 
--   `E_STR_ESC` — unknown escape sequence
--   `E_STR_UNCLOSED` — unterminated single-line or multiline string
--   `E_STR_NL` — raw line break inside a single-line string
--   `E_IPL_EMPTY` — empty interpolation
--   `E_IPL_CLOSE` — closing interpolation delimiter without a matching opening delimiter
--   `E_IPL_UNCLOSED` — unterminated interpolation
--   `E_IPL_TYPE` — unsupported final interpolation result type
+- `E_STR_ESC` — unknown escape sequence
+- `E_STR_UNCLOSED` — unterminated single-line or multiline string
+- `E_STR_NL` — raw line break inside a single-line string
+- `E_IPL_EMPTY` — empty interpolation
+- `E_IPL_CLOSE` — closing interpolation delimiter without a matching opening delimiter
+- `E_IPL_UNCLOSED` — unterminated interpolation
+- `E_IPL_TYPE` — unsupported final interpolation result type
 
 Invalid member calls use these general runtime diagnostic codes:
 
--   `E_MEM_TYPE` — the receiver type does not support the requested member
--   `E_MEM_UNKNOWN` — the receiver type supports members, but the requested member does not exist
--   `E_ARG_COUNT` — wrong number of arguments
--   `E_ARG_TYPE` — wrong runtime argument type
+- `E_MEM_TYPE` — the receiver type does not support the requested member
+- `E_MEM_UNKNOWN` — the receiver type supports members, but the requested member does not exist
+- `E_ARG_COUNT` — wrong number of arguments
+- `E_ARG_TYPE` — wrong runtime argument type
 
 These member-call codes are general-purpose and are reusable by later value types.
 Human-readable diagnostic wording may improve without changing a diagnostic's
@@ -459,7 +458,7 @@ String indexing, slicing, and repetition are not implemented in Phase 10.
 Accepted string-indexing semantics remain assigned to the later collections
 phase.
 
-------------------------------------------------------------------------
+---
 
 # 15. `each` Traversal
 
@@ -475,14 +474,14 @@ The exact item-binding rules, map key/value binding rules, result value, and
 early-termination behaviour are not yet accepted; see `dec-col-sem-001` in the
 Decision Register.
 
-------------------------------------------------------------------------
+---
 
 # 16. Ordering After Transformations
 
--   `filter()` preserves traversal order.
--   `list.add()` appends at the end.
--   A new `set.add()` member is placed last in insertion order.
--   Removal preserves the relative order of remaining values.
--   Maps preserve existing key order; newly added keys are placed last.
+- `filter()` preserves traversal order.
+- `list.add()` appends at the end.
+- A new `set.add()` member is placed last in insertion order.
+- Removal preserves the relative order of remaining values.
+- Maps preserve existing key order; newly added keys are placed last.
 
-------------------------------------------------------------------------
+---

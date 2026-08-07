@@ -126,21 +126,20 @@ operations produce an `Integer`.
 A local variable's current type is inferred from the value assigned to it at
 runtime.
 
-
 # Compound values and named types
 
 Vulci distinguishes four related constructs:
 
-| Property | Tuple | Anonymous object | Struct | Class |
-|---|---:|---:|---:|---:|
-| Named type | No | No | Yes | Yes |
-| Positional members | Yes | No | No | No |
-| Named fields | No | Yes | Yes | Yes |
-| Value semantics | Yes | Yes | Yes | No |
-| Reference identity | No | No | No | Yes |
-| Methods | No | No | Yes | Yes |
-| Inheritance | No | No | No | Yes |
-| Data-focused | Yes | Yes | Yes | Not necessarily |
+| Property           | Tuple | Anonymous object | Struct |           Class |
+| ------------------ | ----: | ---------------: | -----: | --------------: |
+| Named type         |    No |               No |    Yes |             Yes |
+| Positional members |   Yes |               No |     No |              No |
+| Named fields       |    No |              Yes |    Yes |             Yes |
+| Value semantics    |   Yes |              Yes |    Yes |              No |
+| Reference identity |    No |               No |     No |             Yes |
+| Methods            |    No |               No |    Yes |             Yes |
+| Inheritance        |    No |               No |     No |             Yes |
+| Data-focused       |   Yes |              Yes |    Yes | Not necessarily |
 
 Classes belong to a later implementation phase. Phases 11–13 introduce tuples,
 anonymous objects, and structs.
@@ -254,7 +253,7 @@ These are recommendations only.
 
 Preferred:
 
-``` text
+```text
 fn add(a, b) {
     a + b
 }
@@ -262,7 +261,7 @@ fn add(a, b) {
 
 Allowed but discouraged:
 
-``` text
+```text
 fn add(a, b) {
     return a + b
 }
@@ -278,7 +277,7 @@ Use parentheses when they improve clarity.
 
 Preferred:
 
-``` text
+```text
 (20 / 5) / 2
 ```
 
@@ -287,7 +286,7 @@ Preferred:
 An assignment directly used as a condition is valid but produces a non-fatal
 warning.
 
-``` text
+```text
 if (ready = true) {
 }
 ```
@@ -295,7 +294,7 @@ if (ready = true) {
 Adding an extra pair of parentheses explicitly marks the assignment as
 intentional and suppresses the warning.
 
-``` text
+```text
 if ((ready = true)) {
 }
 ```

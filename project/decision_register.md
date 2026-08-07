@@ -103,6 +103,7 @@ collection processing, but no replacement decision is accepted.
 Decision: The agreed Struct feature is implemented over implementation phases 13A–13E only for implementation planning. The language specification is unchanged.
 
 Each implementation phase must be independently:
+
 - compilable;
 - testable;
 - reviewable;

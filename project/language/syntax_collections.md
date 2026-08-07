@@ -17,7 +17,7 @@ This document owns accepted syntax specific to strings and collections. General 
 
 List literals use `list[...]`.
 
-``` text
+```text
 items = list[1, 2, 3]
 empty = list[]
 ```
@@ -26,7 +26,7 @@ empty = list[]
 
 Set literals use `set[...]`.
 
-``` text
+```text
 values = set[1, 2, 3]
 empty = set[]
 ```
@@ -35,7 +35,7 @@ empty = set[]
 
 Map literals use `map[...]`. Entries use `key: value` syntax.
 
-``` text
+```text
 lookup = map[
     "a": 1,
     "b": 2
@@ -44,7 +44,7 @@ lookup = map[
 empty = map[]
 ```
 
-------------------------------------------------------------------------
+---
 
 # 2. Collection Types at Function Boundaries
 
@@ -53,7 +53,7 @@ empty = map[]
 Collection item types use angle-bracket type arguments where function
 parameter or return types are already permitted.
 
-``` text
+```text
 fn process(list<int|str> items) {
 }
 
@@ -64,14 +64,14 @@ fn create_items() returns list<int|str> {
 
 Sets use one item type. Maps use a key type followed by a value type.
 
-``` text
+```text
 set<int>
 map<str, int>
 ```
 
 Union types may be used inside collection type arguments.
 
-``` text
+```text
 list<int|str>
 map<str, int|null>
 ```
@@ -84,7 +84,7 @@ deferred under `dec-syn-005` in the Decision Register.
 
 Bare collection types are syntactically valid at function boundaries.
 
-``` text
+```text
 fn process(list items) {
 }
 ```
@@ -97,7 +97,7 @@ semantic rules defined in the Collection Semantics Specification.
 The keyword `collection` may be used as a function parameter or return type
 without naming a concrete collection type.
 
-``` text
+```text
 fn do_something(collection values) {
 }
 
@@ -109,27 +109,27 @@ fn create_values() returns collection {
 Its membership and runtime behaviour are defined in the Collection Semantics
 Specification.
 
-------------------------------------------------------------------------
+---
 
 # 3. Runtime Collection Type Inspection
 
 The boolean properties `isList`, `isSet`, and `isMap` inspect the concrete
 runtime type of a collection value.
 
-``` text
+```text
 values.isList
 values.isSet
 values.isMap
 ```
 
-------------------------------------------------------------------------
+---
 
 # 4. Indexed and Keyed Access
 
 Strings and lists use bracket syntax for positional access. Maps use bracket
 syntax for keyed access. Sets do not support bracket or positional access.
 
-``` text
+```text
 text[0]
 items[0]
 lookup["name"]
@@ -138,7 +138,7 @@ lookup["name"]
 The behavior of invalid positional access and missing map keys is defined in
 the Collection Semantics Specification.
 
-------------------------------------------------------------------------
+---
 
 # 5. `each` Loop Form
 
@@ -147,7 +147,7 @@ the Collection Semantics Specification.
 It uses a brace-delimited executable body, like conditional expressions. The body
 is executed once for every traversed item.
 
-``` text
+```text
 each ... {
     ...
 }
@@ -156,13 +156,13 @@ each ... {
 The exact collection-expression and item-binding syntax is not yet accepted; see
 `dec-col-syn-001` in the Decision Register.
 
-------------------------------------------------------------------------
+---
 
 # 6. String Operation Syntax
 
 Accepted string operation syntax includes:
 
-``` text
+```text
 left + right
 left ~ right
 text.contains(value)
@@ -186,13 +186,13 @@ accepted synonym; strings use `count()` consistently with collections.
 String indexing, slicing, and repetition are not part of Phase 10. Accepted
 string indexing remains scheduled with collections rather than Phase 10.
 
-------------------------------------------------------------------------
+---
 
 # 7. Collection Operation Names
 
 Accepted collection operation names include:
 
-``` text
+```text
 collection.contains(value)
 collection.filter(...)
 collection.find(...)
@@ -208,7 +208,7 @@ collection.removeAll(...)
 
 Initially accepted immutable update syntax includes:
 
-``` text
+```text
 listValue.add(value)
 setValue.add(value)
 mapValue.add(key, value)
@@ -219,13 +219,13 @@ setValue.remove(value)
 Exact syntax remains authoritative only where explicitly specified in this
 document. Implementation order belongs to the Implementation Phases document.
 
-------------------------------------------------------------------------
+---
 
 # 8. Trailing Commas
 
 Trailing commas are valid in list, set, and map literals.
 
-``` text
+```text
 list[
     1,
     2,
@@ -242,4 +242,4 @@ map[
 ]
 ```
 
-------------------------------------------------------------------------
+---
