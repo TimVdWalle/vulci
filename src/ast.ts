@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import { Token } from "./token.js";
 
@@ -26,6 +26,7 @@ export type Expression =
   | AssignmentExpression
   | FunctionDeclaration
   | StructDeclaration
+  | EnumDeclaration
   | FunctionCall
   | MemberCall
   | MemberAccess
@@ -162,6 +163,13 @@ export interface StructDeclaration {
   name: Token;
   fields: StructFieldDeclaration[];
   methods: FunctionDeclaration[];
+}
+
+export interface EnumDeclaration {
+  type: "EnumDeclaration";
+  keyword: Token;
+  name: Token;
+  members: Token[];
 }
 
 export interface FunctionCall {

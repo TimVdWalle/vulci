@@ -1,0 +1,23 @@
+// Phase 14
+// Expected output:
+// Status.Running
+// state=Pending
+// true
+
+initial = Status.Pending
+
+enum Status {
+    Pending
+    Running
+}
+
+fn keep(Status value) returns Status {
+    value
+}
+
+current = initial
+current = Status.Running
+
+print(value: current)
+print(value: "state={{keep(initial)}}")
+print(value: initial == Status.Pending and current != initial)

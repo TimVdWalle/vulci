@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import {
   ConditionalExpression,
@@ -95,6 +95,7 @@ export abstract class ExpressionEvaluator extends FunctionEvaluator {
 
       case "FunctionDeclaration":
       case "StructDeclaration":
+      case "EnumDeclaration":
         return NULL_VALUE;
 
       case "FunctionCall":
@@ -187,6 +188,13 @@ export abstract class ExpressionEvaluator extends FunctionEvaluator {
       }
 
       return this.currentSelf;
+    }
+
+    if (this.enums.has(expression.name)) {
+      throw new Error(
+        `Enum '${expression.name}' must be accessed through a qualified ` +
+          `member. at ${expression.token.line}:${expression.token.column}`,
+      );
     }
 
     if (expression.name.startsWith("$")) {

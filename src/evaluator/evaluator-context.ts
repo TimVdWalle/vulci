@@ -1,6 +1,7 @@
-// Phase 13
+// Phase 14
 
 import {
+  EnumDeclaration,
   Expression,
   FunctionDeclaration,
   StructDeclaration,
@@ -16,6 +17,7 @@ export abstract class EvaluatorContext {
 
   protected readonly functions = new Map<string, FunctionDeclaration>();
   protected readonly structs = new Map<string, StructDeclaration>();
+  protected readonly enums = new Map<string, EnumDeclaration>();
   protected currentEnvironment: Environment;
   protected functionDepth = 0;
   protected currentFunction: FunctionDeclaration | null = null;

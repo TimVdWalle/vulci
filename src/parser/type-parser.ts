@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import { TypeAnnotation, TypeMember } from "../ast.js";
 import { Token, TokenType } from "../token.js";
@@ -42,7 +42,13 @@ export abstract class TypeParser extends ParserContext {
 
   private finishTypeMember(token: Token): TypeMember {
     if (token.lexeme === "tuple") {
-      return this.finishTupleType(token);
+      if (this.check(TokenType.LeftParen)) {
+        return this.finishTupleType(token);
+      }
+
+      if (!this.isEnumName(token.lexeme)) {
+        throw this.error(token, "A bare 'tuple' type does not exist.");
+      }
     }
 
     this.validateTypeName(token);
@@ -50,9 +56,7 @@ export abstract class TypeParser extends ParserContext {
   }
 
   private finishTupleType(token: Token): TypeMember {
-    if (!this.match(TokenType.LeftParen)) {
-      throw this.error(token, "A bare 'tuple' type does not exist.");
-    }
+    this.consume(TokenType.LeftParen, "Expected '(' after 'tuple'.");
 
     const members: TypeAnnotation[] = [];
     this.skipNewlines();

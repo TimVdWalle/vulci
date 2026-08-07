@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import { Expression } from "../ast.js";
 import { Token, TokenType } from "../token.js";
@@ -9,6 +9,7 @@ import { BUILT_IN_TYPE_NAMES } from "../type-names.js";
 export abstract class ParserContext {
   protected readonly knownTypeNames = new Set<string>(BUILT_IN_TYPE_NAMES);
   protected readonly knownStructNames = new Set<string>();
+  protected readonly knownEnumNames = new Set<string>();
   protected current = 0;
 
   constructor(protected readonly tokens: Token[]) {}
@@ -20,6 +21,15 @@ export abstract class ParserContext {
 
   protected isStructName(name: string): boolean {
     return this.knownStructNames.has(name);
+  }
+
+  protected registerEnumName(name: string): void {
+    this.knownEnumNames.add(name);
+    this.knownTypeNames.add(name);
+  }
+
+  protected isEnumName(name: string): boolean {
+    return this.knownEnumNames.has(name);
   }
 
   protected abstract expression(): Expression;

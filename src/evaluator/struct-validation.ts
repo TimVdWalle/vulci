@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import {
   Expression,
@@ -219,6 +219,7 @@ function findExpressionConflict(
         ? null
         : findExpressionConflict(expression.value, structNames);
 
+    case "EnumDeclaration":
     case "IntegerLiteral":
     case "BooleanLiteral":
     case "NullLiteral":

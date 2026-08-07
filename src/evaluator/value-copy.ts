@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import { RuntimeValue } from "../runtime-value.js";
 
@@ -28,6 +28,14 @@ export function copyRuntimeValue(value: RuntimeValue): RuntimeValue {
         name: field.name,
         value: copyRuntimeValue(field.value),
       })),
+    };
+  }
+
+  if (value.type === "Enum") {
+    return {
+      type: "Enum",
+      enumName: value.enumName,
+      memberName: value.memberName,
     };
   }
 

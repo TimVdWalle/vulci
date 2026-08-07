@@ -1,4 +1,4 @@
-// Phase 13
+// Phase 14
 
 import { RuntimeValue } from "../runtime-value.js";
 
@@ -34,6 +34,12 @@ export function runtimeValuesEqual(
           runtimeValuesEqual(field.value, other.value)
         );
       });
+    case "Enum":
+      return (
+        right.type === "Enum" &&
+        left.enumName === right.enumName &&
+        left.memberName === right.memberName
+      );
     case "Tuple":
     case "AnonymousObject":
     case "NativeFunction":
