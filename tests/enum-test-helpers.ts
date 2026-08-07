@@ -1,6 +1,6 @@
 // Phase 14
 
-import { Program } from "../../../../../Downloads/vulci-phase14/src/ast.js";
+import { Program } from "../src/ast.js";
 import { registerBuiltins } from "../src/builtins.js";
 import { Environment } from "../src/environment.js";
 import { Evaluator } from "../src/evaluator.js";
