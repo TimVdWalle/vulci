@@ -10,14 +10,14 @@ other JetBrains IDEs.
 1. Open **Settings** (or **Preferences** on macOS).
 2. Open **Editor → TextMate Bundles**.
 3. Select **Add** and choose the `Vulci.tmbundle` folder beside this file.
-4. Apply the settings and open a `.vulci` file.
+4. Apply the settings and open a `.vci` file.
 
 Keep the bundle linked to this repository folder. After updating the repository,
 restart the IDE if it does not reload a changed grammar automatically.
 
 ## Current support
 
-- `.vulci` file recognition
+- `.vci` file recognition
 - Phase 14 keywords and built-in types
 - declarations, literals, operators, and punctuation
 - line comments and nested block comments

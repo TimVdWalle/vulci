@@ -8,7 +8,7 @@
     <string>source.vulci</string>
     <key>fileTypes</key>
     <array>
-        <string>vulci</string>
+        <string>vci</string>
     </array>
     <key>uuid</key>
     <string>65BB2800-7D43-459A-A020-7D049F12CC76</string>

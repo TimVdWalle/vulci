@@ -9,9 +9,9 @@
 ## `name-001` — Accepted decisions
 
 - The programming language is named **Vulci**.
-- Vulci source files use the extension **`.vulci`**.
+- Vulci source files use the extension **`.vci`**.
 - Both decisions may be revised later.
-- Until explicitly revised, **Vulci** and **`.vulci`** are the accepted project decisions.
+- Until explicitly revised, **Vulci** and **`.vci`** are the accepted project decisions.
 
 ## Context and reasoning
 
@@ -30,9 +30,9 @@ The name was also preferred because it is:
 - suitable for a programming language;
 - not dependent on a feature that may later change.
 
-Several file extensions were considered, including `.vci`, `.vu`, and `.vulci`.
+Several short file extensions were considered, including `.vci` and `.vu`.
 
-The accepted extension is **`.vulci`** because it is explicit, recognizable, and directly matches the language name.
+The accepted extension is **`.vci`** because it is concise, recognizable, and derived directly from the language name.
 
 ## Status
 

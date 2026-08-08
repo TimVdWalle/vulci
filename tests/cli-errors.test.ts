@@ -14,23 +14,23 @@ const projectRoot = path.resolve(
 const cases = [
   {
     name: "unknown string member",
-    fixture: "unknown-string-member.vulci",
+    fixture: "unknown-string-member.vci",
     expected: "E_MEM_UNKNOWN: Unknown string member 'missing'. at 3:9",
   },
   {
     name: "wrong string member argument count",
-    fixture: "wrong-string-member-argument-count.vulci",
+    fixture: "wrong-string-member-argument-count.vci",
     expected:
       "E_ARG_COUNT: Member 'count' expects 0 arguments, but received 1. at 3:9",
   },
   {
     name: "wrong string member argument type",
-    fixture: "wrong-string-member-argument-type.vulci",
+    fixture: "wrong-string-member-argument-type.vci",
     expected: "E_ARG_TYPE: Member 'contains' expects a str argument. at 3:9",
   },
   {
     name: "unknown enum member",
-    fixture: "unknown-enum-member.vulci",
+    fixture: "unknown-enum-member.vci",
     expected: "E_MEM_UNKNOWN: Enum 'Status' has no member 'Missing'. at 5:8",
   },
 ] as const;
