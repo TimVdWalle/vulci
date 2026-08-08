@@ -119,7 +119,7 @@ Wrapper().number.value`),
 test("field defaults cannot access ordinary globals or caller locals", () => {
   assert.throws(
     () =>
-      evaluate(`fallback = 42
+      evaluate(`$fallback = 42
 struct Value {
   int number = fallback
 }

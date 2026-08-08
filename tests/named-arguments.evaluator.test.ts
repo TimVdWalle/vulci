@@ -352,10 +352,13 @@ answer`),
   );
 });
 
-test("bare variables still evaluate as variables", () => {
+test("bare local variables still evaluate as variables", () => {
   assert.deepEqual(
-    evaluate(`answer = 42
-answer`),
+    evaluate(`fn read() returns int {
+  answer = 42
+  answer
+}
+read()`),
     {
       type: "Integer",
       value: 42,

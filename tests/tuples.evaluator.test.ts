@@ -39,9 +39,9 @@ test("evaluates and indexes tuples", () => {
 
 test("evaluates tuple members from left to right", () => {
   assert.deepEqual(
-    evaluate(`value = 0
-result = ((value = value + 1), (value = value + 1))
-(result[0], result[1], value)`),
+    evaluate(`$value = 0
+$result = (($value = $value + 1), ($value = $value + 1))
+($result[0], $result[1], $value)`),
     {
       type: "Tuple",
       members: [

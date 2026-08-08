@@ -84,9 +84,9 @@ test("evaluates arithmetic operands before comparisons", () => {
 });
 
 test("evaluates each middle operand only once", () => {
-  const source = `value = 0
-result = 0 < (value = value + 1) < 2
-value
+  const source = `$value = 0
+$result = 0 < ($value = $value + 1) < 2
+$value
 `;
 
   assert.deepEqual(evaluate(source), {
@@ -96,9 +96,9 @@ value
 });
 
 test("evaluates chained operands from left to right", () => {
-  const source = `value = 0
-result = (value = value + 1) < (value = value + 1) < (value = value + 1)
-value
+  const source = `$value = 0
+$result = ($value = $value + 1) < ($value = $value + 1) < ($value = $value + 1)
+$value
 `;
 
   assert.deepEqual(evaluate(source), {
@@ -108,9 +108,9 @@ value
 });
 
 test("stops evaluating after the first false comparison", () => {
-  const source = `value = 0
-result = 10 < 5 < (value = 1)
-value
+  const source = `$value = 0
+$result = 10 < 5 < ($value = 1)
+$value
 `;
 
   assert.deepEqual(evaluate(source), {

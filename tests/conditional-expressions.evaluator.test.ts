@@ -103,11 +103,11 @@ test("uses the final branch expression as the conditional result", () => {
 
 test("assignment is an expression inside a branch", () => {
   assert.deepEqual(
-    evaluate(`value = if (true) {
-  result = 10
-  result + 1
+    evaluate(`$value = if (true) {
+  $result = 10
+  $result + 1
 }
-value
+$value
 `),
     {
       type: "Integer",
@@ -118,12 +118,12 @@ value
 
 test("assignments inside a branch affect the current environment", () => {
   assert.deepEqual(
-    evaluate(`value = 1
-result = if (true) {
-  value = 10
-  value
+    evaluate(`$value = 1
+$result = if (true) {
+  $value = 10
+  $value
 }
-value
+$value
 `),
     {
       type: "Integer",
@@ -177,17 +177,17 @@ test("does not evaluate later else if conditions after a match", () => {
 });
 
 test("does not evaluate later branch bodies after a match", () => {
-  const source = `value = 0
-result = if (true) {
+  const source = `$value = 0
+$result = if (true) {
   1
 } else if (true) {
-  value = 10
+  $value = 10
   2
 } else {
-  value = 20
+  $value = 20
   3
 }
-value
+$value
 `;
 
   assert.deepEqual(evaluate(source), {
@@ -214,12 +214,12 @@ test("supports nested conditional expressions", () => {
 
 test("supports conditional expressions as assignment values", () => {
   assert.deepEqual(
-    evaluate(`value = if (false) {
+    evaluate(`$value = if (false) {
   1
 } else {
   2
 }
-value
+$value
 `),
     {
       type: "Integer",
@@ -296,15 +296,15 @@ test("rejects an invalid else if condition at its if keyword", () => {
 });
 
 test("evaluates conditions from left to right", () => {
-  const source = `value = 0
-result = if ((value = value + 1) == 2) {
+  const source = `$value = 0
+$result = if (($value = $value + 1) == 2) {
   1
-} else if ((value = value + 1) == 2) {
+} else if (($value = $value + 1) == 2) {
   2
 } else {
   3
 }
-value
+$value
 `;
 
   assert.deepEqual(evaluate(source), {
@@ -314,13 +314,13 @@ value
 });
 
 test("stops evaluating conditions after the first matching branch", () => {
-  const source = `value = 0
-result = if (true) {
+  const source = `$value = 0
+$result = if (true) {
   1
-} else if ((value = 1) == 1) {
+} else if (($value = 1) == 1) {
   2
 }
-value
+$value
 `;
 
   assert.deepEqual(evaluate(source), {

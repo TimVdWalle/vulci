@@ -51,8 +51,8 @@ test("rejects an ordinary variable assignment at the top level", () => {
 
 test("supports chained assignment expressions", () => {
   assert.deepEqual(
-    evaluate(`first = second = 42
-first + second
+    evaluate(`$first = $second = 42
+$first + $second
 `),
     {
       type: "Integer",
@@ -87,9 +87,9 @@ test("assignment is right-associative", () => {
 
 test("supports assignment inside arithmetic expressions", () => {
   assert.deepEqual(
-    evaluate(`value = 0
-result = (value = 5) + 2
-result
+    evaluate(`$value = 0
+$result = ($value = 5) + 2
+$result
 `),
     {
       type: "Integer",
@@ -100,9 +100,9 @@ result
 
 test("supports assignment inside comparison expressions", () => {
   assert.deepEqual(
-    evaluate(`value = 0
-result = (value = 5) == 5
-result
+    evaluate(`$value = 0
+$result = ($value = 5) == 5
+$result
 `),
     {
       type: "Boolean",
@@ -113,9 +113,9 @@ result
 
 test("supports assignment inside logical expressions", () => {
   assert.deepEqual(
-    evaluate(`value = false
-result = (value = true) and true
-result
+    evaluate(`$value = false
+$result = ($value = true) and true
+$result
 `),
     {
       type: "Boolean",
@@ -126,13 +126,13 @@ result
 
 test("supports assignment as a conditional condition", () => {
   assert.deepEqual(
-    evaluate(`condition = false
-result = if (condition = true) {
+    evaluate(`$condition = false
+$result = if ($condition = true) {
   1
 } else {
   2
 }
-result
+$result
 `),
     {
       type: "Integer",
@@ -143,12 +143,12 @@ result
 
 test("supports a conditional expression as an assignment value", () => {
   assert.deepEqual(
-    evaluate(`value = if (true) {
+    evaluate(`$value = if (true) {
   10
 } else {
   20
 }
-value
+$value
 `),
     {
       type: "Integer",
@@ -159,11 +159,11 @@ value
 
 test("supports assignment as the final branch expression", () => {
   assert.deepEqual(
-    evaluate(`value = 0
-result = if (true) {
-  value = 10
+    evaluate(`$value = 0
+$result = if (true) {
+  $value = 10
 }
-result
+$result
 `),
     {
       type: "Integer",
@@ -174,11 +174,11 @@ result
 
 test("assignment inside a branch updates the current environment", () => {
   assert.deepEqual(
-    evaluate(`value = 0
+    evaluate(`$value = 0
 if (true) {
-  value = 10
+  $value = 10
 }
-value
+$value
 `),
     {
       type: "Integer",
@@ -189,13 +189,13 @@ value
 
 test("does not evaluate an assignment in an unselected branch", () => {
   assert.deepEqual(
-    evaluate(`value = 0
+    evaluate(`$value = 0
 if (true) {
   1
 } else {
-  value = 10
+  $value = 10
 }
-value
+$value
 `),
     {
       type: "Integer",

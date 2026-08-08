@@ -13,8 +13,8 @@ function evaluate(source: string, environment: Environment): RuntimeValue {
 }
 test("stores and retrieves variables", () => {
   const environment = new Environment();
-  evaluate("answer = 42", environment);
-  assert.deepEqual(environment.get("answer"), {
+  evaluate("$answer = 42", environment);
+  assert.deepEqual(environment.get("$answer"), {
     type: "Integer",
     value: 42,
   });
@@ -32,8 +32,8 @@ test("calls native functions with evaluated arguments", () => {
     },
   });
   evaluate(
-    `answer = 42
-capture(answer)
+    `$answer = 42
+capture($answer)
 `,
     environment,
   );
@@ -56,12 +56,12 @@ test("reports values that are not callable", () => {
   assert.throws(
     () =>
       evaluate(
-        `answer = 42
-answer()
+        `$answer = 42
+$answer()
 `,
         environment,
       ),
-    /Cannot call 'answer': value is not a function/,
+    /Cannot call '\$answer': value is not a function/,
   );
 });
 test("evaluates addition", () => {
@@ -165,8 +165,8 @@ test("evaluates division left-associatively", () => {
 test("evaluates expressions containing variables", () => {
   const environment = new Environment();
   const result = evaluate(
-    `value = 10
-value + 3 * 4
+    `$value = 10
+$value + 3 * 4
 `,
     environment,
   );
@@ -234,8 +234,8 @@ test("evaluates false", () => {
 });
 test("stores and retrieves Boolean values", () => {
   const environment = new Environment();
-  evaluate("result = true", environment);
-  assert.deepEqual(environment.get("result"), {
+  evaluate("$result = true", environment);
+  assert.deepEqual(environment.get("$result"), {
     type: "Boolean",
     value: true,
   });
@@ -470,28 +470,28 @@ test("reports logical errors at the operator source position", () => {
   assert.throws(
     () =>
       evaluate(
-        `value = true
-value and 1
+        `$value = true
+$value and 1
 `,
         new Environment(),
       ),
-    /Operator 'and' requires boolean operands, but the right operand is integer\. at 2:7/,
+    /Operator 'and' requires boolean operands, but the right operand is integer\. at 2:8/,
   );
   assert.throws(
     () =>
       evaluate(
-        `value = false
-value or 1
+        `$value = false
+$value or 1
 `,
         new Environment(),
       ),
-    /Operator 'or' requires boolean operands, but the right operand is integer\. at 2:7/,
+    /Operator 'or' requires boolean operands, but the right operand is integer\. at 2:8/,
   );
   assert.throws(
     () =>
       evaluate(
-        `value = 1
-not value
+        `$value = 1
+not $value
 `,
         new Environment(),
       ),

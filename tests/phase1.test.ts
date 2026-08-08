@@ -8,8 +8,8 @@ import { Lexer } from "../src/lexer.js";
 import { Parser } from "../src/parser.js";
 
 test("executes the complete Phase 1 example", () => {
-  const source = `answer = 42
-print(answer)
+  const source = `$answer = 42
+print($answer)
 `;
 
   const output: unknown[][] = [];

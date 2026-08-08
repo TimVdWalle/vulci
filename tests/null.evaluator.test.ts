@@ -24,8 +24,8 @@ test("evaluates a null literal", () => {
 
 test("assigns null to a variable", () => {
   assert.deepEqual(
-    evaluate(`value = null
-value
+    evaluate(`$value = null
+$value
 `),
     {
       type: "Null",
