@@ -1,4 +1,4 @@
-<!-- Phase: Documentation restructuring after Phase 13 -->
+<!-- Phase: Editor support planning after Phase 14 -->
 <!-- Document ID: implementation-strategy -->
 <!-- Version: 2 -->
 <!-- Status: Active -->
@@ -130,6 +130,43 @@ Premature runtime optimization is intentionally avoided.
 
 Performance improvements should only be pursued when justified by real
 usage and measurement.
+
+---
+
+## Editor Support
+
+### `ide-dec-001` — Lightweight support first
+
+The first JetBrains and WebStorm integration is lightweight editor support.
+
+### `ide-dec-002` — Repository-linked TextMate bundle
+
+The current integration is a TextMate bundle stored in the Vulci repository and
+linked from the IDE. Updating the linked repository bundle is the preferred
+lightweight upgrade mechanism.
+
+### `ide-dec-003` — Current feature scope
+
+The current integration provides `.vulci` file recognition, Phase 14 syntax
+highlighting, comments, strings, interpolation, bracket pairing, comment
+toggling, and basic indentation.
+
+### `ide-dec-004` — No duplicated language analysis
+
+Editor integrations must not introduce a separate implementation of Vulci
+parsing, warning rules, or semantic rules when those rules are owned by the
+reference implementation.
+
+### `ide-dec-005` — Current warning authority
+
+The reference interpreter's command-line warnings remain authoritative until
+reusable Vulci analysis rules are available.
+
+### `ide-dec-006` — Shared future analysis
+
+Future IDE warnings should consume reusable Vulci analysis rules shared with the
+command-line interface. The exact analysis API, warning ownership split, and
+editor-integration architecture remain undecided.
 
 ---
 

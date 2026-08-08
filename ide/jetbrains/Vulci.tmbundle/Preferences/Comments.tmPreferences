@@ -1,0 +1,18 @@
+<!-- Phase: Phase 14 IDE support -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>name</key><string>Vulci Comments</string>
+    <key>scope</key><string>source.vulci</string>
+    <key>settings</key>
+    <dict>
+        <key>shellVariables</key>
+        <array>
+            <dict><key>name</key><string>TM_COMMENT_START</string><key>value</key><string>// </string></dict>
+            <dict><key>name</key><string>TM_COMMENT_START_2</string><key>value</key><string>/*</string></dict>
+            <dict><key>name</key><string>TM_COMMENT_END_2</string><key>value</key><string>*/</string></dict>
+        </array>
+    </dict>
+    <key>uuid</key><string>4AA70FD3-94A5-42C9-9170-E548E627CB6A</string>
+</dict>
+</plist>

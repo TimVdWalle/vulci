@@ -1,4 +1,4 @@
-<!-- Phase: Phase 14 enum source-of-truth update -->
+<!-- Phase: Editor support planning after Phase 14 -->
 <!-- Document ID: implementation-phases -->
 <!-- Version: 15 -->
 <!-- Status: Active -->
@@ -550,6 +550,43 @@ concrete numbered phases:
 
 **Result:** Deferred collection work remains visible until its exact design and
 implementation phase are agreed.
+
+---
+
+## Editor support work
+
+### `ide4-now` — Lightweight JetBrains and WebStorm support
+
+- Repository-linked TextMate bundle
+- `.vulci` file recognition
+- Phase 14 syntax highlighting
+- Comments, strings, and interpolation highlighting
+- Bracket pairing and comment toggling
+- Basic indentation
+- No duplicated Vulci parsing, warning rules, or semantic rules
+- Command-line warnings remain authoritative
+
+**Result:** Vulci source files receive useful lightweight editor support while
+the language continues to evolve.
+
+### Future editor analysis — Exact phase undecided
+
+The following work remains undecided and must not be treated as accepted
+implementation architecture or phase scope:
+
+- The exact reusable Vulci analysis API
+- When warnings move out of the parser
+- Whether future integration uses LSP, a native JetBrains plugin, or a hybrid
+- Which warnings become IDE-only and which remain available through the CLI
+- Completion, navigation, refactoring, formatting, and other semantic features
+- Exact implementation phases for advanced editor support
+- Distribution through the JetBrains Marketplace
+
+Future IDE warnings should consume reusable Vulci analysis rules shared with the
+command-line interface rather than duplicate the rules.
+
+**Result:** Future editor work remains visible without prematurely accepting an
+architecture or duplicating language analysis.
 
 ## Phase 13 implementation split
 
