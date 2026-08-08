@@ -77,7 +77,7 @@ The name was chosen while the project’s creator was on holiday near the archae
 
 Source files currently use the extension:
 
-.vulci
+.vci
 
 Both the name and extension are accepted project decisions, although they may still evolve before a stable release.
 

@@ -558,7 +558,7 @@ implementation phase are agreed.
 ### `ide4-now` — Lightweight JetBrains and WebStorm support
 
 - Repository-linked TextMate bundle
-- `.vulci` file recognition
+- `.vci` file recognition
 - Phase 14 syntax highlighting
 - Comments, strings, and interpolation highlighting
 - Bracket pairing and comment toggling

@@ -147,7 +147,7 @@ lightweight upgrade mechanism.
 
 ### `ide-dec-003` — Current feature scope
 
-The current integration provides `.vulci` file recognition, Phase 14 syntax
+The current integration provides `.vci` file recognition, Phase 14 syntax
 highlighting, comments, strings, interpolation, bracket pairing, comment
 toggling, and basic indentation.
 
