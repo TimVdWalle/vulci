@@ -15,8 +15,8 @@
 
 
 // p2err05 — Arithmetic overflow through a variable
-// maximum = 9_007_199_254_740_991
-// print(maximum + 1)
+// $maximum = 9_007_199_254_740_991
+// print($maximum + 1)
 
 
 // p2err06 — Addition overflow
@@ -40,8 +40,8 @@
 
 
 // p2err11 — Repeated variable negation
-// value = 5
-// print(--value)
+// $value = 5
+// print(--$value)
 
 
 // p2err12 — Repeated grouped-expression negation

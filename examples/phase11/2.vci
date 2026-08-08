@@ -11,8 +11,8 @@ fn inspect(
     return (coordinates[0] + coordinates[1], value[1])
 }
 
-swapped = swap((42, "answer"))
-inspected = inspect(((10, 20), "point"))
+$swapped = swap((42, "answer"))
+$inspected = inspect(((10, 20), "point"))
 
-print(swapped)
-print(inspected)
+print($swapped)
+print($inspected)

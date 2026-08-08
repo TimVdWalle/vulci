@@ -1,0 +1,3 @@
+enum Status { Pending }
+$answer = 42
+if ($ready and not false)

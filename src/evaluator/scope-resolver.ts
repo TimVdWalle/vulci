@@ -51,11 +51,14 @@ export abstract class ScopeResolver extends TypeChecker {
       return;
     }
 
-    if (
-      this.currentEnvironment === this.environment &&
-      this.functions.has(name)
-    ) {
+    if (this.functions.has(name)) {
       throw new Error(`Name '${name}' is already defined as a function.`);
+    }
+
+    if (this.currentEnvironment === this.environment) {
+      throw new Error(
+        `Top-level variable '${name}' must use the '$' global-variable prefix.`,
+      );
     }
 
     const parameterType = this.currentParameterTypes.get(name);

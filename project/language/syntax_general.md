@@ -1,4 +1,4 @@
-<!-- Phase: Phase 14 enum source-of-truth update -->
+<!-- Phase: Phase 14A global-variable and editor-support correction -->
 <!-- Document ID: syntax-general -->
 <!-- Version: 25 -->
 <!-- Status: Active -->
@@ -54,14 +54,26 @@ No `fn main` exists.
 
 ### Decision
 
-Variables are created by first assignment. No `let` or `var` is used.
+Ordinary local variables are created by first assignment inside functions and
+methods. No `let` or `var` is used.
 
 ```text
-count = 1
-count = 2
+fn count_items() returns int {
+    count = 1
+    count = 2
+    count
+}
 ```
 
 A variable exists only if execution reached its first assignment.
+
+Every variable created at the top level must use the `$` global-variable prefix.
+An ordinary unprefixed variable assignment at the top level is invalid.
+
+```text
+$count = 1 // valid
+count = 1  // invalid at the top level
+```
 
 ---
 
@@ -958,6 +970,8 @@ $counter = 0
 Global variables may only be created at the top level. Parameters cannot use
 `$`-prefixed names. The `$` prefix applies to variables, not function names. `$` must be followed
 by a valid ordinary identifier. `$`, `$2name`, and `$$name` are invalid.
+
+Ordinary unprefixed variables may only be created inside functions and methods.
 
 ---
 

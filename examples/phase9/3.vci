@@ -20,14 +20,14 @@ fn start() returns int {
 }
 
 // Bare zero-argument call.
-started = start
+$started = start
 
 // First two required parameters supplied positionally.
 // Optional parameters use their defaults.
-first = calculate(10, 20)
+$first = calculate(10, 20)
 
 // Mixed positional and named arguments.
-second = calculate(
+$second = calculate(
     10,
     20,
     multiplier: 3,
@@ -36,7 +36,7 @@ second = calculate(
 
 // Required and optional parameters supplied by name.
 // Named arguments may be reordered.
-third = calculate(
+$third = calculate(
     bonus: 0,
     right: 4,
     multiplier: 2,
@@ -44,7 +44,7 @@ third = calculate(
 )
 
 // Native function called with a named argument.
-print(value: started)
-print(value: first)
-print(value: second)
-print(value: third)
+print(value: $started)
+print(value: $first)
+print(value: $second)
+print(value: $third)

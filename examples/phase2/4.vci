@@ -1,13 +1,13 @@
-large = 1_000_000
-grouped = (20 + 10) * 3
-division = -25 / 4
-remainder = -25 % 4
-negated = -(-5)
-result = large + grouped + division + remainder + negated
+$large = 1_000_000
+$grouped = (20 + 10) * 3
+$division = -25 / 4
+$remainder = -25 % 4
+$negated = -(-5)
+$result = $large + $grouped + $division + $remainder + $negated
 
-print(large)
-print(grouped)
-print(division)
-print(remainder)
-print(negated)
-print(result)
+print($large)
+print($grouped)
+print($division)
+print($remainder)
+print($negated)
+print($result)

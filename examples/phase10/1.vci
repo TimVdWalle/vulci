@@ -1,12 +1,12 @@
 // Phase 10
 
-name = "Ada"
-language = 'Vulci'
+$name = "Ada"
+$language = 'Vulci'
 
-greeting = "Hello, {{name}}!"
-description = language ~ "supports strings"
+$greeting = "Hello, {{$name}}!"
+$description = $language ~ "supports strings"
 
-multiline = """
+$multiline = """
     Strings support:
       interpolation
       multiline text
@@ -14,20 +14,20 @@ multiline = """
       comparisons
 """
 
-concatenated = "Vul" + "ci"
-joined = "Hello" ~ "world"
+$concatenated = "Vul" + "ci"
+$joined = "Hello" ~ "world"
 
-containsVul = language.contains("Vul")
-graphemeCount = "👨‍👩‍👧‍👦á".count()
+$containsVul = $language.contains("Vul")
+$graphemeCount = "👨‍👩‍👧‍👦á".count()
 
-ordered = "apple" < "banana"
-equal = "Vulci" == concatenated
+$ordered = "apple" < "banana"
+$equal = "Vulci" == $concatenated
 
-print(greeting)
-print(description)
-print(multiline)
-print(joined)
-print(containsVul)
-print(graphemeCount)
-print(ordered)
-print(equal)
+print($greeting)
+print($description)
+print($multiline)
+print($joined)
+print($containsVul)
+print($graphemeCount)
+print($ordered)
+print($equal)

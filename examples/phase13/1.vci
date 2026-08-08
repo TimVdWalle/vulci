@@ -17,14 +17,14 @@ struct User {
     Address address
 }
 
-original = User(
+$original = User(
     name: "Tim",
     address: Address(city: "Rome"),
 )
 
-moved = original
-moved.address.move(city: "Paris")
+$moved = $original
+$moved.address.move(city: "Paris")
 
-print(value: moved)
-print(value: original)
-print(value: original == User(name: "Tim", address: Address(city: "Rome")))
+print(value: $moved)
+print(value: $original)
+print(value: $original == User(name: "Tim", address: Address(city: "Rome")))

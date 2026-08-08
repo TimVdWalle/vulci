@@ -1,4 +1,4 @@
-<!-- Phase: Editor support planning after Phase 14 -->
+<!-- Phase: Phase 14A global-variable and editor-support correction -->
 <!-- Document ID: implementation-strategy -->
 <!-- Version: 2 -->
 <!-- Status: Active -->
@@ -150,6 +150,11 @@ lightweight upgrade mechanism.
 The current integration provides `.vci` file recognition, Phase 14 syntax
 highlighting, comments, strings, interpolation, bracket pairing, comment
 toggling, and basic indentation.
+
+Phase 14A will assign separate theme-controlled TextMate scopes to ordinary
+variables, global variables, logical operators, control-flow keywords, structs,
+and enums. The selected editor colour scheme will remain responsible for the
+exact colours.
 
 ### `ide-dec-004` — No duplicated language analysis
 

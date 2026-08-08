@@ -1,2 +1,2 @@
-maximum = 9_007_199_254_740_991
-print(maximum + 1)
+$maximum = 9_007_199_254_740_991
+print($maximum + 1)

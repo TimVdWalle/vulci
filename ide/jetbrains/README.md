@@ -1,30 +1,15 @@
-<!-- Phase: Phase 14 IDE support -->
+<!-- Phase: Phase 14A .vci editor-support improvements -->
 
 # Vulci support for JetBrains IDEs
 
-This TextMate bundle provides lightweight Vulci editing support in WebStorm and
-other JetBrains IDEs.
+In WebStorm, open **Settings → Editor → TextMate Bundles**, click **Add**, and
+select the `Vulci.tmbundle` folder beside this file. The bundle recognizes `.vci`
+files.
 
-## Install
+It exposes separate theme-controlled scopes for local variables, `$` global
+variables, logical operators, flow keywords, structs, and enums. Double-quoted
+strings highlight `{{expression}}` interpolation. Interpolation-looking text in
+single-quoted strings remains literal by design.
 
-1. Open **Settings** (or **Preferences** on macOS).
-2. Open **Editor → TextMate Bundles**.
-3. Select **Add** and choose the `Vulci.tmbundle` folder beside this file.
-4. Apply the settings and open a `.vci` file.
-
-Keep the bundle linked to this repository folder. After updating the repository,
-restart the IDE if it does not reload a changed grammar automatically.
-
-## Current support
-
-- `.vci` file recognition
-- Phase 14 keywords and built-in types
-- declarations, literals, operators, and punctuation
-- line comments and nested block comments
-- all four string forms, escapes, and interpolation delimiters
-- bracket, brace, and parenthesis pairing
-- comment toggling and basic indentation rules
-
-This bundle intentionally does not duplicate Vulci parsing or warning rules.
-Semantic warnings, errors, completion, navigation, and refactoring require a
-later integration with a reusable Vulci analysis API.
+After replacing or updating the bundle, remove the old WebStorm TextMate entry
+and add this folder again. This avoids a stale cached registration.
