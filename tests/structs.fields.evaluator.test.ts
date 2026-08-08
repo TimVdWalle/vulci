@@ -10,9 +10,9 @@ test("reads and mutates direct struct fields", () => {
   int x
   int y
 }
-point = Point(x: 1, y: 2)
-point.x = 42
-point.x`),
+$point = Point(x: 1, y: 2)
+$point.x = 42
+$point.x`),
     { type: "Integer", value: 42 },
   );
 });
@@ -25,9 +25,9 @@ test("mutates nested struct fields", () => {
 struct User {
   Address address
 }
-user = User(address: Address(city: "Rome"))
-user.address.city = "Paris"
-user.address.city`),
+$user = User(address: Address(city: "Rome"))
+$user.address.city = "Paris"
+$user.address.city`),
     { type: "String", value: "Paris" },
   );
 });
@@ -37,8 +37,8 @@ test("field assignment is an expression", () => {
     evaluate(`struct Value {
   int number
 }
-value = Value(number: 1)
-(value.number = 42) + 1`),
+$value = Value(number: 1)
+($value.number = 42) + 1`),
     { type: "Integer", value: 43 },
   );
 });
@@ -48,10 +48,10 @@ test("struct assignment creates an independent copy", () => {
     evaluate(`struct Counter {
   int value
 }
-original = Counter(value: 1)
-copy = original
-copy.value = 2
-original.value`),
+$original = Counter(value: 1)
+$copy = $original
+$copy.value = 2
+$original.value`),
     { type: "Integer", value: 1 },
   );
 });
@@ -64,10 +64,10 @@ test("struct assignment recursively copies nested values", () => {
 struct Outer {
   Inner inner
 }
-original = Outer(inner: Inner(value: 1))
-copy = original
-copy.inner.value = 2
-original.inner.value`),
+$original = Outer(inner: Inner(value: 1))
+$copy = $original
+$copy.inner.value = 2
+$original.inner.value`),
     { type: "Integer", value: 1 },
   );
 });
@@ -80,10 +80,10 @@ test("construction and field assignment copy supplied struct values", () => {
 struct Box {
   Item item
 }
-item = Item(value: 1)
-box = Box(item: item)
-item.value = 2
-box.item.value`),
+$item = Item(value: 1)
+$box = Box(item: $item)
+$item.value = 2
+$box.item.value`),
     { type: "Integer", value: 1 },
   );
 
@@ -94,12 +94,12 @@ box.item.value`),
 struct Box {
   Item item
 }
-first = Item(value: 1)
-second = Item(value: 2)
-box = Box(item: first)
-box.item = second
-second.value = 3
-box.item.value`),
+$first = Item(value: 1)
+$second = Item(value: 2)
+$box = Box(item: $first)
+$box.item = $second
+$second.value = 3
+$box.item.value`),
     { type: "Integer", value: 2 },
   );
 });
@@ -113,9 +113,9 @@ fn changed(Counter counter) returns Counter {
   counter.value = 2
   counter
 }
-original = Counter(value: 1)
-changed(original)
-original.value`),
+$original = Counter(value: 1)
+changed($original)
+$original.value`),
     { type: "Integer", value: 1 },
   );
 });
@@ -169,8 +169,8 @@ test("rejects field assignment with the wrong declared type", () => {
       evaluate(`struct Value {
   int number
 }
-value = Value(number: 1)
-value.number = "wrong"`),
+$value = Value(number: 1)
+$value.number = "wrong"`),
     /E_STRUCT_FIELD_TYPE.*expects int.*received string/i,
   );
 });
@@ -190,8 +190,8 @@ User(name: "Tim").age`),
       evaluate(`struct User {
   str name
 }
-user = User(name: "Tim")
-user.age = 1`),
+$user = User(name: "Tim")
+$user.age = 1`),
     /E_MEM_UNKNOWN.*age/,
   );
 });

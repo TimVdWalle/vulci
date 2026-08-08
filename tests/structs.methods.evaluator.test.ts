@@ -13,9 +13,9 @@ test("methods mutate their receiver through implicit self", () => {
     self.value
   }
 }
-counter = Counter(value: 1)
-counter.increment(2)
-counter.value`),
+$counter = Counter(value: 1)
+$counter.increment(2)
+$counter.value`),
     { type: "Integer", value: 3 },
   );
 });
@@ -29,9 +29,9 @@ test("methods support named and defaulted arguments", () => {
     self.value
   }
 }
-counter = Counter(value: 1)
-counter.add()
-counter.add(amount: 40)`),
+$counter = Counter(value: 1)
+$counter.add()
+$counter.add(amount: 40)`),
     { type: "Integer", value: 42 },
   );
 });
@@ -49,9 +49,9 @@ test("methods may call other methods on self", () => {
     self.increment()
   }
 }
-counter = Counter(value: 0)
-counter.increment_twice()
-counter.value`),
+$counter = Counter(value: 0)
+$counter.increment_twice()
+$counter.value`),
     { type: "Integer", value: 2 },
   );
 });
@@ -68,9 +68,9 @@ test("method calls on nested struct fields mutate the nested receiver", () => {
 struct Holder {
   Counter counter
 }
-holder = Holder(counter: Counter(value: 1))
-holder.counter.increment()
-holder.counter.value`),
+$holder = Holder(counter: Counter(value: 1))
+$holder.counter.increment()
+$holder.counter.value`),
     { type: "Integer", value: 2 },
   );
 });
@@ -85,8 +85,8 @@ test("self behaves as a normal struct value when assigned", () => {
     self.value
   }
 }
-counter = Counter(value: 1)
-counter.copied_value()`),
+$counter = Counter(value: 1)
+$counter.copied_value()`),
     { type: "Integer", value: 1 },
   );
 });
@@ -120,10 +120,10 @@ test("methods may return self", () => {
     self
   }
 }
-original = Counter(value: 1)
-copy = original.copy()
-copy.value = 2
-original.value`),
+$original = Counter(value: 1)
+$copy = $original.copy()
+$copy.value = 2
+$original.value`),
     { type: "Integer", value: 1 },
   );
 });

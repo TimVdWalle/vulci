@@ -15,12 +15,12 @@ test("enum declarations evaluate to null", () => {
 
 test("resolves enum values before their textual declaration", () => {
   assert.deepEqual(
-    evaluate(`value = Status.Pending
+    evaluate(`$value = Status.Pending
 enum Status {
   Pending
   Running
 }
-value`),
+$value`),
     { type: "Enum", enumName: "Status", memberName: "Pending" },
   );
 });
@@ -31,10 +31,10 @@ test("preserves enum identity across assignment and copying", () => {
   Pending
   Running
 }
-first = Status.Pending
-second = first
-first = Status.Running
-second`),
+$first = Status.Pending
+$second = $first
+$first = Status.Running
+$second`),
     { type: "Enum", enumName: "Status", memberName: "Pending" },
   );
 });

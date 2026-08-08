@@ -27,7 +27,7 @@ test("evaluates string concatenation and space joining", () => {
 
 test("evaluates interpolation left to right", () => {
   assert.deepEqual(
-    evaluate('name = "Ada"\n"Hi {{name}}, {{1 + 2}}, {{true}}"'),
+    evaluate('$name = "Ada"\n"Hi {{$name}}, {{1 + 2}}, {{true}}"'),
     {
       type: "String",
       value: "Hi Ada, 3, true",

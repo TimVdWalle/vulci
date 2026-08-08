@@ -59,9 +59,9 @@ test("method declaration warnings are not repeated by calls", () => {
     value
   }
 }
-item = Value(number: 1)
-item.identity(1)
-item.identity(2)`),
+$item = Value(number: 1)
+$item.identity(1)
+$item.identity(2)`),
   );
 
   assert.equal(warnings.length, 2);

@@ -19,14 +19,14 @@ function evaluate(source: string) {
 
 test("constructs objects and reads chained fields", () => {
   const result = evaluate(`
-user = object(
+$user = object(
   name: "Tim",
   address: object(
     city: "Rome",
   ),
 )
 
-user.address.city
+$user.address.city
 `);
 
   assert.deepEqual(result, {
@@ -77,12 +77,12 @@ object(
 
 test("copies anonymous objects with value semantics", () => {
   const result = evaluate(`
-original = object(
+$original = object(
   pair: (1, 2),
 )
 
-copy = original
-copy.pair[0]
+$copy = $original
+$copy.pair[0]
 `);
 
   assert.deepEqual(result, {
@@ -94,8 +94,8 @@ copy.pair[0]
 test("rejects anonymous-object field assignment at runtime", () => {
   assert.throws(
     () =>
-      evaluate(`user = object(name: "Tim")
-user.name = "Bob"`),
+      evaluate(`$user = object(name: "Tim")
+$user.name = "Bob"`),
     /E_MEM_TYPE:/,
   );
 });

@@ -298,11 +298,11 @@ test("function declarations evaluate to null", () => {
 
 test("supports calling a function declared later in the file", () => {
   assert.deepEqual(
-    evaluate(`result = first()
+    evaluate(`$result = first()
 fn first() {
   return 42
 }
-result`),
+$result`),
     {
       type: "Integer",
       value: 42,
@@ -358,9 +358,9 @@ test("reports an undefined function", () => {
 test("reports a global value that is not a function", () => {
   assert.throws(
     () =>
-      evaluate(`value = 42
-value()`),
-    /Cannot call 'value': value is not a function\./,
+      evaluate(`$value = 42
+$value()`),
+    /Cannot call '\$value': value is not a function\./,
   );
 });
 

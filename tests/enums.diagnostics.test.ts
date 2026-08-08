@@ -149,11 +149,14 @@ test("rejects bare member references and bare enum qualifiers", () => {
 
 test("keeps enum member names out of the surrounding namespace", () => {
   assert.deepEqual(
-    evaluate(`Pending = 42
-enum Status {
+    evaluate(`enum Status {
   Pending
 }
-Pending`),
+fn read() returns int {
+  Pending = 42
+  Pending
+}
+read()`),
     { type: "Integer", value: 42 },
   );
 });
