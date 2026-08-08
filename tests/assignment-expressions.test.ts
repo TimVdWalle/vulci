@@ -35,11 +35,18 @@ test("parses assignment as an expression", () => {
   });
 });
 
-test("returns the assigned value", () => {
-  assert.deepEqual(evaluate("value = 42"), {
+test("returns the assigned global value", () => {
+  assert.deepEqual(evaluate("$value = 42"), {
     type: "Integer",
     value: 42,
   });
+});
+
+test("rejects an ordinary variable assignment at the top level", () => {
+  assert.throws(
+    () => evaluate("value = 42"),
+    /Top-level variable 'value' must use the '\$' global-variable prefix\./,
+  );
 });
 
 test("supports chained assignment expressions", () => {

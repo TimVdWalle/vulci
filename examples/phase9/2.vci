@@ -6,11 +6,11 @@ fn area(int width, int height=$default_height) returns int {
     width * height
 }
 
-first = area(10)
-second = area(10, height: 30)
+$first = area(10)
+$second = area(10, height: 30)
 
-print(value: first)
-print(value: second)
+print(value: $first)
+print(value: $second)
 
 fn fibonacci(number) {
     if (number <= 1) {

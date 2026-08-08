@@ -1,10 +1,17 @@
 // Phase 14
 // Expected output: Phase13Counter(value: 15, step: 2)
 //                  Phase14Status.Running
-//                  SMOKE OK: 1339
-value = 1
-value = value + 1
-arithmetic = value
+//                  SMOKE OK: 1338
+
+enum Status { Pending }
+$answer = 42
+
+$globalVar = "global var"
+$interpolated = "{{$globalVar}} and the rest of the string"
+
+$value = 1
+$value = $value + 1
+$arithmetic = $value
     + 2 * 3
     + (1 + 2) * 3
     + 20
@@ -15,12 +22,12 @@ arithmetic = value
     + (-35 / 2)
     + (-37 % 10)
     + 1_000
-line_comment = 1 // ignored
-block_comment = 1 /* ignored */ + 1
-multiline_comment = 1 + /*
+$line_comment = 1 // ignored
+$block_comment = 1 /* ignored */ + 1
+$multiline_comment = 1 + /*
 ignored
 */ 2
-nested_comment = 1 + /*
+$nested_comment = 1 + /*
 outer
 /* inner */
 /* another /* deeper */ nested comment */
@@ -29,11 +36,11 @@ outer
 /**
  * Documentation-style block comments are ordinary comments.
  */
-smoke_value_2 = line_comment
-    + block_comment
-    + multiline_comment
-    + nested_comment
-comparison_result = true == true
+$smoke_value_2 = $line_comment
+    + $block_comment
+    + $multiline_comment
+    + $nested_comment
+$comparison_result = true == true
     and false == false
     and 1 == 1
     and 1 != 2
@@ -44,30 +51,30 @@ comparison_result = true == true
     and 1 + 2 == 3
     and 2 * 3 > 5
     and (1 < 2) == true
-logical_result = not false
+$logical_result = not false
     and not not true
     and (false or true)
     and not (false and 1 / 0 == 0)
-conditional_result = if (false) {
+$conditional_result = if (false) {
     0
-} else if (comparison_result and logical_result) {
+} else if ($comparison_result and $logical_result) {
     20
 } else {
     0
 }
-branch_value = 0
-branch_result = if (true) {
-    branch_value = 5
-    branch_value + 1
+$branch_value = 0
+$branch_result = if (true) {
+    $branch_value = 5
+    $branch_value + 1
 } else {
     0
 }
-selected_branch = if (true) {
+$selected_branch = if (true) {
     8
 } else {
     1 / 0
 }
-nested_result = if (true) {
+$nested_result = if (true) {
     if (false) {
         0
     } else {
@@ -76,12 +83,12 @@ nested_result = if (true) {
 } else {
     0
 }
-chain_counter = 0
-chain_result = 0 < (chain_counter = chain_counter + 1) < 2
+$chain_counter = 0
+$chain_result = 0 < ($chain_counter = $chain_counter + 1) < 2
     and 1 < 2 <= 3
     and 1 == 1 != 2
     and not (1 < 2 > 3)
-chain_short_circuit = not (10 < 5 < 1 / 0)
+$chain_short_circuit = not (10 < 5 < 1 / 0)
 fn add(int left, int right) returns int {
     return left + right
 }
@@ -91,7 +98,7 @@ fn implicit_result() returns int {
 fn return_null() returns null {
     return
 }
-local_value = 10
+$local_value = 10
 fn local_scope() returns int {
     local_value = 11
     return local_value
@@ -119,11 +126,11 @@ fn is_odd(int value) returns bool {
     }
     return is_even(value - 1)
 }
-forward_result = declared_later()
+$forward_result = declared_later()
 fn declared_later() returns int {
     return 5
 }
-missing_else = if (false) {
+$missing_else = if (false) {
     1
 }
 fn typed_increment(int value) returns int {
@@ -166,106 +173,107 @@ fn next_default() returns int {
 fn phase9_default(int value=next_default()) returns int {
     value
 }
-phase9_named = phase9_calculate(right: 3, left: 4, multiplier: 5, offset: 1)
-phase9_mixed = phase9_calculate(4, 3, multiplier: 5, offset: 1)
-phase9_defaults = phase9_calculate(4, 3)
-phase9_trailing = phase9_calculate(
+$phase9_named = phase9_calculate(right: 3, left: 4, multiplier: 5, offset: 1)
+$phase9_mixed = phase9_calculate(4, 3, multiplier: 5, offset: 1)
+$phase9_defaults = phase9_calculate(4, 3)
+$phase9_trailing = phase9_calculate(
     4,
     3,
     multiplier: 1,
 )
-phase9_first_default = phase9_default()
-phase9_second_default = phase9_default()
-phase9_supplied_default = phase9_default(value: 10)
-phase9_bare_call = declared_later
-checksum = arithmetic
-    + smoke_value_2
-    + conditional_result
-    + branch_result
-    + branch_value
-    + selected_branch
-    + nested_result
-    + chain_counter
+$phase9_first_default = phase9_default()
+$phase9_second_default = phase9_default()
+$phase9_supplied_default = phase9_default(value: 10)
+$phase9_bare_call = declared_later
+$checksum = $arithmetic
+    + $smoke_value_2
+    + $conditional_result
+    + $branch_result
+    + $branch_value
+    + $selected_branch
+    + $nested_result
+    + $chain_counter
     + add(2, 3)
     + implicit_result()
     + local_scope()
-    + local_value
+    + $local_value
     + increment_global()
     + $global_value
     + recurse(3)
-    + forward_result
-all_features_work = comparison_result
-    and logical_result
-    and chain_result
-    and chain_short_circuit
+    + $forward_result
+$all_features_work = $comparison_result
+    and $logical_result
+    and $chain_result
+    and $chain_short_circuit
     and is_even(10)
     and not is_even(9)
-existing_boolean_score = if (all_features_work) {
+$existing_boolean_score = if ($all_features_work) {
     1
 } else {
     0
 }
-existing_null_score = if (missing_else == null) {
+$existing_null_score = if ($missing_else == null) {
     1
 } else {
     0
 }
-typed_reassignment_score = typed_increment(1)
-union_integer_score = preserve(3)
-union_boolean_score = if (preserve(true)) {
+$typed_reassignment_score = typed_increment(1)
+$union_integer_score = preserve(3)
+$union_boolean_score = if (preserve(true)) {
     1
 } else {
     0
 }
-nullable_score = if (positive_or_null(-1) == null) {
+$nullable_score = if (positive_or_null(-1) == null) {
     1
 } else {
     0
 }
-union_reassignment_score = if (switch_type(1)) {
+$union_reassignment_score = if (switch_type(1)) {
     1
 } else {
     0
 }
-explicit_any_score = explicit_any(4)
-implicit_any_score = implicit_any(5)
-spaced_union_score = spaced_union(true)
-phase10_name = "Vulci"
-phase10_literal = '{{phase10_name}}'
-phase10_joined = "Hello" ~ phase10_name + "!"
-phase10_multiline = """
-    {{phase10_name}}
+$explicit_any_score = explicit_any(4)
+$implicit_any_score = implicit_any(5)
+$spaced_union_score = spaced_union(true)
+$phase10_name = "Vulci"
+$phase10_literal = '{{$phase10_name}}'
+$phase10_literal = "{{$phase10_name}}"
+$phase10_joined = "Hello" ~ $phase10_name + "!"
+$phase10_multiline = """
+    {{$phase10_name}}
     text
 """
-phase10_interpolation = "n={{1 + 2}}, b={{true}}"
-phase10_score = "👨‍👩‍👧‍👦á".count()
-    + if (phase10_joined.contains("Vulci")) { 1 } else { 0 }
+$phase10_interpolation = "$n={{1 + 2}}, $b={{true}}"
+$phase10_score = "👨‍👩‍👧‍👦á".count()
+    + if ($phase10_joined.contains("Vulci")) { 1 } else { 0 }
     + if ("A" < "a") { 1 } else { 0 }
-    + if (phase10_literal == '{{phase10_name}}') { 1 } else { 0 }
-    + if (phase10_multiline == "Vulci\ntext") { 1 } else { 0 }
-    + if (phase10_interpolation == "n=3, b=true") { 1 } else { 0 }
-    + if (phase10_joined == "Hello Vulci!") { 1 } else { 0 }
-phase9_score = phase9_named
-    + phase9_mixed
-    + phase9_defaults
-    + phase9_trailing
-    + phase9_first_default
-    + phase9_second_default
-    + phase9_supplied_default
-    + phase9_bare_call
+    + if ($phase10_literal == '{{$phase10_name}}') { 1 } else { 0 }
+    + if ($phase10_multiline == "Vulci\ntext") { 1 } else { 0 }
+    + if ($phase10_interpolation == "$n=3, $b=true") { 1 } else { 0 }
+    + if ($phase10_joined == "Hello Vulci!") { 1 } else { 0 }
+$phase9_score = $phase9_named
+    + $phase9_mixed
+    + $phase9_defaults
+    + $phase9_trailing
+    + $phase9_first_default
+    + $phase9_second_default
+    + $phase9_supplied_default
+    + $phase9_bare_call
     + $default_counter
 fn phase11_swap(tuple(int, str) value) returns tuple(str, int) {
     (value[1], value[0])
 }
-phase11_tuple = phase11_swap((11, "tuple"))
-phase11_score = phase11_tuple[1]
-phase12_user = object(
+$phase11_tuple = phase11_swap((11, "tuple"))
+$phase11_score = $phase11_tuple[1]
+$phase12_user = object(
     name: "Vulci",
     address: object(city: "Rome"),
     score: 12,
 )
-phase12_score = phase12_user.score
-phase12_city = phase12_user.address.city
+$phase12_score = $phase12_user.score
+$phase12_city = $phase12_user.address.city
 struct Phase13Counter {
     int value
     int step = 2
@@ -273,37 +281,46 @@ struct Phase13Counter {
         self.value = self.value + self.step
     }
 }
-phase13_counter = Phase13Counter(value: 13)
-phase13_copy = phase13_counter
-phase13_copy.value = 1
-phase13_method_score = phase13_counter.increment()
-phase13_score = phase13_method_score
-    + phase13_copy.value
-    + if (phase13_counter == Phase13Counter(value: 15)) { 1 } else { 0 }
-print(value: phase13_counter)
-phase14_forward = Phase14Status.Pending
+$phase13_counter = Phase13Counter(value: 13)
+$phase13_copy = $phase13_counter
+$phase13_copy.value = 1
+$phase13_method_score = $phase13_counter.increment()
+$phase13_score = $phase13_method_score
+    + $phase13_copy.value
+    + if ($phase13_counter == Phase13Counter(value: 15)) { 1 } else { 0 }
+print(value: $phase13_counter)
+$phase14_forward = Phase14Status.Pending
 enum Phase14Status {
     Pending
     Running
 }
-phase14_score = if (phase14_forward == Phase14Status.Pending and "{{phase14_forward}}" == "Pending") { 14 } else { 0 }
+$phase14_score = if ($phase14_forward == Phase14Status.Pending and "{{$phase14_forward}}" == "Pending") { 14 } else { 0 }
 print(value: Phase14Status.Running)
-result = checksum
-    + existing_boolean_score
-    + existing_null_score
-    + typed_reassignment_score
-    + union_integer_score
-    + union_boolean_score
-    + nullable_score
-    + union_reassignment_score
-    + explicit_any_score
-    + implicit_any_score
-    + spaced_union_score
-    + phase9_score
-    + phase10_score
-    + phase11_score
-    + phase12_score
-    + phase13_score
-    + phase14_score
-print(value: "SMOKE OK: {{result}}")
-unused_null = return_null()
+$result = $checksum
+    + $existing_boolean_score
+    + $existing_null_score
+    + $typed_reassignment_score
+    + $union_integer_score
+    + $union_boolean_score
+    + $nullable_score
+    + $union_reassignment_score
+    + $explicit_any_score
+    + $implicit_any_score
+    + $spaced_union_score
+    + $phase9_score
+    + $phase10_score
+    + $phase11_score
+    + $phase12_score
+    + $phase13_score
+    + $phase14_score
+print(value: "SMOKE OK: {{$result}}")
+$unused_null = return_null()
+
+
+$gl = 1
+
+fn test(wth) {
+    yes = $gl + 1
+
+    yes
+}

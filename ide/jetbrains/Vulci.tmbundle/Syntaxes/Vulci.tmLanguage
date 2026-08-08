@@ -1,4 +1,4 @@
-<!-- Phase: Phase 14 IDE support -->
+<!-- Phase: Phase 14 IDE support — Catppuccin-compatible variable and interpolation refinement -->
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
@@ -59,8 +59,16 @@
             <key>match</key><string>\b[0-9]+(?:_[0-9]+)*\b</string>
         </dict>
         <dict>
-            <key>name</key><string>variable.other.global.vulci</string>
+            <key>name</key><string>variable.parameter.global.vulci</string>
             <key>match</key><string>\$[A-Za-z_][A-Za-z0-9_]*</string>
+        </dict>
+        <dict>
+            <key>name</key><string>support.function.call.vulci</string>
+            <key>match</key><string>\b[a-z_][A-Za-z0-9_]*(?=\s*\()</string>
+        </dict>
+        <dict>
+            <key>name</key><string>support.type.variable.local.vulci</string>
+            <key>match</key><string>\b[a-z_][A-Za-z0-9_]*\b</string>
         </dict>
         <dict>
             <key>name</key><string>keyword.operator.vulci</string>
@@ -159,9 +167,9 @@
             <key>begin</key><string>\{\{</string>
             <key>end</key><string>\}\}</string>
             <key>beginCaptures</key>
-            <dict><key>0</key><dict><key>name</key><string>punctuation.section.interpolation.begin.vulci</string></dict></dict>
+            <dict><key>0</key><dict><key>name</key><string>constant.character.escape.interpolation.begin.vulci</string></dict></dict>
             <key>endCaptures</key>
-            <dict><key>0</key><dict><key>name</key><string>punctuation.section.interpolation.end.vulci</string></dict></dict>
+            <dict><key>0</key><dict><key>name</key><string>constant.character.escape.interpolation.end.vulci</string></dict></dict>
             <key>patterns</key>
             <array><dict><key>include</key><string>$self</string></dict></array>
         </dict>

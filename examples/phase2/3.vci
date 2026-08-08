@@ -1,7 +1,7 @@
-value = 10
-negative = -value
-result = negative + 3 * 4
+$value = 10
+$negative = -$value
+$result = $negative + 3 * 4
 
-print(value)
-print(negative)
-print(result)
+print($value)
+print($negative)
+print($result)

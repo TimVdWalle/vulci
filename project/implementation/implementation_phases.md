@@ -1,4 +1,4 @@
-<!-- Phase: Editor support planning after Phase 14 -->
+<!-- Phase: Phase 14A global-variable and editor-support correction -->
 <!-- Document ID: implementation-phases -->
 <!-- Version: 15 -->
 <!-- Status: Active -->
@@ -290,6 +290,21 @@ semantics have been explicitly agreed.
 - No Phase 15 map or other collection implementation
 
 **Result:** Programs can model closed sets of named alternatives.
+
+---
+
+## `ph14a` Global-variable and editor-support correction — Core
+
+- Require every top-level variable to use the `$` prefix
+- Reject ordinary unprefixed variable assignments at the top level
+- Preserve ordinary unprefixed local variables inside functions and methods
+- Update examples, tests, and smoke coverage for the corrected rule
+- Give ordinary variables, global variables, logical operators, control-flow
+  keywords, structs, and enums distinct theme-controlled TextMate scopes
+- Highlight interpolation expressions only in double-quoted strings
+
+**Result:** Top-level variable syntax matches the accepted explicit-global rule,
+and editors can style important Vulci categories through their colour schemes.
 
 ---
 

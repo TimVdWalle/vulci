@@ -1,4 +1,4 @@
-<!-- Phase: Phase 14 enum source-of-truth update -->
+<!-- Phase: Phase 14A global-variable and editor-support correction -->
 <!-- Document ID: semantics-general -->
 <!-- Version: 22 -->
 <!-- Status: Active -->
@@ -12,6 +12,10 @@ This document owns accepted general Vulci semantics. String and collection seman
 ---
 
 # 1. Local Variables
+
+Ordinary unprefixed variables are local variables and may only be created inside
+functions and methods. An ordinary unprefixed assignment at the top level is
+invalid.
 
 ## Type Inference
 
@@ -421,6 +425,9 @@ Vulci uses lexical scope.
 
 A `$name` identifier always refers to a top-level global variable. `$name` and
 `name` are distinct identifiers.
+
+Every variable created at the top level must use a `$`-prefixed identifier.
+Ordinary unprefixed variables may only be created inside functions and methods.
 
 Functions may read and write existing global variables through `$name`. A
 function cannot create an undeclared global variable. Global variables must be

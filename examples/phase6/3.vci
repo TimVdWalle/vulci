@@ -1,22 +1,22 @@
 // Phase 6
 
-value = 5
+$value = 5
 
-result = if (value == 5) {
-    value = 10
-    value + 1
+$result = if ($value == 5) {
+    $value = 10
+    $value + 1
 } else {
-    value = 100
-    value
+    $value = 100
+    $value
 }
 
-print(result)
-print(value)
+print($result)
+print($value)
 
-safe = if (true) {
+$safe = if (true) {
     42
 } else {
     1 / 0
 }
 
-print(safe)
+print($safe)

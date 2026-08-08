@@ -11,7 +11,7 @@ fn next_value() returns int {
     $counter
 }
 
-original = object(
+$original = object(
     first: next_value(),
     second: next_value(),
     nested: object(
@@ -19,8 +19,8 @@ original = object(
     ),
 )
 
-copied = original
+$copied = $original
 
-print(value: "{{original.first}}, {{original.second}}, {{original.nested.third}}")
-print(value: original)
-print(value: copied)
+print(value: "{{$original.first}}, {{$original.second}}, {{$original.nested.third}}")
+print(value: $original)
+print(value: $copied)
