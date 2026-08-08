@@ -1,0 +1,10 @@
+<!-- Phase: Phase 14 IDE support -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>name</key>
+    <string>Vulci</string>
+    <key>uuid</key>
+    <string>AA0B77A8-0F51-4D76-88CD-19C18FA2B1F4</string>
+</dict>
+</plist>
